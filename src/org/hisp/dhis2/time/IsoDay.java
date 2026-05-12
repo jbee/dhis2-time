@@ -2,6 +2,8 @@ package org.hisp.dhis2.time;
 
 import java.util.function.LongSupplier;
 
+import static java.lang.Math.abs;
+
 @TimeOffset
 public record IsoDay(@TimeOffset int daysSince2k) {
 
@@ -148,15 +150,18 @@ public record IsoDay(@TimeOffset int daysSince2k) {
   @TimeOffset
   public int year() {
     int daysRem = daysSince2k % DAYS_IN_4_YEARS;
-    int years0to3 = daysRem < 366 ? 0 : 1 + ((daysRem - 366) / 365);
-    if (daysSince2k < 0) years0to3 = -years0to3;
+    int years0to3 = daysRem < 0
+        ? daysRem % 365 == 0 ? (daysRem / 365) : (daysRem / 365) -1
+        : daysRem < 366 ? 0 : 1 + ((daysRem - 366) / 365);
     return 2000 + ((daysSince2k / DAYS_IN_4_YEARS) * 4) + years0to3;
   }
 
   @TimeOffset
   public int dayOfYear() {
     int daysRem = daysSince2k % DAYS_IN_4_YEARS;
-    return daysRem < 366 ? daysRem : (daysRem - 366) % 365;
+    return daysRem < 0
+        ? daysRem % 365 == 0 ? 0 : 365 - abs(daysRem % 365)
+        : daysRem < 366 ? daysRem : (daysRem - 366) % 365;
   }
 
   @TimeOffset

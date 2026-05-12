@@ -12,6 +12,12 @@ public record IsoInterval(IsoDay first, IsoDay last) {
     this(day, day);
   }
 
+  public IsoInterval {
+    if (last.before(first))
+      throw new IllegalArgumentException(
+          "Negative length interval between %s and %s".formatted(first, last));
+  }
+
   public int lengthInDays() {
     return last.daysSince2k() - first.daysSince2k() + 1;
   }

@@ -4,7 +4,11 @@ import java.util.function.LongSupplier;
 
 interface TimeSequence {
 
-  record Code(char system, char interval, char offset) {}
+  record Code(char system, char interval, char offset) {
+    public Code(char system, char interval) {
+      this(system, interval, '-');
+    }
+  }
 
   Code code();
 

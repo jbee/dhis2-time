@@ -20,6 +20,11 @@ class TestIsoDay {
     assertDayEquals("2002-01-01", new IsoDay(366+365));
   }
 
+  @Test
+  void testEpoch() {
+    assertDayEquals("1970-01-02", IsoDay.today(() -> 1));
+  }
+
   private void assertDayEquals(String expected, IsoDay actual) {
     IsoDay.OffsetYMD offset = actual.offset();
     assertEquals(expected, offset.toString());

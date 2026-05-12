@@ -54,7 +54,7 @@ public final class GregorianSequences {
     }
   }
 
-  record BiWeeklyGregorianSequence(Code code, IsoDay.Weekday startingWeekday)
+  record BiWeeklyGregorianSequence(Code code, IsoDay.Weekday day1)
       implements TimeSequence {
 
     @Override
