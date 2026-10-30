@@ -7,18 +7,18 @@ public final class GregorianSequences {
   record DailyGregorianSequence(Code code) implements TimeSequence {
 
     @Override
-    public IsoInterval today(LongSupplier nowUTC) {
-      return new IsoInterval(IsoDay.today(nowUTC));
+    public Epoch2kInterval today(LongSupplier nowUTC) {
+      return new Epoch2kInterval(Epoch2kDay.today(nowUTC));
     }
 
     @Override
-    public IsoInterval next(IsoInterval ref) {
-      return new IsoInterval(ref.last().tomorrow());
+    public Epoch2kInterval next(Epoch2kInterval ref) {
+      return new Epoch2kInterval(ref.last().tomorrow());
     }
 
     @Override
-    public IsoInterval previous(IsoInterval ref) {
-      return new IsoInterval(ref.first().yesterday());
+    public Epoch2kInterval previous(Epoch2kInterval ref) {
+      return new Epoch2kInterval(ref.first().yesterday());
     }
 
     @Override
@@ -30,22 +30,22 @@ public final class GregorianSequences {
   /**
    * @param day1 the day considered the first day of the week
    */
-  record WeeklyGregorianSequence(Code code, IsoDay.Weekday day1)
+  record WeeklyGregorianSequence(Code code, Epoch2kDay.Weekday day1)
       implements TimeSequence {
 
     @Override
-    public IsoInterval today(LongSupplier nowUTC) {
-      return IsoDay.today(nowUTC).inWeek(day1);
+    public Epoch2kInterval today(LongSupplier nowUTC) {
+      return Epoch2kDay.today(nowUTC).containingWeek(day1);
     }
 
     @Override
-    public IsoInterval next(IsoInterval ref) {
-      return ref.last().tomorrow().inWeek(day1);
+    public Epoch2kInterval next(Epoch2kInterval ref) {
+      return ref.last().tomorrow().containingWeek(day1);
     }
 
     @Override
-    public IsoInterval previous(IsoInterval ref) {
-      return ref.first().yesterday().inWeek(day1);
+    public Epoch2kInterval previous(Epoch2kInterval ref) {
+      return ref.first().yesterday().containingWeek(day1);
     }
 
     @Override
@@ -54,23 +54,23 @@ public final class GregorianSequences {
     }
   }
 
-  record BiWeeklyGregorianSequence(Code code, IsoDay.Weekday day1)
+  record BiWeeklyGregorianSequence(Code code, Epoch2kDay.Weekday day1)
       implements TimeSequence {
 
     @Override
-    public IsoInterval today(LongSupplier nowUTC) {
+    public Epoch2kInterval today(LongSupplier nowUTC) {
       // TODO interestingly the math has to take into account when (bi-)week 1 starts to check if we
       // are in bi-week 27 which can be only 1 week long
       return null;
     }
 
     @Override
-    public IsoInterval next(IsoInterval ref) {
+    public Epoch2kInterval next(Epoch2kInterval ref) {
       return null;
     }
 
     @Override
-    public IsoInterval previous(IsoInterval ref) {
+    public Epoch2kInterval previous(Epoch2kInterval ref) {
       return null;
     }
 
@@ -87,18 +87,18 @@ public final class GregorianSequences {
   record MonthlyGregorianSequence(Code code) implements TimeSequence {
 
     @Override
-    public IsoInterval today(LongSupplier nowUTC) {
-      return IsoDay.today(nowUTC).inMonth();
+    public Epoch2kInterval today(LongSupplier nowUTC) {
+      return Epoch2kDay.today(nowUTC).containingMonth();
     }
 
     @Override
-    public IsoInterval next(IsoInterval ref) {
-      return ref.last().tomorrow().inMonth();
+    public Epoch2kInterval next(Epoch2kInterval ref) {
+      return ref.last().tomorrow().containingMonth();
     }
 
     @Override
-    public IsoInterval previous(IsoInterval ref) {
-      return ref.first().yesterday().inMonth();
+    public Epoch2kInterval previous(Epoch2kInterval ref) {
+      return ref.first().yesterday().containingMonth();
     }
 
     @Override
@@ -107,21 +107,21 @@ public final class GregorianSequences {
     }
   }
 
-  record QuarterlyGregorianSequence(Code code, IsoDay.Month month1) implements TimeSequence {
+  record QuarterlyGregorianSequence(Code code, Epoch2kDay.Month month1) implements TimeSequence {
 
     @Override
-    public IsoInterval today(LongSupplier nowUTC) {
-      return IsoDay.today(nowUTC).inQuarter(month1);
+    public Epoch2kInterval today(LongSupplier nowUTC) {
+      return Epoch2kDay.today(nowUTC).containingQuarter(month1);
     }
 
     @Override
-    public IsoInterval next(IsoInterval ref) {
-      return ref.last().tomorrow().inQuarter(month1);
+    public Epoch2kInterval next(Epoch2kInterval ref) {
+      return ref.last().tomorrow().containingQuarter(month1);
     }
 
     @Override
-    public IsoInterval previous(IsoInterval ref) {
-      return ref.first().yesterday().inQuarter(month1);
+    public Epoch2kInterval previous(Epoch2kInterval ref) {
+      return ref.first().yesterday().containingQuarter(month1);
     }
 
     @Override
@@ -134,21 +134,21 @@ public final class GregorianSequences {
    * @param code
    * @param month1 the month considered the first month of the year(ly cycle)
    */
-  record YearlyGregorianSequence(Code code, IsoDay.Month month1) implements TimeSequence {
+  record YearlyGregorianSequence(Code code, Epoch2kDay.Month month1) implements TimeSequence {
 
     @Override
-    public IsoInterval today(LongSupplier nowUTC) {
-      return IsoDay.today(nowUTC).inYear(month1);
+    public Epoch2kInterval today(LongSupplier nowUTC) {
+      return Epoch2kDay.today(nowUTC).containingYear(month1);
     }
 
     @Override
-    public IsoInterval next(IsoInterval ref) {
-      return ref.last().tomorrow().inYear(month1);
+    public Epoch2kInterval next(Epoch2kInterval ref) {
+      return ref.last().tomorrow().containingYear(month1);
     }
 
     @Override
-    public IsoInterval previous(IsoInterval ref) {
-      return ref.first().yesterday().inYear(month1);
+    public Epoch2kInterval previous(Epoch2kInterval ref) {
+      return ref.first().yesterday().containingYear(month1);
     }
 
     @Override

@@ -23,19 +23,19 @@ interface TimeSequence {
    *     System#currentTimeMillis()}
    * @return the interval of this sequence containing the current day (now/today)
    */
-  IsoInterval today(LongSupplier nowUTC);
+  Epoch2kInterval today(LongSupplier nowUTC);
 
   /**
    * @param ref a reference interval, usually of the same sequence
    * @return the interval of this sequence starting or containing the day after the last day of the
    *     given interval
    */
-  IsoInterval next(IsoInterval ref);
+  Epoch2kInterval next(Epoch2kInterval ref);
 
   /**
    * @param ref a reference interval, usually of the same sequence
    * @return the interval of this sequence ending or containing the day before the first day of the
    *     given interval
    */
-  IsoInterval previous(IsoInterval ref);
+  Epoch2kInterval previous(Epoch2kInterval ref);
 }

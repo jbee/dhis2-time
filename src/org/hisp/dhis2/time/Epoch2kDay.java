@@ -5,19 +5,19 @@ import java.util.function.LongSupplier;
 import static java.lang.Math.abs;
 
 @TimeOffset
-public record IsoDay(@TimeOffset int daysSince2k) {
+public record Epoch2kDay(@TimeOffset int daysSince2k) {
 
-  private static final long MILLIS_SINCE_2K_MIDNIGHT = 946_684_800_000L;
+  private static final long MILLIS_UTC_T0_UNTIL_2K_MIDNIGHT = 946_684_800_000L;
   private static final long MILLIS_IN_A_DAY = 86_400_000L;
 
-  public static IsoDay today() {
+  public static Epoch2kDay today() {
     return today(System::currentTimeMillis);
   }
 
-  public static IsoDay today(@TimeOffset LongSupplier nowUTC) {
-    long millisSince2k = nowUTC.getAsLong() - MILLIS_SINCE_2K_MIDNIGHT;
+  public static Epoch2kDay today(@TimeOffset LongSupplier nowUTC) {
+    long millisSince2k = nowUTC.getAsLong() - MILLIS_UTC_T0_UNTIL_2K_MIDNIGHT;
     int daysSince2k = (int) (millisSince2k / MILLIS_IN_A_DAY);
-    return new IsoDay(daysSince2k);
+    return new Epoch2kDay(daysSince2k);
   }
 
   @TimeOffset
@@ -57,7 +57,7 @@ public record IsoDay(@TimeOffset int daysSince2k) {
       @TimeOffset int years, @TimeOffset int months, @TimeOffset int days) {
 
     int daysInMonth() {
-      return IsoDay.daysInMonth(years, months);
+      return Epoch2kDay.daysInMonth(years, months);
     }
 
     @Override
@@ -66,19 +66,19 @@ public record IsoDay(@TimeOffset int daysSince2k) {
     }
   }
 
-  public boolean before(IsoDay other) {
+  public boolean before(Epoch2kDay other) {
     return daysSince2k < other.daysSince2k;
   }
 
-  public boolean notBefore(IsoDay other) {
+  public boolean notBefore(Epoch2kDay other) {
     return daysSince2k >= other.daysSince2k;
   }
 
-  public boolean after(IsoDay other) {
+  public boolean after(Epoch2kDay other) {
     return daysSince2k > other.daysSince2k;
   }
 
-  public boolean notAfter(IsoDay other) {
+  public boolean notAfter(Epoch2kDay other) {
     return daysSince2k <= other.daysSince2k;
   }
 
@@ -87,19 +87,23 @@ public record IsoDay(@TimeOffset int daysSince2k) {
     return offset().toString();
   }
 
-  public IsoDay plusDays(int n) {
-    return new IsoDay(daysSince2k + n);
+  public long toUTCMillis() {
+    return MILLIS_UTC_T0_UNTIL_2K_MIDNIGHT + daysSince2k * MILLIS_IN_A_DAY;
   }
 
-  public IsoDay minusDays(int n) {
+  public Epoch2kDay plusDays(int n) {
+    return new Epoch2kDay(daysSince2k + n);
+  }
+
+  public Epoch2kDay minusDays(int n) {
     return plusDays(-n);
   }
 
-  public IsoDay yesterday() {
+  public Epoch2kDay yesterday() {
     return minusDays(1);
   }
 
-  public IsoDay tomorrow() {
+  public Epoch2kDay tomorrow() {
     return plusDays(1);
   }
 
@@ -108,7 +112,7 @@ public record IsoDay(@TimeOffset int daysSince2k) {
    * @return the day n month later (which can effectively be n+1 month later of this day of the
    *     month exceeds the days in the month n month from this day's month)
    */
-  public IsoDay plusMonths(int n) {
+  public Epoch2kDay plusMonths(int n) {
     int year = year();
     int startMonth = month();
     int days = daysSince2k;
@@ -118,10 +122,10 @@ public record IsoDay(@TimeOffset int daysSince2k) {
       int yearOffset = monthOffset / 12;
       days += daysInMonth(year + yearOffset, month);
     }
-    return new IsoDay(days);
+    return new Epoch2kDay(days);
   }
 
-  public IsoDay day1InYear() {
+  public Epoch2kDay day1InYear() {
     return minusDays(dayOfYear());
   }
 
@@ -129,11 +133,11 @@ public record IsoDay(@TimeOffset int daysSince2k) {
    * @param month the month to find the 1st day of
    * @return the 1st day in the given month in the same year as this day's year
    */
-  public IsoDay day1InMonth(Month month) {
+  public Epoch2kDay day1InMonth(Month month) {
     int year = year();
     int daysToDay1 = 0;
     for (int m = 0; m < month.ordinal(); m++) daysToDay1 += daysInMonth(year, m);
-    return new IsoDay(daysSince2k - dayOfYear() + daysToDay1);
+    return new Epoch2kDay(daysSince2k - dayOfYear() + daysToDay1);
   }
 
   /*
@@ -224,47 +228,47 @@ public record IsoDay(@TimeOffset int daysSince2k) {
   /**
    * @return the interval of the week (starting Monday) containing this day
    */
-  public IsoInterval inWeek() {
-    return inWeek(Weekday.Monday);
+  public Epoch2kInterval containingWeek() {
+    return containingWeek(Weekday.Monday);
   }
 
-  public IsoInterval inWeek(Weekday day1) {
-    IsoDay start = minusDays(dayOfWeek(day1));
+  public Epoch2kInterval containingWeek(Weekday day1) {
+    Epoch2kDay start = minusDays(dayOfWeek(day1));
     //TODO two cases as well?
-    return new IsoInterval(start, start.plusDays(6));
+    return new Epoch2kInterval(start, start.plusDays(6));
   }
 
   /**
    * @return the interval of the month containing this day
    */
-  public IsoInterval inMonth() {
+  public Epoch2kInterval containingMonth() {
     OffsetYMD offset = offset();
-    IsoDay firstDay = new IsoDay(daysSince2k - offset.days());
-    return new IsoInterval(firstDay, firstDay.plusDays(offset.daysInMonth() - 1));
+    Epoch2kDay firstDay = new Epoch2kDay(daysSince2k - offset.days());
+    return new Epoch2kInterval(firstDay, firstDay.plusDays(offset.daysInMonth() - 1));
   }
 
   /**
    * @return the interval of the year containing this day
    */
-  public IsoInterval inYear() {
-    return inYear(Month.January);
+  public Epoch2kInterval containingYear() {
+    return containingYear(Month.January);
   }
 
-  public IsoInterval inYear(Month month1) {
-    IsoDay yearDay1 = day1InMonth(month1);
+  public Epoch2kInterval containingYear(Month month1) {
+    Epoch2kDay yearDay1 = day1InMonth(month1);
     //TODO this day can be before or after year day1 - 2 cases
-    IsoDay yearLastDay = yearDay1.plusMonths(12).minusDays(1);
-    return new IsoInterval(yearDay1, yearLastDay);
+    Epoch2kDay yearLastDay = yearDay1.plusMonths(12).minusDays(1);
+    return new Epoch2kInterval(yearDay1, yearLastDay);
   }
 
-  public IsoInterval inQuarter(Month month1) {
-    IsoDay yearDay1 = day1InMonth(month1);
+  public Epoch2kInterval containingQuarter(Month month1) {
+    Epoch2kDay yearDay1 = day1InMonth(month1);
     if (yearDay1.after(this)) {
 
     } else {
 
     }
-    IsoDay qX = yearDay1.plusMonths(3).minusDays(1);
+    Epoch2kDay qX = yearDay1.plusMonths(3).minusDays(1);
 
     return null;
   }

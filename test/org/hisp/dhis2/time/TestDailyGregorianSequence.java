@@ -9,10 +9,10 @@ class TestDailyGregorianSequence {
   @Test
   void testNext() {
     TimeSequence daily = new GregorianSequences.DailyGregorianSequence(new TimeSequence.Code('G', 'D'));
-    IsoInterval epochDay1 = daily.today(() -> 0);
+    Epoch2kInterval epochDay1 = daily.today(() -> 0);
     assertEquals("1970-01-01+1", epochDay1.toString());
-    IsoInterval epochDay2 = daily.next(epochDay1);
-    IsoInterval epochDay3 = daily.next(epochDay2);
+    Epoch2kInterval epochDay2 = daily.next(epochDay1);
+    Epoch2kInterval epochDay3 = daily.next(epochDay2);
     assertEquals("1970-01-02+1", epochDay2.toString());
     assertEquals("1970-01-03+1", epochDay3.toString());
   }
@@ -20,10 +20,10 @@ class TestDailyGregorianSequence {
   @Test
   void testPrevious() {
     TimeSequence daily = new GregorianSequences.DailyGregorianSequence(new TimeSequence.Code('G', 'D'));
-    IsoInterval epochDay1 = daily.today(() -> 0);
+    Epoch2kInterval epochDay1 = daily.today(() -> 0);
     assertEquals("1970-01-01+1", epochDay1.toString());
-    IsoInterval epochDay2 = daily.previous(epochDay1);
-    IsoInterval epochDay3 = daily.previous(epochDay2);
+    Epoch2kInterval epochDay2 = daily.previous(epochDay1);
+    Epoch2kInterval epochDay3 = daily.previous(epochDay2);
     assertEquals("1969-12-31+1", epochDay2.toString());
     assertEquals("1969-12-30+1", epochDay3.toString());
   }
