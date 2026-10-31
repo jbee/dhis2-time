@@ -225,19 +225,23 @@ public interface TimeSequence {
   }
 
   /**
-   * The families this sequence strictly tiles: calling {@link #partition} with a
-   * parent of one of these families will succeed for well-formed input.
+   * The families this sequence strictly tiles, as a declaration.
    *
-   * <p>Strict tiling means every interval of this sequence is fully contained in
-   * exactly one interval of the parent family, so the parent is exactly the
-   * concatenation of child intervals with no gaps and no overlaps. Equivalently:
-   * no child interval straddles a parent boundary.
+   * <p>A family in this set is a guarantee: {@link #partition} will succeed
+   * for a well-formed parent of that family. A family not in this set is a
+   * guarantee of the opposite: some instance of that family will not tile,
+   * typically because the two sequences' offsets do not align (e.g.
+   * {@code Quarterly(April)} cannot tile {@code SixMonthly(February)}).
    *
-   * <p>Always a subset of {@link #contributesTo()}. The two sets coincide for
-   * calendar sequences whose boundaries nest cleanly; they differ for sequences
-   * with boundary-straddling children (e.g. ISO weeks into Gregorian months).
-   *
-   * @see #partition(Epoch2kInterval)
+   * <p><b>Not enforced at runtime.</b> {@link #partition} operates on the
+   * specific interval passed to it, not on the family it came from, so it may
+   * succeed on a specific parent whose family is not in this set — when the
+   * boundaries happen to line up. Conversely, it may throw on a parent whose
+   * family <em>is</em> in this set if the two sequences' offsets do not match
+   * (something this set cannot express, since {@link TimeFamilyKey} does not
+   * encode offset). Use this set to decide <em>which families to attempt</em>
+   * to partition; use {@link #partition}'s return or exception for the actual
+   * outcome on a specific interval.
    */
   Set<TimeFamilyKey> partitions();
 

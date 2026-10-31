@@ -108,7 +108,7 @@ public final class GregorianSequences {
             : TimeSequenceKey.biMonthly('G', month1);
     return new BiMonthlyGregorianSequence(
         key, month1,
-        Set.of(SixMonth, Year),
+        Set.of(Year),
         Set.of(Quarter, SixMonth, Year));
   }
 
@@ -130,7 +130,7 @@ public final class GregorianSequences {
             : TimeSequenceKey.quarterly('G', month1);
     return new QuarterlyGregorianSequence(
         key, month1,
-        Set.of(SixMonth, Year),
+        Set.of(Year),
         Set.of(SixMonth, Year));
   }
 
