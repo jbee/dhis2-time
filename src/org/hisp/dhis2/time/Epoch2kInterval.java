@@ -14,8 +14,8 @@ public record Epoch2kInterval(Epoch2kDay first, Epoch2kDay last) {
    */
   public static Epoch2kInterval ofYear(int year) {
     return new Epoch2kInterval(
-        Epoch2kDay.ofJanuary1stIn(year),
-        Epoch2kDay.ofJanuary1stIn(year + 1).minusDays(1));
+        Epoch2kDay.ofJanuary1stInYear(year),
+        Epoch2kDay.ofJanuary1stInYear(year + 1).minusDays(1));
   }
 
   /**
@@ -29,8 +29,8 @@ public record Epoch2kInterval(Epoch2kDay first, Epoch2kDay last) {
       throw new IllegalArgumentException(
           "year2 (" + year2 + ") must not be before year1 (" + year1 + ")");
     return new Epoch2kInterval(
-        Epoch2kDay.ofJanuary1stIn(year1),
-        Epoch2kDay.ofJanuary1stIn(year2 + 1).minusDays(1));
+        Epoch2kDay.ofJanuary1stInYear(year1),
+        Epoch2kDay.ofJanuary1stInYear(year2 + 1).minusDays(1));
   }
 
   Epoch2kInterval(Epoch2kDay day) {

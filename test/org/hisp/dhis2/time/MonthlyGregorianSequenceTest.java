@@ -10,51 +10,51 @@ class MonthlyGregorianSequenceTest {
 
   @Test
   void intervalIsFullMonth() {
-    assertInterval(Monthly.interval(Epoch2kDay.of(2024, 6, 15)), 2024, 6, 1, 2024, 6, 30);
+    assertInterval(Monthly.interval(Epoch2kDay.ofYMD(2024, 6, 15)), 2024, 6, 1, 2024, 6, 30);
   }
 
   @Test
   void leapYearFebruaryHas29Days() {
-    assertInterval(Monthly.interval(Epoch2kDay.of(2024, 2, 15)), 2024, 2, 1, 2024, 2, 29);
+    assertInterval(Monthly.interval(Epoch2kDay.ofYMD(2024, 2, 15)), 2024, 2, 1, 2024, 2, 29);
   }
 
   @Test
   void nonLeapYearFebruaryHas28Days() {
-    assertInterval(Monthly.interval(Epoch2kDay.of(2023, 2, 15)), 2023, 2, 1, 2023, 2, 28);
+    assertInterval(Monthly.interval(Epoch2kDay.ofYMD(2023, 2, 15)), 2023, 2, 1, 2023, 2, 28);
   }
 
   @Test
   void firstAndLastDayOfMonthMapToSameInterval() {
-    var expected = Monthly.interval(Epoch2kDay.of(2024, 6, 1));
-    assertEquals(expected, Monthly.interval(Epoch2kDay.of(2024, 6, 30)));
+    var expected = Monthly.interval(Epoch2kDay.ofYMD(2024, 6, 1));
+    assertEquals(expected, Monthly.interval(Epoch2kDay.ofYMD(2024, 6, 30)));
   }
 
   @Test
   void nextIsFollowingMonth() {
     assertInterval(
-        Monthly.next(Monthly.interval(Epoch2kDay.of(2024, 6, 15))), 2024, 7, 1, 2024, 7, 31);
+        Monthly.next(Monthly.interval(Epoch2kDay.ofYMD(2024, 6, 15))), 2024, 7, 1, 2024, 7, 31);
   }
 
   @Test
   void nextFromDecemberCrossesYear() {
     assertInterval(
-        Monthly.next(Monthly.interval(Epoch2kDay.of(2024, 12, 15))), 2025, 1, 1, 2025, 1, 31);
+        Monthly.next(Monthly.interval(Epoch2kDay.ofYMD(2024, 12, 15))), 2025, 1, 1, 2025, 1, 31);
   }
 
   @Test
   void previousIsPrecedingMonth() {
     assertInterval(
-        Monthly.previous(Monthly.interval(Epoch2kDay.of(2024, 6, 15))), 2024, 5, 1, 2024, 5, 31);
+        Monthly.previous(Monthly.interval(Epoch2kDay.ofYMD(2024, 6, 15))), 2024, 5, 1, 2024, 5, 31);
   }
 
   @Test
   void nextAndPreviousAreInverses() {
     for (var d :
         new Epoch2kDay[] {
-          Epoch2kDay.of(2024, 1, 15),
-          Epoch2kDay.of(2024, 2, 15),
-          Epoch2kDay.of(2024, 12, 15),
-          Epoch2kDay.of(2023, 2, 15)
+          Epoch2kDay.ofYMD(2024, 1, 15),
+          Epoch2kDay.ofYMD(2024, 2, 15),
+          Epoch2kDay.ofYMD(2024, 12, 15),
+          Epoch2kDay.ofYMD(2023, 2, 15)
         }) {
       var i = Monthly.interval(d);
       assertEquals(i, Monthly.previous(Monthly.next(i)));
@@ -79,7 +79,7 @@ class MonthlyGregorianSequenceTest {
 
   @Test
   void partitionReflexive() {
-    var month = Monthly.interval(Epoch2kDay.of(2024, 6, 15));
+    var month = Monthly.interval(Epoch2kDay.ofYMD(2024, 6, 15));
     var parts = Monthly.partition(month);
     assertEquals(1, parts.size());
     assertEquals(month, parts.get(0));

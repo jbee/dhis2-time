@@ -176,12 +176,12 @@ public final class GregorianSequences {
 
       // ISO-style week-year: week 1 of Y contains Jan 4 of Y.
       int year = weekStart.year();
-      Epoch2kDay week1 = Epoch2kDay.ofWeek1In(year, day1);
+      Epoch2kDay week1 = Epoch2kDay.ofWeek1InYear(year, day1);
       if (weekStart.before(week1)) {
         year--;
-        week1 = Epoch2kDay.ofWeek1In(year, day1);
+        week1 = Epoch2kDay.ofWeek1InYear(year, day1);
       } else {
-        Epoch2kDay nextWeek1 = Epoch2kDay.ofWeek1In(year + 1, day1);
+        Epoch2kDay nextWeek1 = Epoch2kDay.ofWeek1InYear(year + 1, day1);
         if (weekStart.notBefore(nextWeek1)) {
           year++;
           week1 = nextWeek1;
@@ -195,7 +195,7 @@ public final class GregorianSequences {
       Epoch2kDay biWeekEnd = biWeekStart.plusDays(13);
 
       // 53-week years: the 27th bi-week is a single week.
-      Epoch2kDay nextYearWeek1 = Epoch2kDay.ofWeek1In(year + 1, day1);
+      Epoch2kDay nextYearWeek1 = Epoch2kDay.ofWeek1InYear(year + 1, day1);
       if (biWeekEnd.notBefore(nextYearWeek1)) {
         biWeekEnd = nextYearWeek1.minusDays(1);
       }

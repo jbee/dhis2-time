@@ -20,14 +20,14 @@ public record Epoch2kDay(@TimeOffset int daysSince2k) {
     return new Epoch2kDay(daysSince2k);
   }
 
-  static Epoch2kDay of(int year, int month, int dayOfMonth) {
-    return Epoch2kDay.ofJanuary1stIn(year)
+  static Epoch2kDay ofYMD(int year, int month, int dayOfMonth) {
+    return Epoch2kDay.ofJanuary1stInYear(year)
         .plusMonths(month - 1)
         .plusDays(dayOfMonth - 1);
   }
 
   /** @return January 1st of the given year */
-  public static Epoch2kDay ofJanuary1stIn(int year) {
+  public static Epoch2kDay ofJanuary1stInYear(int year) {
     return new Epoch2kDay(0).plusYears(year - 2000); // 0 == 2000-01-01
   }
 
@@ -35,8 +35,8 @@ public record Epoch2kDay(@TimeOffset int daysSince2k) {
    * Start of the first week of the given year, where the week containing January 4th
    * is the first week (ISO-style generalised to any {@code day1}).
    */
-  public static Epoch2kDay ofWeek1In(int year, DayOfWeek day1) {
-    return ofJanuary1stIn(year).plusDays(3).previousOrSame(day1);
+  public static Epoch2kDay ofWeek1InYear(int year, DayOfWeek day1) {
+    return ofJanuary1stInYear(year).plusDays(3).previousOrSame(day1);
   }
 
   @TimeOffset
@@ -215,11 +215,10 @@ public record Epoch2kDay(@TimeOffset int daysSince2k) {
     31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31
   };
 
-  private static int daysInMonth(@TimeOffset int year, @TimeOffset int month) {
-    int daysInMonth = NON_LEAP_MONTH_LENGTHS[month];
-    if (month != 1) return daysInMonth;
-    boolean leap = (year % 4 == 0); // works for 2000-2099
-    return leap ? daysInMonth + 1 : daysInMonth;
+  private static int daysInMonth(int year, int month) {
+    int days = NON_LEAP_MONTH_LENGTHS[month];
+    if (month == 1 && isLeapYear(year)) days++;
+    return days;
   }
 
   /*
@@ -272,21 +271,34 @@ public record Epoch2kDay(@TimeOffset int daysSince2k) {
     return new Epoch2kInterval(quarterDay1, quarterDay1.plusMonths(3).minusDays(1));
   }
 
-  /** @param n number of months; negative moves backwards, day-of-month preserved where possible */
+  /**
+   * @param n number of months; negative moves backwards, day-of-month clamped to target month length
+   */
   public Epoch2kDay plusMonths(int n) {
-    int year = year();
-    int startMonth = month();
-    int days = daysSince2k;
-    int step = Integer.signum(n);
-    for (int i = 0; i < Math.abs(n); i++) {
-      // forward: skip months M, M+1, ..., M+n-1
-      // backward: skip months M-1, M-2, ..., M-|n|
-      int monthOffset = step > 0 ? startMonth + i : startMonth - (i + 1);
-      int month = Math.floorMod(monthOffset, 12);
-      int yearOffset = Math.floorDiv(monthOffset, 12);
-      days += step * daysInMonth(year + yearOffset, month);
+    int y = year();
+    int m = month();
+    int d = dayOfMonth();
+    int totalMonths = y * 12 + m + n;
+    int targetYear = Math.floorDiv(totalMonths, 12);
+    int targetMonth = Math.floorMod(totalMonths, 12);
+    int targetDay = Math.min(d, daysInMonth(targetYear, targetMonth) - 1);
+    return fromYMD(targetYear, targetMonth, targetDay);
+  }
+
+  /** Inverse of {@link #offset()}; all three args 0-based (month 0=Jan, day 0=1st). */
+  private static Epoch2kDay fromYMD(int year, int month, int dayOfMonth) {
+    int days = 0;
+    if (year >= 2000) {
+      for (int y = 2000; y < year; y++) days += isLeapYear(y) ? 366 : 365;
+    } else {
+      for (int y = year; y < 2000; y++) days -= isLeapYear(y) ? 366 : 365;
     }
-    return new Epoch2kDay(days);
+    for (int m = 0; m < month; m++) days += daysInMonth(year, m);
+    return new Epoch2kDay(days + dayOfMonth);
+  }
+
+  private static boolean isLeapYear(int year) {
+    return year % 4 == 0; // valid for 1901-2099
   }
 
   public Epoch2kDay minusMonths(int n) { return plusMonths(-n); }
