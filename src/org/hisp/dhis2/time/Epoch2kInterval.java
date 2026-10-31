@@ -3,10 +3,10 @@ package org.hisp.dhis2.time;
 /**
  * A closed interval in the ISO calendar.
  *
- * @param first day 1 of the interval (inclusive)
- * @param last last day of the interval (inclusive)
+ * @param firstDay day 1 of the interval (inclusive)
+ * @param lastDay last day of the interval (inclusive)
  */
-public record Epoch2kInterval(Epoch2kDay first, Epoch2kDay last) {
+public record Epoch2kInterval(Epoch2kDay firstDay, Epoch2kDay lastDay) {
 
   /**
    * The calendar year {@code [year-01-01, year-12-31]} — the whole of the given
@@ -38,33 +38,33 @@ public record Epoch2kInterval(Epoch2kDay first, Epoch2kDay last) {
   }
 
   public Epoch2kInterval {
-    if (last.before(first))
+    if (lastDay.before(firstDay))
       throw new IllegalArgumentException(
-          "Negative length interval between %s and %s".formatted(first, last));
+          "Negative length interval between %s and %s".formatted(firstDay, lastDay));
   }
 
   public int lengthInDays() {
-    return last.daysSince2k() - first.daysSince2k() + 1;
+    return lastDay.daysSince2k() - firstDay.daysSince2k() + 1;
   }
 
   @Override
   public String toString() {
-    return first.toString() + "+" + lengthInDays();
+    return firstDay.toString() + "+" + lengthInDays();
   }
 
   public boolean contains(Epoch2kDay day) {
-    return first.daysSince2k() <= day.daysSince2k() && last.daysSince2k() >= day.daysSince2k();
+    return firstDay.daysSince2k() <= day.daysSince2k() && lastDay.daysSince2k() >= day.daysSince2k();
   }
 
   public boolean overlaps(Epoch2kInterval other) {
-    return first.daysSince2k() <= other.last.daysSince2k()
-        && other.first.daysSince2k() <= last.daysSince2k();
+    return firstDay.daysSince2k() <= other.lastDay.daysSince2k()
+        && other.firstDay.daysSince2k() <= lastDay.daysSince2k();
   }
 
   /** @return the number of days shared by this interval and {@code other}; 0 if disjoint. */
   public int overlapLength(Epoch2kInterval other) {
-    int first = Math.max(this.first.daysSince2k(), other.first.daysSince2k());
-    int last  = Math.min(this.last.daysSince2k(),  other.last.daysSince2k());
+    int first = Math.max(this.firstDay.daysSince2k(), other.firstDay.daysSince2k());
+    int last  = Math.min(this.lastDay.daysSince2k(),  other.lastDay.daysSince2k());
     return Math.max(0, last - first + 1);
   }
 }

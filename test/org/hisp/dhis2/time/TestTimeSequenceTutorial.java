@@ -42,8 +42,8 @@ class TestTimeSequenceTutorial {
     // quarterly interval containing (or following) the given day".
     var q1 = parser.parse("GQ/2024-02-15").interval();
 
-    assertEquals(ofYMD(2024, 1, 1), q1.first());
-    assertEquals(ofYMD(2024, 3, 31), q1.last());
+    assertEquals(ofYMD(2024, 1, 1), q1.firstDay());
+    assertEquals(ofYMD(2024, 3, 31), q1.lastDay());
   }
 
   // ── 3. Short date forms ───────────────────────────────────────────
@@ -56,8 +56,8 @@ class TestTimeSequenceTutorial {
     // the first quarterly interval that overlaps it.
     var q1 = parser.parse("GQ/2024").interval();
 
-    assertEquals(ofYMD(2024, 1, 1), q1.first());
-    assertEquals(ofYMD(2024, 3, 31), q1.last());
+    assertEquals(ofYMD(2024, 1, 1), q1.firstDay());
+    assertEquals(ofYMD(2024, 3, 31), q1.lastDay());
   }
 
   @Test
@@ -67,8 +67,8 @@ class TestTimeSequenceTutorial {
     // "2024-04" means April 2024 — a month is enough to disambiguate a quarter.
     var q2 = parser.parse("GQ/2024-04").interval();
 
-    assertEquals(ofYMD(2024, 4, 1), q2.first());
-    assertEquals(ofYMD(2024, 6, 30), q2.last());
+    assertEquals(ofYMD(2024, 4, 1), q2.firstDay());
+    assertEquals(ofYMD(2024, 6, 30), q2.lastDay());
   }
 
   // ── 4. Explicit length: "+N" ──────────────────────────────────────
@@ -81,8 +81,8 @@ class TestTimeSequenceTutorial {
     // does not check that this matches a quarter — it just builds the interval.
     var interval = parser.parse("GQ/2024-01-01+91").interval();
 
-    assertEquals(ofYMD(2024, 1, 1), interval.first());
-    assertEquals(ofYMD(2024, 3, 31), interval.last());
+    assertEquals(ofYMD(2024, 1, 1), interval.firstDay());
+    assertEquals(ofYMD(2024, 3, 31), interval.lastDay());
   }
 
   @Test
@@ -105,8 +105,8 @@ class TestTimeSequenceTutorial {
     var q1 = parser.parse("GQ/2024:1").interval();
     var q4 = parser.parse("GQ/2024:4").interval();
 
-    assertEquals(ofYMD(2024, 1, 1), q1.first());
-    assertEquals(ofYMD(2024, 10, 1), q4.first());
+    assertEquals(ofYMD(2024, 1, 1), q1.firstDay());
+    assertEquals(ofYMD(2024, 10, 1), q4.firstDay());
   }
 
   @Test
@@ -126,7 +126,7 @@ class TestTimeSequenceTutorial {
     // Anchored at a month, a monthly sequence has exactly one overlapping
     // interval. :1 works; :2 has no candidate.
     var march = parser.parse("GM/2024-03:1").interval();
-    assertEquals(ofYMD(2024, 3, 1), march.first());
+    assertEquals(ofYMD(2024, 3, 1), march.firstDay());
 
     assertThrows(IllegalArgumentException.class, () -> parser.parse("GM/2024-03:2"));
   }
@@ -163,10 +163,10 @@ class TestTimeSequenceTutorial {
     var month   = parser.parse("GM/2024-06-15").interval();
     var day     = parser.parse("GD/2024-06-15").interval();
 
-    assertEquals(ofYMD(2024, 1, 1),  year.first());
-    assertEquals(ofYMD(2024, 4, 1),  quarter.first());
-    assertEquals(ofYMD(2024, 6, 1),  month.first());
-    assertEquals(ofYMD(2024, 6, 15), day.first());
+    assertEquals(ofYMD(2024, 1, 1),  year.firstDay());
+    assertEquals(ofYMD(2024, 4, 1),  quarter.firstDay());
+    assertEquals(ofYMD(2024, 6, 1),  month.firstDay());
+    assertEquals(ofYMD(2024, 6, 15), day.firstDay());
   }
 
   // ── 8. Same interval via different input forms ────────────────────

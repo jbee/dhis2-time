@@ -130,12 +130,12 @@ class TestCustomSequences {
     var second = new Epoch2kInterval(ofYMD(2024, 4, 1), ofYMD(2024, 6, 30));
     var seq = of(new TimeSequenceKey('S', 'T'), List.of(first, second));
     assertEquals(List.of(first, second),
-        seq.partition(new Epoch2kInterval(first.first(), second.last())));
+        seq.partition(new Epoch2kInterval(first.firstDay(), second.lastDay())));
   }
 
   @Test
   void partitionRangeSpanningGapThrows() {
-    var span = new Epoch2kInterval(SPRING.first(), AUTUMN.last());
+    var span = new Epoch2kInterval(SPRING.firstDay(), AUTUMN.lastDay());
     assertThrows(IllegalArgumentException.class, () -> TERMS.partition(span));
   }
 
@@ -189,8 +189,8 @@ class TestCustomSequences {
     // declared aggregation target, and membersOf agrees.
     var year = Epoch2kInterval.ofYear(2024);
     for (var member : TERMS.contributorsTo(year)) {
-      assertTrue(year.contains(member.first()));
-      assertTrue(year.contains(member.last()));
+      assertTrue(year.contains(member.firstDay()));
+      assertTrue(year.contains(member.lastDay()));
     }
   }
 

@@ -13,7 +13,7 @@ class TestIslamicSequences {
   void dailyIntervalIsSingleDay() {
     var i = Daily.interval(toEpochDayInIC(1445, 9, 1));
     assertEquals(1, i.lengthInDays());
-    assertEquals(toEpochDayInIC(1445, 9, 1), i.first());
+    assertEquals(toEpochDayInIC(1445, 9, 1), i.firstDay());
   }
 
   @Test
@@ -36,22 +36,22 @@ class TestIslamicSequences {
   void monthlyNextIsFollowingIslamicMonth() {
     var ramadan = Monthly.interval(toEpochDayInIC(1445, 9, 1));
     var shawwal = Monthly.next(ramadan);
-    assertEquals(toEpochDayInIC(1445, 10, 1), shawwal.first());
-    assertEquals(toEpochDayInIC(1445, 10, 29), shawwal.last());
+    assertEquals(toEpochDayInIC(1445, 10, 1), shawwal.firstDay());
+    assertEquals(toEpochDayInIC(1445, 10, 29), shawwal.lastDay());
   }
 
   @Test
   void monthlyNextFromDhuAlHijjahCrossesIslamicYear() {
     var last = Monthly.interval(toEpochDayInIC(1445, 12, 1));
     var next = Monthly.next(last);
-    assertEquals(toEpochDayInIC(1446, 1, 1), next.first());
+    assertEquals(toEpochDayInIC(1446, 1, 1), next.firstDay());
   }
 
   @Test
   void yearlyNextIsFollowingIslamicYear() {
     var y1445 = Yearly.interval(toEpochDayInIC(1445, 6, 15));
     var y1446 = Yearly.next(y1445);
-    assertEquals(toEpochDayInIC(1446, 1, 1), y1446.first());
+    assertEquals(toEpochDayInIC(1446, 1, 1), y1446.firstDay());
   }
 
   @Test
@@ -79,13 +79,13 @@ class TestIslamicSequences {
     var year = Yearly.interval(toEpochDayInIC(1447, 6, 15));
     var months = Monthly.partition(year);
     assertEquals(12, months.size());
-    assertEquals(toEpochDayInIC(1447, 1, 1), months.get(0).first());
-    assertEquals(toEpochDayInIC(1447, 12, IslamicCalendar.daysInMonthInIC(1447, 12)), months.get(11).last());
+    assertEquals(toEpochDayInIC(1447, 1, 1), months.get(0).firstDay());
+    assertEquals(toEpochDayInIC(1447, 12, IslamicCalendar.daysInMonthInIC(1447, 12)), months.get(11).lastDay());
   }
 
   @Test
   void aggregatesToOnlyIslamicFamilies() {
-    assertEquals(Set.of(IslamicMonth, IslamicYear), Daily.contributesTo());
+    assertEquals(Set.of(Month, Year), Daily.contributesTo());
     assertFalse(Daily.contributesTo(GregorianSequences.Month));
     assertFalse(Daily.contributesTo(EthiopianSequences.Month));
   }

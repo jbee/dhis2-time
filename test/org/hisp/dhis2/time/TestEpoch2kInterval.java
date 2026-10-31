@@ -32,8 +32,8 @@ class TestEpoch2kInterval {
   @Test
   void ofYearSpansJanuaryToDecember() {
     var leap = Epoch2kInterval.ofYear(2024);
-    assertEquals(ofYMD(2024, 1, 1), leap.first());
-    assertEquals(ofYMD(2024, 12, 31), leap.last());
+    assertEquals(ofYMD(2024, 1, 1), leap.firstDay());
+    assertEquals(ofYMD(2024, 12, 31), leap.lastDay());
     assertEquals(366, leap.lengthInDays());
 
     var nonLeap = Epoch2kInterval.ofYear(2023);
@@ -43,8 +43,8 @@ class TestEpoch2kInterval {
   @Test
   void ofYearRangeSpansConsecutiveYears() {
     var i = Epoch2kInterval.ofYearRange(2024, 2025);
-    assertEquals(ofYMD(2024, 1, 1), i.first());
-    assertEquals(ofYMD(2025, 12, 31), i.last());
+    assertEquals(ofYMD(2024, 1, 1), i.firstDay());
+    assertEquals(ofYMD(2025, 12, 31), i.lastDay());
     assertEquals(366 + 365, i.lengthInDays());
   }
 

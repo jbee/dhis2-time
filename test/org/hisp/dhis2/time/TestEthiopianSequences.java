@@ -13,8 +13,8 @@ class TestEthiopianSequences {
   void dailyIntervalIsSingleDay() {
     var i = Daily.interval(toEpochDayInEC(1992, 4, 22));
     assertEquals(1, i.lengthInDays());
-    assertEquals(toEpochDayInEC(1992, 4, 22), i.first());
-    assertEquals(toEpochDayInEC(1992, 4, 22), i.last());
+    assertEquals(toEpochDayInEC(1992, 4, 22), i.firstDay());
+    assertEquals(toEpochDayInEC(1992, 4, 22), i.lastDay());
   }
 
   @Test
@@ -37,8 +37,8 @@ class TestEthiopianSequences {
   void monthlyNextIsFollowingEthiopianMonth() {
     var tahsas = Monthly.interval(new Epoch2kDay(0));  // Tahsas 1992
     var tir = Monthly.next(tahsas);                    // Tir 1992
-    assertEquals(toEpochDayInEC(1992, 5, 1), tir.first());
-    assertEquals(toEpochDayInEC(1992, 5, 30), tir.last());
+    assertEquals(toEpochDayInEC(1992, 5, 1), tir.firstDay());
+    assertEquals(toEpochDayInEC(1992, 5, 30), tir.lastDay());
   }
 
   @Test
@@ -46,15 +46,15 @@ class TestEthiopianSequences {
     // Pagume 1995 is the last month; next is Meskerem 1996.
     var pagume = Monthly.interval(toEpochDayInEC(1995, 13, 1));
     var meskerem = Monthly.next(pagume);
-    assertEquals(toEpochDayInEC(1996, 1, 1), meskerem.first());
+    assertEquals(toEpochDayInEC(1996, 1, 1), meskerem.firstDay());
   }
 
   @Test
   void yearlyNextIsFollowingEthiopianYear() {
     var y1992 = Yearly.interval(new Epoch2kDay(0));
     var y1993 = Yearly.next(y1992);
-    assertEquals(toEpochDayInEC(1993, 1, 1), y1993.first());
-    assertEquals(toEpochDayInEC(1993, 13, 5), y1993.last());
+    assertEquals(toEpochDayInEC(1993, 1, 1), y1993.firstDay());
+    assertEquals(toEpochDayInEC(1993, 13, 5), y1993.lastDay());
   }
 
   @Test
@@ -79,8 +79,8 @@ class TestEthiopianSequences {
     var pagume = Monthly.interval(toEpochDayInEC(1995, 13, 1));
     var days = Daily.partition(pagume);
     assertEquals(6, days.size());
-    assertEquals(toEpochDayInEC(1995, 13, 1), days.get(0).first());
-    assertEquals(toEpochDayInEC(1995, 13, 6), days.get(5).last());
+    assertEquals(toEpochDayInEC(1995, 13, 1), days.get(0).firstDay());
+    assertEquals(toEpochDayInEC(1995, 13, 6), days.get(5).lastDay());
   }
 
   @Test
@@ -88,8 +88,8 @@ class TestEthiopianSequences {
     var year = Yearly.interval(toEpochDayInEC(1995, 6, 15));
     var months = Monthly.partition(year);
     assertEquals(13, months.size());
-    assertEquals(toEpochDayInEC(1995, 1, 1), months.get(0).first());
-    assertEquals(toEpochDayInEC(1995, 13, 6), months.get(12).last());
+    assertEquals(toEpochDayInEC(1995, 1, 1), months.get(0).firstDay());
+    assertEquals(toEpochDayInEC(1995, 13, 6), months.get(12).lastDay());
   }
 
   @Test
@@ -133,8 +133,8 @@ class TestEthiopianSequences {
     var gregYear = Epoch2kInterval.ofYear(2000);
     var members = Monthly.contributorsTo(gregYear);
     for (var m : members) {
-      int inside = Math.min(m.last().daysSince2k(), gregYear.last().daysSince2k())
-                 - Math.max(m.first().daysSince2k(), gregYear.first().daysSince2k()) + 1;
+      int inside = Math.min(m.lastDay().daysSince2k(), gregYear.lastDay().daysSince2k())
+                 - Math.max(m.firstDay().daysSince2k(), gregYear.firstDay().daysSince2k()) + 1;
       assertTrue(inside * 2 > m.lengthInDays());
     }
   }

@@ -204,7 +204,7 @@ public interface TimeSequence {
    *     of this sequence's supported range
    */
   default Epoch2kInterval next(Epoch2kInterval ref) {
-    return interval(ref.last().tomorrow());
+    return interval(ref.lastDay().tomorrow());
   }
 
   /**
@@ -221,7 +221,7 @@ public interface TimeSequence {
    *     of this sequence's supported range
    */
   default Epoch2kInterval previous(Epoch2kInterval ref) {
-    return interval(ref.first().yesterday());
+    return interval(ref.firstDay().yesterday());
   }
 
   /**
@@ -298,20 +298,20 @@ public interface TimeSequence {
    *     {@code parent}
    */
   default List<Epoch2kInterval> partition(Epoch2kInterval parent) {
-    Epoch2kInterval child = interval(parent.first());
-    if (!child.first().equals(parent.first()))
+    Epoch2kInterval child = interval(parent.firstDay());
+    if (!child.firstDay().equals(parent.firstDay()))
       throw new IllegalArgumentException(
-          key() + " does not align with " + parent.first()
-              + " (child starts at " + child.first() + ")");
+          key() + " does not align with " + parent.firstDay()
+              + " (child starts at " + child.firstDay() + ")");
 
     List<Epoch2kInterval> parts = new ArrayList<>();
     while (true) {
       parts.add(child);
-      if (child.last().equals(parent.last())) return List.copyOf(parts);
-      if (child.last().after(parent.last()))
+      if (child.lastDay().equals(parent.lastDay())) return List.copyOf(parts);
+      if (child.lastDay().after(parent.lastDay()))
         throw new IllegalArgumentException(
-            key() + " overshoots " + parent.last() + " (child ends at " + child.last() + ")");
-      child = interval(child.last().tomorrow());
+            key() + " overshoots " + parent.lastDay() + " (child ends at " + child.lastDay() + ")");
+      child = interval(child.lastDay().tomorrow());
     }
   }
 
@@ -339,11 +339,11 @@ public interface TimeSequence {
    * @return the ordered list of contributing intervals
    */
   default List<Epoch2kInterval> contributorsTo(Epoch2kInterval parent) {
-    Epoch2kInterval child = interval(parent.first());
+    Epoch2kInterval child = interval(parent.firstDay());
     List<Epoch2kInterval> result = new ArrayList<>();
-    while (!child.first().after(parent.last())) {
+    while (!child.firstDay().after(parent.lastDay())) {
       if (majorityInside(child, parent)) result.add(child);
-      child = interval(child.last().tomorrow());
+      child = interval(child.lastDay().tomorrow());
     }
     return List.copyOf(result);
   }
@@ -378,7 +378,7 @@ public interface TimeSequence {
     int childLength = child.lengthInDays();
     if (overlap * 2 != childLength) return overlap * 2 > childLength;
     // Exact 50/50: attribute to the earlier parent — the one containing child.first().
-    return parent.contains(child.first());
+    return parent.contains(child.firstDay());
   }
 
   /**

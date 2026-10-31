@@ -56,12 +56,12 @@ public final class CustomSequences {
         throw new IllegalArgumentException(
             "custom sequence " + key + " requires at least one interval");
       intervals = intervals.stream()
-          .sorted(Comparator.comparing(Epoch2kInterval::first))
+          .sorted(Comparator.comparing(Epoch2kInterval::firstDay))
           .toList();
       for (int i = 0; i < intervals.size() - 1; i++) {
         Epoch2kInterval curr = intervals.get(i);
         Epoch2kInterval next = intervals.get(i + 1);
-        if (curr.last().notBefore(next.first()))
+        if (curr.lastDay().notBefore(next.firstDay()))
           throw new IllegalArgumentException(
               "custom sequence " + key + ": interval " + curr
                   + " overlaps or is not before " + next);
@@ -75,8 +75,8 @@ public final class CustomSequences {
       while (lo <= hi) {
         int mid = (lo + hi) >>> 1;
         Epoch2kInterval candidate = intervals.get(mid);
-        if (day.before(candidate.first())) hi = mid - 1;
-        else if (day.after(candidate.last())) lo = mid + 1;
+        if (day.before(candidate.firstDay())) hi = mid - 1;
+        else if (day.after(candidate.lastDay())) lo = mid + 1;
         else return candidate;
       }
       throw new IllegalArgumentException(
@@ -88,7 +88,7 @@ public final class CustomSequences {
       int lo = 0, hi = intervals.size() - 1, result = -1;
       while (lo <= hi) {
         int mid = (lo + hi) >>> 1;
-        if (intervals.get(mid).last().notBefore(day)) { result = mid; hi = mid - 1; }
+        if (intervals.get(mid).lastDay().notBefore(day)) { result = mid; hi = mid - 1; }
         else { lo = mid + 1; }
       }
       if (result < 0)
@@ -104,11 +104,11 @@ public final class CustomSequences {
      */
     @Override
     public Epoch2kInterval next(Epoch2kInterval ref) {
-      Epoch2kDay after = ref.last().tomorrow();
+      Epoch2kDay after = ref.lastDay().tomorrow();
       int lo = 0, hi = intervals.size() - 1, result = -1;
       while (lo <= hi) {
         int mid = (lo + hi) >>> 1;
-        if (intervals.get(mid).first().notBefore(after)) {
+        if (intervals.get(mid).firstDay().notBefore(after)) {
           result = mid;
           hi = mid - 1;
         } else {
@@ -128,11 +128,11 @@ public final class CustomSequences {
      */
     @Override
     public Epoch2kInterval previous(Epoch2kInterval ref) {
-      Epoch2kDay before = ref.first().yesterday();
+      Epoch2kDay before = ref.firstDay().yesterday();
       int lo = 0, hi = intervals.size() - 1, result = -1;
       while (lo <= hi) {
         int mid = (lo + hi) >>> 1;
-        if (intervals.get(mid).last().notAfter(before)) {
+        if (intervals.get(mid).lastDay().notAfter(before)) {
           result = mid;
           lo = mid + 1;
         } else {

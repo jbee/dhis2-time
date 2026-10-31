@@ -52,8 +52,8 @@ class DailyGregorianSequenceTest {
     var parent = interval(2024, 1, 1, 2024, 1, 10);
     var parts = Daily.partition(parent);
     assertEquals(10, parts.size());
-    assertEquals(Epoch2kDay.ofYMD(2024, 1, 1), parts.get(0).first());
-    assertEquals(Epoch2kDay.ofYMD(2024, 1, 10), parts.get(9).last());
+    assertEquals(Epoch2kDay.ofYMD(2024, 1, 1), parts.get(0).firstDay());
+    assertEquals(Epoch2kDay.ofYMD(2024, 1, 10), parts.get(9).lastDay());
   }
 
   @Test

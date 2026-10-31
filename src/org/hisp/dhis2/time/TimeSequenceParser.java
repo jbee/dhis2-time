@@ -224,13 +224,13 @@ public final class TimeSequenceParser {
       TimeSequence sequence, Epoch2kInterval period) {
     Epoch2kInterval current;
     try {
-      current = sequence.intervalOrNext(period.first());
+      current = sequence.intervalOrNext(period.firstDay());
     } catch (IllegalArgumentException e) {
       return List.of();
     }
 
     List<Epoch2kInterval> result = new ArrayList<>();
-    while (current.first().notAfter(period.last())) {
+    while (current.firstDay().notAfter(period.lastDay())) {
       result.add(current);
       try {
         current = sequence.next(current);

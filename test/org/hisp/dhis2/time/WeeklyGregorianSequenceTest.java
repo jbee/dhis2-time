@@ -80,7 +80,7 @@ class WeeklyGregorianSequenceTest {
     var june = interval(2024, 6, 1, 2024, 6, 30);
     var weeks = Weekly.contributorsTo(june);
     assertEquals(4, weeks.size());
-    assertEquals(Epoch2kDay.ofYMD(2024, 6, 3), weeks.get(0).first());
+    assertEquals(Epoch2kDay.ofYMD(2024, 6, 3), weeks.get(0).firstDay());
   }
 
   @Test
@@ -90,7 +90,7 @@ class WeeklyGregorianSequenceTest {
     var aug = interval(2024, 8, 1, 2024, 8, 31);
     var weeks = Weekly.contributorsTo(aug);
     assertEquals(5, weeks.size());
-    assertEquals(Epoch2kDay.ofYMD(2024, 7, 29), weeks.get(0).first());
+    assertEquals(Epoch2kDay.ofYMD(2024, 7, 29), weeks.get(0).firstDay());
   }
 
   @Test

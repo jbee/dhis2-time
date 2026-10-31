@@ -6,9 +6,9 @@ public final class IslamicSequences {
 
   private IslamicSequences() {}
 
-  public static final TimeFamilyKey IslamicDay = new TimeFamilyKey('I', 'D');
-  public static final TimeFamilyKey IslamicMonth = new TimeFamilyKey('I', 'M');
-  public static final TimeFamilyKey IslamicYear = new TimeFamilyKey('I', 'Y');
+  public static final TimeFamilyKey Day = new TimeFamilyKey('I', 'D');
+  public static final TimeFamilyKey Month = new TimeFamilyKey('I', 'M');
+  public static final TimeFamilyKey Year = new TimeFamilyKey('I', 'Y');
 
   public static final TimeSequence Daily = daily();
   public static final TimeSequence Monthly = monthly();
@@ -17,15 +17,15 @@ public final class IslamicSequences {
   public static TimeSequence daily() {
     return new DailyIslamicSequence(
         new TimeSequenceKey('I', 'D'),
-        Set.of(IslamicMonth, IslamicYear),
-        Set.of(IslamicMonth, IslamicYear));
+        Set.of(Month, Year),
+        Set.of(Month, Year));
   }
 
   public static TimeSequence monthly() {
     return new MonthlyIslamicSequence(
         new TimeSequenceKey('I', 'M'),
-        Set.of(IslamicYear),
-        Set.of(IslamicYear));
+        Set.of(Year),
+        Set.of(Year));
   }
 
   public static TimeSequence yearly() {

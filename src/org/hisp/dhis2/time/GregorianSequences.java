@@ -172,7 +172,7 @@ public final class GregorianSequences {
     @Override
     public Epoch2kInterval interval(Epoch2kDay day) {
       Epoch2kInterval week = day.containingWeek(day1);
-      Epoch2kDay weekStart = week.first();
+      Epoch2kDay weekStart = week.firstDay();
 
       // ISO-style week-year: week 1 of Y contains Jan 4 of Y.
       int year = weekStart.year();

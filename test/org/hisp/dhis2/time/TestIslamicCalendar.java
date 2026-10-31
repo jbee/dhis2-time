@@ -22,14 +22,14 @@ class TestIslamicCalendar {
   @Test
   void year1450Ends2029_05_13AndSentinelIs2029_05_14() {
     var range = IslamicCalendar.supportedRange();
-    assertEquals(Epoch2kDay.ofYMD(2018, 9, 11), range.first());
-    assertEquals(Epoch2kDay.ofYMD(2029, 5, 13), range.last());
-    assertEquals(Epoch2kDay.ofYMD(2029, 5, 14), range.last().tomorrow());
+    assertEquals(Epoch2kDay.ofYMD(2018, 9, 11), range.firstDay());
+    assertEquals(Epoch2kDay.ofYMD(2029, 5, 13), range.lastDay());
+    assertEquals(Epoch2kDay.ofYMD(2029, 5, 14), range.lastDay().tomorrow());
   }
 
   @Test
   void yearJustPastSupportedRangeThrows() {
-    var sentinel = IslamicCalendar.supportedRange().last().tomorrow();
+    var sentinel = IslamicCalendar.supportedRange().lastDay().tomorrow();
     assertThrows(IllegalArgumentException.class, () -> yearInIC(sentinel));
     assertThrows(IllegalArgumentException.class, () -> yearInIC(sentinel.tomorrow()));
   }
@@ -39,7 +39,7 @@ class TestIslamicCalendar {
     assertRoundTrip(1440, 1, 1, Epoch2kDay.ofYMD(2018, 9, 11));
     assertRoundTrip(1445, 9, 1, Epoch2kDay.ofYMD(2024, 3, 11));
 
-    var lastDay = IslamicCalendar.supportedRange().last();
+    var lastDay = IslamicCalendar.supportedRange().lastDay();
     assertEquals(1450, IslamicCalendar.yearInIC(lastDay));
     assertEquals(12, IslamicCalendar.monthInIC(lastDay));
     assertEquals(29, IslamicCalendar.dayOfMonthInIC(lastDay));
@@ -84,16 +84,16 @@ class TestIslamicCalendar {
   @Test
   void monthIntervalForRamadan1445() {
     var i = toEpochIntervalOfIslamicMonthContaining(toEpochDayInIC(1445, 9, 1));
-    assertEquals(toEpochDayInIC(1445, 9, 1), i.first());
-    assertEquals(toEpochDayInIC(1445, 9, 30), i.last());
+    assertEquals(toEpochDayInIC(1445, 9, 1), i.firstDay());
+    assertEquals(toEpochDayInIC(1445, 9, 30), i.lastDay());
     assertEquals(30, i.lengthInDays());
   }
 
   @Test
   void yearIntervalFor1445Has354Days() {
     var i = toEpochIntervalOfIslamicYearContaining(toEpochDayInIC(1445, 6, 15));
-    assertEquals(toEpochDayInIC(1445, 1, 1), i.first());
-    assertEquals(toEpochDayInIC(1445, 12, 30), i.last());
+    assertEquals(toEpochDayInIC(1445, 1, 1), i.firstDay());
+    assertEquals(toEpochDayInIC(1445, 12, 30), i.lastDay());
     assertEquals(354, i.lengthInDays());
   }
 
@@ -101,7 +101,7 @@ class TestIslamicCalendar {
   void yearIntervalFor1447Has355Days() {
     var i = toEpochIntervalOfIslamicYearContaining(toEpochDayInIC(1447, 6, 15));
     assertEquals(355, i.lengthInDays());
-    assertEquals(toEpochDayInIC(1447, 12, daysInMonthInIC(1447, 12)), i.last());
+    assertEquals(toEpochDayInIC(1447, 12, daysInMonthInIC(1447, 12)), i.lastDay());
   }
 
   @Test

@@ -298,23 +298,23 @@ class TestEpoch2kDay {
   @Test
   void containingWeekMondayAnchored() {
     var i = ofYMD(2024, 3, 15).containingWeek(); // Friday
-    assertDayEquals("2024-03-11", i.first());
-    assertDayEquals("2024-03-17", i.last());
+    assertDayEquals("2024-03-11", i.firstDay());
+    assertDayEquals("2024-03-17", i.lastDay());
     assertEquals(7, i.lengthInDays());
   }
 
   @Test
   void containingWeekSundayAnchored() {
     var i = ofYMD(2024, 3, 15).containingWeek(Sunday);
-    assertDayEquals("2024-03-10", i.first());
-    assertDayEquals("2024-03-16", i.last());
+    assertDayEquals("2024-03-10", i.firstDay());
+    assertDayEquals("2024-03-16", i.lastDay());
   }
 
   @Test
   void containingMonthLeapFebruary() {
     var i = ofYMD(2024, 2, 15).containingMonth();
-    assertDayEquals("2024-02-01", i.first());
-    assertDayEquals("2024-02-29", i.last());
+    assertDayEquals("2024-02-01", i.firstDay());
+    assertDayEquals("2024-02-29", i.lastDay());
     assertEquals(29, i.lengthInDays());
   }
 
@@ -327,23 +327,23 @@ class TestEpoch2kDay {
   @Test
   void containingYearCalendar() {
     var i = ofYMD(2024, 3, 15).containingYear();
-    assertDayEquals("2024-01-01", i.first());
-    assertDayEquals("2024-12-31", i.last());
+    assertDayEquals("2024-01-01", i.firstDay());
+    assertDayEquals("2024-12-31", i.lastDay());
     assertEquals(366, i.lengthInDays());
   }
 
   @Test
   void containingYearStartingJulyBeforeJuly() {
     var i = ofYMD(2024, 3, 15).containingYear(July);
-    assertDayEquals("2023-07-01", i.first());
-    assertDayEquals("2024-06-30", i.last());
+    assertDayEquals("2023-07-01", i.firstDay());
+    assertDayEquals("2024-06-30", i.lastDay());
   }
 
   @Test
   void containingYearStartingJulyAfterJuly() {
     var i = ofYMD(2024, 8, 15).containingYear(July);
-    assertDayEquals("2024-07-01", i.first());
-    assertDayEquals("2025-06-30", i.last());
+    assertDayEquals("2024-07-01", i.firstDay());
+    assertDayEquals("2025-06-30", i.lastDay());
   }
 
   @Test
@@ -373,26 +373,26 @@ class TestEpoch2kDay {
 
   @Test
   void containingQuarterCalendar() {
-    assertDayEquals("2024-01-01", ofYMD(2024, 2, 15).containingQuarter(January).first());
-    assertDayEquals("2024-03-31", ofYMD(2024, 2, 15).containingQuarter(January).last());
-    assertDayEquals("2024-10-01", ofYMD(2024, 11, 15).containingQuarter(January).first());
-    assertDayEquals("2024-12-31", ofYMD(2024, 11, 15).containingQuarter(January).last());
+    assertDayEquals("2024-01-01", ofYMD(2024, 2, 15).containingQuarter(January).firstDay());
+    assertDayEquals("2024-03-31", ofYMD(2024, 2, 15).containingQuarter(January).lastDay());
+    assertDayEquals("2024-10-01", ofYMD(2024, 11, 15).containingQuarter(January).firstDay());
+    assertDayEquals("2024-12-31", ofYMD(2024, 11, 15).containingQuarter(January).lastDay());
   }
 
   @Test
   void containingQuarterFiscalJulyForAugust() {
     // Q1 of FY 2024/25 = Jul-Sep 2024
     var i = ofYMD(2024, 8, 15).containingQuarter(July);
-    assertDayEquals("2024-07-01", i.first());
-    assertDayEquals("2024-09-30", i.last());
+    assertDayEquals("2024-07-01", i.firstDay());
+    assertDayEquals("2024-09-30", i.lastDay());
   }
 
   @Test
   void containingQuarterFiscalJulyForJanuary() {
     // Q3 of FY 2023/24 = Jan-Mar 2024
     var i = ofYMD(2024, 1, 15).containingQuarter(July);
-    assertDayEquals("2024-01-01", i.first());
-    assertDayEquals("2024-03-31", i.last());
+    assertDayEquals("2024-01-01", i.firstDay());
+    assertDayEquals("2024-03-31", i.lastDay());
   }
 
   @Test

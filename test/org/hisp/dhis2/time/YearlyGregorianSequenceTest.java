@@ -61,8 +61,8 @@ class YearlyGregorianSequenceTest {
     var twoYears = Epoch2kInterval.ofYearRange(2024, 2025);
     var parts = Yearly.partition(twoYears);
     assertEquals(2, parts.size());
-    assertEquals(Epoch2kDay.ofYMD(2024, 1, 1), parts.get(0).first());
-    assertEquals(Epoch2kDay.ofYMD(2025, 12, 31), parts.get(1).last());
+    assertEquals(Epoch2kDay.ofYMD(2024, 1, 1), parts.get(0).firstDay());
+    assertEquals(Epoch2kDay.ofYMD(2025, 12, 31), parts.get(1).lastDay());
   }
 
   @Test

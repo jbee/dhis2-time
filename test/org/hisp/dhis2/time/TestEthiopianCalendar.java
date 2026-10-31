@@ -80,8 +80,8 @@ class TestEthiopianCalendar {
   @Test
   void monthIntervalForTahsas1992() {
     var i = toEpochIntervalOfEthiopianMonthContaining(new Epoch2kDay(0));
-    assertEquals(toEpochDayInEC(1992, 4, 1), i.first());
-    assertEquals(toEpochDayInEC(1992, 4, 30), i.last());
+    assertEquals(toEpochDayInEC(1992, 4, 1), i.firstDay());
+    assertEquals(toEpochDayInEC(1992, 4, 30), i.lastDay());
     assertEquals(30, i.lengthInDays());
   }
 
@@ -89,24 +89,24 @@ class TestEthiopianCalendar {
   void monthIntervalForPagumeInLeapYear() {
     // Pagume 1995 (month 13) has 6 days.
     var i = toEpochIntervalOfEthiopianMonthContaining(toEpochDayInEC(1995, 13, 3));
-    assertEquals(toEpochDayInEC(1995, 13, 1), i.first());
-    assertEquals(toEpochDayInEC(1995, 13, 6), i.last());
+    assertEquals(toEpochDayInEC(1995, 13, 1), i.firstDay());
+    assertEquals(toEpochDayInEC(1995, 13, 6), i.lastDay());
     assertEquals(6, i.lengthInDays());
   }
 
   @Test
   void yearIntervalFor1992Has365Days() {
     var i = toEpochIntervalOfEthiopianYearContaining(new Epoch2kDay(0));
-    assertEquals(toEpochDayInEC(1992, 1, 1), i.first());
-    assertEquals(toEpochDayInEC(1992, 13, 5), i.last());
+    assertEquals(toEpochDayInEC(1992, 1, 1), i.firstDay());
+    assertEquals(toEpochDayInEC(1992, 13, 5), i.lastDay());
     assertEquals(365, i.lengthInDays());
   }
 
   @Test
   void yearIntervalFor1995Has366Days() {
     var i = toEpochIntervalOfEthiopianYearContaining(toEpochDayInEC(1995, 6, 15));
-    assertEquals(toEpochDayInEC(1995, 1, 1), i.first());
-    assertEquals(toEpochDayInEC(1995, 13, 6), i.last());
+    assertEquals(toEpochDayInEC(1995, 1, 1), i.firstDay());
+    assertEquals(toEpochDayInEC(1995, 13, 6), i.lastDay());
     assertEquals(366, i.lengthInDays());
   }
 

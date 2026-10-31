@@ -112,8 +112,8 @@ class BiWeeklyGregorianSequenceTest {
     var members = BiWeekly.contributorsTo(calendarYear);
     for (var m : members) {
       int inside =
-          Math.min(m.last().daysSince2k(), calendarYear.last().daysSince2k())
-              - Math.max(m.first().daysSince2k(), calendarYear.first().daysSince2k())
+          Math.min(m.lastDay().daysSince2k(), calendarYear.lastDay().daysSince2k())
+              - Math.max(m.firstDay().daysSince2k(), calendarYear.firstDay().daysSince2k())
               + 1;
       assertTrue(
           inside * 2 > m.lengthInDays(),
@@ -126,8 +126,8 @@ class BiWeeklyGregorianSequenceTest {
     // Bi-week starting Monday 2024-03-25 runs Mar 25 – Apr 7: 7 days in each month.
     var straddler = BiWeekly.interval(Epoch2kDay.ofYMD(2024, 3, 25));
     assertEquals(14, straddler.lengthInDays());
-    assertEquals(Epoch2kDay.ofYMD(2024, 3, 25), straddler.first());
-    assertEquals(Epoch2kDay.ofYMD(2024, 4, 7), straddler.last());
+    assertEquals(Epoch2kDay.ofYMD(2024, 3, 25), straddler.firstDay());
+    assertEquals(Epoch2kDay.ofYMD(2024, 4, 7), straddler.lastDay());
 
     var march = Monthly.interval(Epoch2kDay.ofYMD(2024, 3, 15));
     var april = Monthly.interval(Epoch2kDay.ofYMD(2024, 4, 15));
