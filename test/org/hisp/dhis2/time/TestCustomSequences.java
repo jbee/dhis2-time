@@ -105,7 +105,7 @@ class TestCustomSequences {
   @Test
   void membersOfGregorianYearReturnsBothTerms() {
     var year = Epoch2kInterval.ofYear(2024);
-    assertEquals(List.of(SPRING, AUTUMN), TERMS.membersOf(year));
+    assertEquals(List.of(SPRING, AUTUMN), TERMS.contributorsTo(year));
   }
 
   @Test
@@ -113,13 +113,13 @@ class TestCustomSequences {
     // The default implementation would throw when the day walk hits the summer
     // gap; the override iterates the table instead and succeeds.
     var year = Epoch2kInterval.ofYear(2024);
-    assertDoesNotThrow(() -> TERMS.membersOf(year));
+    assertDoesNotThrow(() -> TERMS.contributorsTo(year));
   }
 
   @Test
   void membersOfYearOutsideAnyTermReturnsEmpty() {
     var year = Epoch2kInterval.ofYear(2022);
-    assertTrue(TERMS.membersOf(year).isEmpty());
+    assertTrue(TERMS.contributorsTo(year).isEmpty());
   }
 
   // ── partition ──────────────────────────────────────────────────────
@@ -189,7 +189,7 @@ class TestCustomSequences {
     // Every term is fully inside one Gregorian year, so Gregorian Year is a
     // declared aggregation target, and membersOf agrees.
     var year = Epoch2kInterval.ofYear(2024);
-    for (var member : TERMS.membersOf(year)) {
+    for (var member : TERMS.contributorsTo(year)) {
       assertTrue(year.contains(member.first()));
       assertTrue(year.contains(member.last()));
     }

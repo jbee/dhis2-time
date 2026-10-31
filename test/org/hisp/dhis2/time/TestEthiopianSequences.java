@@ -94,19 +94,19 @@ class TestEthiopianSequences {
 
   @Test
   void dailyAggregatesToEthiopianMonthAndYearOnly() {
-    assertEquals(Set.of(Month, Year), Daily.aggregatesTo());
-    assertFalse(Daily.aggregatesTo(GregorianSequences.Month));
-    assertFalse(Daily.aggregatesTo(GregorianSequences.Year));
+    assertEquals(Set.of(Month, Year), Daily.contributesTo());
+    assertFalse(Daily.contributesTo(GregorianSequences.Month));
+    assertFalse(Daily.contributesTo(GregorianSequences.Year));
   }
 
   @Test
   void monthlyAggregatesToEthiopianYearOnly() {
-    assertEquals(Set.of(Year), Monthly.aggregatesTo());
+    assertEquals(Set.of(Year), Monthly.contributesTo());
   }
 
   @Test
   void yearlyAggregatesToNothing() {
-    assertTrue(Yearly.aggregatesTo().isEmpty());
+    assertTrue(Yearly.contributesTo().isEmpty());
   }
 
   @Test
@@ -115,8 +115,8 @@ class TestEthiopianSequences {
     var gregYear = GregorianSequences.Yearly.interval(Epoch2kDay.ofYMD(2002, 1, 1));
     assertTrue(ethYear.overlaps(gregYear));
     // But the Ethiopian sequence does not claim to aggregate to Gregorian years.
-    assertFalse(Yearly.aggregatesTo(GregorianSequences.Year));
-    assertFalse(GregorianSequences.Yearly.aggregatesTo(Year));
+    assertFalse(Yearly.contributesTo(GregorianSequences.Year));
+    assertFalse(GregorianSequences.Yearly.contributesTo(Year));
   }
 
   @Test
@@ -131,7 +131,7 @@ class TestEthiopianSequences {
     // The Ethiopian month containing the most days of Gregorian 2000
     // is included; boundary months are filtered by majority.
     var gregYear = Epoch2kInterval.ofYear(2000);
-    var members = Monthly.membersOf(gregYear);
+    var members = Monthly.contributorsTo(gregYear);
     for (var m : members) {
       int inside = Math.min(m.last().daysSince2k(), gregYear.last().daysSince2k())
                  - Math.max(m.first().daysSince2k(), gregYear.first().daysSince2k()) + 1;

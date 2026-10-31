@@ -94,6 +94,6 @@ class MonthlyGregorianSequenceTest {
   @Test
   void membersOfQuarterEqualsPartition() {
     var q1 = interval(2024, 1, 1, 2024, 3, 31);
-    assertEquals(Monthly.partition(q1), Monthly.membersOf(q1));
+    assertEquals(Monthly.partition(q1), Monthly.contributorsTo(q1));
   }
 }

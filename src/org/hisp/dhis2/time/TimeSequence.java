@@ -40,18 +40,28 @@ public interface TimeSequence {
     return interval(ref.first().yesterday());
   }
 
-  /** Families that {@link #partition} can strictly tile. Subset of {@link #aggregatesTo()}. */
+  /**
+   * Families that {@link #partition} can strictly tile. Subset of
+   * {@link #contributesTo()}.
+   */
   Set<TimeFamilyKey> partitions();
   default boolean partitions(TimeFamilyKey family) { return partitions().contains(family); }
 
   /**
-   * Families this sequence meaningfully aggregates into via {@link #membersOf}
-   * (majority-of-days rule). Superset of {@link #partitions()}; includes families
-   * that don't strictly tile but where majority attribution is the DHIS2 convention
-   * (e.g. weeks → months, years).
+   * The families this sequence can contribute to — a strict superset of
+   * {@link #partitions()}. For each family here, calling
+   * {@link #contributorsTo(Epoch2kInterval)} with a well-formed parent yields
+   * the intervals whose majority of days fall inside that parent.
+   *
+   * <p>Strict containment governs {@link #partitions()}; majority-of-days
+   * governs this set. The gap between them is where a calendar's boundaries
+   * do not align (e.g. weeks to months).
+   *
+   * <p>Same-calendar families only — a Gregorian day lists Gregorian families,
+   * never Islamic or Ethiopian.
    */
-  Set<TimeFamilyKey> aggregatesTo();
-  default boolean aggregatesTo(TimeFamilyKey family) { return aggregatesTo().contains(family); }
+  Set<TimeFamilyKey> contributesTo();
+  default boolean contributesTo(TimeFamilyKey family) { return contributesTo().contains(family); }
 
   default List<Epoch2kInterval> partition(Epoch2kInterval parent) {
     Epoch2kInterval child = interval(parent.first());
@@ -71,7 +81,18 @@ public interface TimeSequence {
     }
   }
 
-  default List<Epoch2kInterval> membersOf(Epoch2kInterval parent) {
+  /**
+   * The intervals of this sequence that contribute to {@code parent} — those
+   * with a strict majority of their days inside it. {@code parent} is not
+   * required to be an interval of a sequence listed in {@link #contributesTo()};
+   * the method computes regardless, and the set documents which families the
+   * result is meaningful for.
+   *
+   * <p>Unlike {@link #partition}, this tolerates parents the child sequence does
+   * not strictly tile (weeks into months, bi-weeks into calendar years, custom
+   * sequences into Gregorian years containing gaps).
+   */
+  default List<Epoch2kInterval> contributorsTo(Epoch2kInterval parent) {
     Epoch2kInterval child = interval(parent.first());
     List<Epoch2kInterval> result = new ArrayList<>();
     while (!child.first().after(parent.last())) {
@@ -86,12 +107,12 @@ public interface TimeSequence {
   }
 
   /** Invariant check used by every implementation's compact constructor. */
-  static void checkFamilies(Set<TimeFamilyKey> partitions, Set<TimeFamilyKey> aggregatesTo) {
+  static void checkFamilies(Set<TimeFamilyKey> partitions, Set<TimeFamilyKey> contributesTo) {
     requireNonNull(partitions, "partitions");
-    requireNonNull(aggregatesTo, "aggregatesTo");
-    if (!aggregatesTo.containsAll(partitions))
+    requireNonNull(contributesTo, "contributesTo");
+    if (!contributesTo.containsAll(partitions))
       throw new IllegalArgumentException(
-          "partitions() must be a subset of aggregatesTo(); missing: "
-              + partitions.stream().filter(p -> !aggregatesTo.contains(p)).toList());
+          "partitions() must be a subset of contributesTo(); missing: "
+              + partitions.stream().filter(p -> !contributesTo.contains(p)).toList());
   }
 }

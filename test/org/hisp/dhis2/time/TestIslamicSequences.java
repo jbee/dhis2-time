@@ -85,9 +85,9 @@ class TestIslamicSequences {
 
   @Test
   void aggregatesToOnlyIslamicFamilies() {
-    assertEquals(Set.of(IslamicMonth, IslamicYear), Daily.aggregatesTo());
-    assertFalse(Daily.aggregatesTo(GregorianSequences.Month));
-    assertFalse(Daily.aggregatesTo(EthiopianSequences.Month));
+    assertEquals(Set.of(IslamicMonth, IslamicYear), Daily.contributesTo());
+    assertFalse(Daily.contributesTo(GregorianSequences.Month));
+    assertFalse(Daily.contributesTo(EthiopianSequences.Month));
   }
 
   @Test

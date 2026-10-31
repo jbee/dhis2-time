@@ -118,11 +118,11 @@ public final class GregorianSequences {
   // ── Implementation ─────────────────────────────────────────────────────────
 
   public record DailyGregorianSequence(
-      TimeSequenceKey key, Set<TimeFamilyKey> partitions, Set<TimeFamilyKey> aggregatesTo)
+      TimeSequenceKey key, Set<TimeFamilyKey> partitions, Set<TimeFamilyKey> contributesTo)
       implements TimeSequence {
 
     public DailyGregorianSequence {
-      TimeSequence.checkFamilies(partitions, aggregatesTo);
+      TimeSequence.checkFamilies(partitions, contributesTo);
     }
 
     @Override
@@ -135,7 +135,7 @@ public final class GregorianSequences {
       TimeSequenceKey key,
       Epoch2kDay.DayOfWeek day1,
       Set<TimeFamilyKey> partitions,
-      Set<TimeFamilyKey> aggregatesTo)
+      Set<TimeFamilyKey> contributesTo)
       implements TimeSequence {
 
     public WeeklyGregorianSequence {
@@ -144,7 +144,7 @@ public final class GregorianSequences {
       if (key.day1() != day1)
         throw new IllegalArgumentException(
             "key " + key + " implies day1 " + key.day1() + " but record has " + day1);
-      TimeSequence.checkFamilies(partitions, aggregatesTo);
+      TimeSequence.checkFamilies(partitions, contributesTo);
     }
 
     @Override
@@ -157,7 +157,7 @@ public final class GregorianSequences {
       TimeSequenceKey key,
       Epoch2kDay.DayOfWeek day1,
       Set<TimeFamilyKey> partitions,
-      Set<TimeFamilyKey> aggregatesTo)
+      Set<TimeFamilyKey> contributesTo)
       implements TimeSequence {
 
     public BiWeeklyGregorianSequence {
@@ -166,7 +166,7 @@ public final class GregorianSequences {
       if (key.day1() != day1)
         throw new IllegalArgumentException(
             "key " + key + " implies day1 " + key.day1() + " but record has " + day1);
-      TimeSequence.checkFamilies(partitions, aggregatesTo);
+      TimeSequence.checkFamilies(partitions, contributesTo);
     }
 
     @Override
@@ -204,11 +204,11 @@ public final class GregorianSequences {
   }
 
   public record MonthlyGregorianSequence(
-      TimeSequenceKey key, Set<TimeFamilyKey> partitions, Set<TimeFamilyKey> aggregatesTo)
+      TimeSequenceKey key, Set<TimeFamilyKey> partitions, Set<TimeFamilyKey> contributesTo)
       implements TimeSequence {
 
     public MonthlyGregorianSequence {
-      TimeSequence.checkFamilies(partitions, aggregatesTo);
+      TimeSequence.checkFamilies(partitions, contributesTo);
     }
 
     @Override
@@ -221,7 +221,7 @@ public final class GregorianSequences {
       TimeSequenceKey key,
       Epoch2kDay.MonthOfYear month1,
       Set<TimeFamilyKey> partitions,
-      Set<TimeFamilyKey> aggregatesTo)
+      Set<TimeFamilyKey> contributesTo)
       implements TimeSequence {
 
     public QuarterlyGregorianSequence {
@@ -232,7 +232,7 @@ public final class GregorianSequences {
       if (keyMonth1 != month1)
         throw new IllegalArgumentException(
             "key " + key + " implies month1 " + keyMonth1 + " but record has " + month1);
-      TimeSequence.checkFamilies(partitions, aggregatesTo);
+      TimeSequence.checkFamilies(partitions, contributesTo);
     }
 
     @Override
@@ -245,7 +245,7 @@ public final class GregorianSequences {
       TimeSequenceKey key,
       Epoch2kDay.MonthOfYear month1,
       Set<TimeFamilyKey> partitions,
-      Set<TimeFamilyKey> aggregatesTo)
+      Set<TimeFamilyKey> contributesTo)
       implements TimeSequence {
 
     public YearlyGregorianSequence {
@@ -256,7 +256,7 @@ public final class GregorianSequences {
       if (keyMonth1 != month1)
         throw new IllegalArgumentException(
             "key " + key + " implies month1 " + keyMonth1 + " but record has " + month1);
-      TimeSequence.checkFamilies(partitions, aggregatesTo);
+      TimeSequence.checkFamilies(partitions, contributesTo);
     }
 
     @Override

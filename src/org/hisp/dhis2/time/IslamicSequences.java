@@ -36,11 +36,11 @@ public final class IslamicSequences {
   }
 
   public record DailyIslamicSequence(
-      TimeSequenceKey key, Set<TimeFamilyKey> partitions, Set<TimeFamilyKey> aggregatesTo)
+      TimeSequenceKey key, Set<TimeFamilyKey> partitions, Set<TimeFamilyKey> contributesTo)
       implements TimeSequence {
 
     public DailyIslamicSequence {
-      TimeSequence.checkFamilies(partitions, aggregatesTo);
+      TimeSequence.checkFamilies(partitions, contributesTo);
     }
 
     @Override
@@ -50,11 +50,11 @@ public final class IslamicSequences {
   }
 
   public record MonthlyIslamicSequence(
-      TimeSequenceKey key, Set<TimeFamilyKey> partitions, Set<TimeFamilyKey> aggregatesTo)
+      TimeSequenceKey key, Set<TimeFamilyKey> partitions, Set<TimeFamilyKey> contributesTo)
       implements TimeSequence {
 
     public MonthlyIslamicSequence {
-      TimeSequence.checkFamilies(partitions, aggregatesTo);
+      TimeSequence.checkFamilies(partitions, contributesTo);
     }
 
     @Override
@@ -64,11 +64,11 @@ public final class IslamicSequences {
   }
 
   public record YearlyIslamicSequence(
-      TimeSequenceKey key, Set<TimeFamilyKey> partitions, Set<TimeFamilyKey> aggregatesTo)
+      TimeSequenceKey key, Set<TimeFamilyKey> partitions, Set<TimeFamilyKey> contributesTo)
       implements TimeSequence {
 
     public YearlyIslamicSequence {
-      TimeSequence.checkFamilies(partitions, aggregatesTo);
+      TimeSequence.checkFamilies(partitions, contributesTo);
     }
 
     @Override

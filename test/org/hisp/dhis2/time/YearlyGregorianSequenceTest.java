@@ -74,7 +74,7 @@ class YearlyGregorianSequenceTest {
   @Test
   void partitionsAndAggregatesToAreEmpty() {
     assertTrue(Yearly.partitions().isEmpty());
-    assertTrue(Yearly.aggregatesTo().isEmpty());
+    assertTrue(Yearly.contributesTo().isEmpty());
   }
 
   @Test

@@ -58,7 +58,7 @@ class DailyGregorianSequenceTest {
 
   @Test
   void partitionsEqualsAggregatesTo() {
-    assertEquals(Daily.partitions(), Daily.aggregatesTo());
+    assertEquals(Daily.partitions(), Daily.contributesTo());
   }
 
   @Test

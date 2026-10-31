@@ -90,7 +90,7 @@ class BiWeeklyGregorianSequenceTest {
 
   @Test
   void aggregatesToContainsMonthQuarterYear() {
-    assertEquals(Set.of(Month, Quarter, Year), BiWeekly.aggregatesTo());
+    assertEquals(Set.of(Month, Quarter, Year), BiWeekly.contributesTo());
   }
 
   @Test
@@ -109,7 +109,7 @@ class BiWeeklyGregorianSequenceTest {
   @Test
   void membersOfCalendarYearAssignsBoundaryBiWeeksByMajority() {
     var calendarYear = Epoch2kInterval.ofYear(2024);
-    var members = BiWeekly.membersOf(calendarYear);
+    var members = BiWeekly.contributorsTo(calendarYear);
     for (var m : members) {
       int inside =
           Math.min(m.last().daysSince2k(), calendarYear.last().daysSince2k())

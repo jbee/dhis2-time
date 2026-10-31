@@ -78,7 +78,7 @@ class WeeklyGregorianSequenceTest {
     // June 2024: Jun 1 is Saturday. Week containing Jun 1 runs May 27–Jun 2,
     // with only 2 of 7 days in June → excluded.
     var june = interval(2024, 6, 1, 2024, 6, 30);
-    var weeks = Weekly.membersOf(june);
+    var weeks = Weekly.contributorsTo(june);
     assertEquals(4, weeks.size());
     assertEquals(Epoch2kDay.ofYMD(2024, 6, 3), weeks.get(0).first());
   }
@@ -88,7 +88,7 @@ class WeeklyGregorianSequenceTest {
     // Aug 2024: Aug 1 is Thursday. Week containing Aug 1 runs Jul 29–Aug 4,
     // with 4 of 7 days in Aug → included.
     var aug = interval(2024, 8, 1, 2024, 8, 31);
-    var weeks = Weekly.membersOf(aug);
+    var weeks = Weekly.contributorsTo(aug);
     assertEquals(5, weeks.size());
     assertEquals(Epoch2kDay.ofYMD(2024, 7, 29), weeks.get(0).first());
   }
@@ -100,7 +100,7 @@ class WeeklyGregorianSequenceTest {
 
   @Test
   void aggregatesToContainsBiWeekMonthQuarterYear() {
-    assertEquals(Set.of(BiWeek, Month, Quarter, Year), Weekly.aggregatesTo());
+    assertEquals(Set.of(BiWeek, Month, Quarter, Year), Weekly.contributesTo());
   }
 
   @Test

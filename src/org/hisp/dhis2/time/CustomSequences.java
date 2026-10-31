@@ -18,7 +18,7 @@ import java.util.Set;
  *   <li>{@code next} / {@code previous} are table lookups (the next / previous
  *       interval in the table, regardless of gaps) rather than
  *       {@code interval(day ± 1)}.</li>
- *   <li>{@code membersOf} is overridden to iterate the table directly, so it works
+ *   <li>{@code contributesTo} is overridden to iterate the table directly, so it works
  *       for parents that contain gaps.</li>
  *   <li>{@code partition} is left as the default: it succeeds only for parents
  *       that are exactly one of the table intervals, or a run of adjacent ones.</li>
@@ -37,8 +37,8 @@ public final class CustomSequences {
       TimeSequenceKey key,
       List<Epoch2kInterval> intervals,
       Set<TimeFamilyKey> partitions,
-      Set<TimeFamilyKey> aggregatesTo) {
-    return new CustomSequence(key, intervals, partitions, aggregatesTo);
+      Set<TimeFamilyKey> contributesTo) {
+    return new CustomSequence(key, intervals, partitions, contributesTo);
   }
 
   /**
@@ -50,7 +50,7 @@ public final class CustomSequences {
       TimeSequenceKey key,
       List<Epoch2kInterval> intervals,
       Set<TimeFamilyKey> partitions,
-      Set<TimeFamilyKey> aggregatesTo) implements TimeSequence {
+      Set<TimeFamilyKey> contributesTo) implements TimeSequence {
 
     public CustomSequence {
       if (intervals.isEmpty())
@@ -67,7 +67,7 @@ public final class CustomSequences {
               "custom sequence " + key + ": interval " + curr
                   + " overlaps or is not before " + next);
       }
-      TimeSequence.checkFamilies(partitions, aggregatesTo);
+      TimeSequence.checkFamilies(partitions, contributesTo);
     }
 
     @Override
@@ -151,7 +151,7 @@ public final class CustomSequences {
      * which the default day-by-day walk does not.
      */
     @Override
-    public List<Epoch2kInterval> membersOf(Epoch2kInterval parent) {
+    public List<Epoch2kInterval> contributorsTo(Epoch2kInterval parent) {
       return intervals.stream()
           .filter(i -> TimeSequence.majorityInside(i, parent))
           .toList();

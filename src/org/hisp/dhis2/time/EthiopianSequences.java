@@ -37,11 +37,11 @@ public final class EthiopianSequences {
   }
 
   public record DailyEthiopianSequence(
-      TimeSequenceKey key, Set<TimeFamilyKey> partitions, Set<TimeFamilyKey> aggregatesTo)
+      TimeSequenceKey key, Set<TimeFamilyKey> partitions, Set<TimeFamilyKey> contributesTo)
       implements TimeSequence {
 
     public DailyEthiopianSequence {
-      TimeSequence.checkFamilies(partitions, aggregatesTo);
+      TimeSequence.checkFamilies(partitions, contributesTo);
     }
 
     @Override
@@ -51,11 +51,11 @@ public final class EthiopianSequences {
   }
 
   public record MonthlyEthiopianSequence(
-      TimeSequenceKey key, Set<TimeFamilyKey> partitions, Set<TimeFamilyKey> aggregatesTo)
+      TimeSequenceKey key, Set<TimeFamilyKey> partitions, Set<TimeFamilyKey> contributesTo)
       implements TimeSequence {
 
     public MonthlyEthiopianSequence {
-      TimeSequence.checkFamilies(partitions, aggregatesTo);
+      TimeSequence.checkFamilies(partitions, contributesTo);
     }
 
     @Override
@@ -65,11 +65,11 @@ public final class EthiopianSequences {
   }
 
   public record YearlyEthiopianSequence(
-      TimeSequenceKey key, Set<TimeFamilyKey> partitions, Set<TimeFamilyKey> aggregatesTo)
+      TimeSequenceKey key, Set<TimeFamilyKey> partitions, Set<TimeFamilyKey> contributesTo)
       implements TimeSequence {
 
     public YearlyEthiopianSequence {
-      TimeSequence.checkFamilies(partitions, aggregatesTo);
+      TimeSequence.checkFamilies(partitions, contributesTo);
     }
 
     @Override

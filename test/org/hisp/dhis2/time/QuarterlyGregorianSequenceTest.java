@@ -89,7 +89,7 @@ class QuarterlyGregorianSequenceTest {
 
   @Test
   void aggregatesToContainsYear() {
-    assertEquals(Set.of(Year), Quarterly.aggregatesTo());
+    assertEquals(Set.of(Year), Quarterly.contributesTo());
   }
 
   @Test
