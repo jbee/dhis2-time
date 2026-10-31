@@ -110,13 +110,14 @@ class TestTimeSequenceParser {
   @Test
   void walkOnCustomSequenceWithGapAnchorThrows() {
     // Custom sequence: one term Jan 8 - May 24, 2024.
+    TimeSequenceKey key = new TimeSequenceKey('S', 'Y');
     var terms = CustomSequences.of(
-        TimeSequenceKey.custom('S'),
+        key,
         List.of(new Epoch2kInterval(ofYMD(2024, 1, 8), ofYMD(2024, 5, 24))));
     var parser = new TimeSequenceParser(List.of(terms));
 
     // July is in a gap; walking from it fails.
-    assertThrows(IllegalArgumentException.class, () -> parser.parse("CS/2024-07-01:1"));
+    assertThrows(IllegalArgumentException.class, () -> parser.parse("SY/2024-07-01:1"));
   }
 
   // ── Registry construction ────────────────────────────────────────
@@ -183,5 +184,16 @@ class TestTimeSequenceParser {
       assertEquals(first.interval(), second.interval(),
           () -> "round-trip failed for: " + s);
     }
+  }
+
+  @Test
+  void customSequenceCollidingWithCalendarKeyRejectedAtRegistryConstruction() {
+    var gregorianYear = GregorianSequences.Yearly;   // key "GY/"
+    var fakeCustom = CustomSequences.of(
+        new TimeSequenceKey('G', 'Y'),               // also "GY/"
+        List.of(new Epoch2kInterval(ofYMD(2024, 1, 8), ofYMD(2024, 5, 24))));
+
+    assertThrows(IllegalArgumentException.class,
+        () -> new TimeSequenceParser(List.of(gregorianYear, fakeCustom)));
   }
 }

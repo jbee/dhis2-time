@@ -1,7 +1,6 @@
 package org.hisp.dhis2.time;
 
 import static org.hisp.dhis2.time.CustomSequences.of;
-import static org.hisp.dhis2.time.TimeSequenceKey.custom;
 import static org.hisp.dhis2.time.Epoch2kDay.ofYMD;
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -19,7 +18,11 @@ class TestCustomSequences {
       new Epoch2kInterval(ofYMD(2024, 9, 2), ofYMD(2024, 12, 20));
 
   private static final TimeSequence TERMS =
-      of(custom('S'), List.of(SPRING, AUTUMN), Set.of(), Set.of(GregorianSequences.Year));
+      of(
+          new TimeSequenceKey('S', 'Y'),
+          List.of(SPRING, AUTUMN),
+          Set.of(),
+          Set.of(GregorianSequences.Year));
 
   // ── interval ───────────────────────────────────────────────────────
 
@@ -133,7 +136,7 @@ class TestCustomSequences {
   void partitionAdjacentTermsReturnsBoth() {
     var first = new Epoch2kInterval(ofYMD(2024, 1, 1), ofYMD(2024, 3, 31));
     var second = new Epoch2kInterval(ofYMD(2024, 4, 1), ofYMD(2024, 6, 30));
-    var seq = of(custom('S'), List.of(first, second));
+    var seq = of(new TimeSequenceKey('S', 'T'), List.of(first, second));
     assertEquals(List.of(first, second),
         seq.partition(new Epoch2kInterval(first.first(), second.last())));
   }
@@ -148,22 +151,24 @@ class TestCustomSequences {
 
   @Test
   void emptyIntervalListRejected() {
-    assertThrows(IllegalArgumentException.class,
-        () -> of(custom('S'), List.of()));
+    TimeSequenceKey key = new TimeSequenceKey('S', 'Y');
+    assertThrows(IllegalArgumentException.class, () -> of(key, List.of()));
   }
 
   @Test
   void overlappingIntervalsRejected() {
     var a = new Epoch2kInterval(ofYMD(2024, 1, 1), ofYMD(2024, 3, 31));
     var b = new Epoch2kInterval(ofYMD(2024, 3, 15), ofYMD(2024, 6, 30));
+    TimeSequenceKey key = new TimeSequenceKey('S', 'Y');
     assertThrows(IllegalArgumentException.class,
-        () -> of(custom('S'), List.of(a, b)));
+        () -> of(key, List.of(a, b)));
   }
 
   @Test
   void constructionSortsUnorderedInput() {
     // Pass Autumn first, then Spring — the constructor sorts.
-    var seq = of(custom('S'), List.of(AUTUMN, SPRING));
+    TimeSequenceKey key = new TimeSequenceKey('S', 'Y');
+    var seq = of(key, List.of(AUTUMN, SPRING));
     assertEquals(SPRING, seq.next(new Epoch2kInterval(ofYMD(2023, 1, 1), ofYMD(2023, 12, 31))));
   }
 
@@ -171,7 +176,8 @@ class TestCustomSequences {
   void adjacentIntervalsAllowed() {
     var a = new Epoch2kInterval(ofYMD(2024, 1, 1), ofYMD(2024, 3, 31));
     var b = new Epoch2kInterval(ofYMD(2024, 4, 1), ofYMD(2024, 6, 30));
-    assertDoesNotThrow(() -> of(custom('S'), List.of(a, b)));
+    TimeSequenceKey key = new TimeSequenceKey('S', 'Y');
+    assertDoesNotThrow(() -> of(key, List.of(a, b)));
   }
 
   // ── Multi-year and integration ────────────────────────────────────
@@ -180,7 +186,8 @@ class TestCustomSequences {
   void nextCrossesYearBoundaryWhenTableDoes() {
     var autumn2024 = AUTUMN;
     var spring2025 = new Epoch2kInterval(ofYMD(2025, 1, 6), ofYMD(2025, 5, 23));
-    var seq = of(custom('S'), List.of(SPRING, autumn2024, spring2025));
+    TimeSequenceKey key = new TimeSequenceKey('S', 'Y');
+    var seq = of(key, List.of(SPRING, autumn2024, spring2025));
     assertEquals(spring2025, seq.next(autumn2024));
   }
 
@@ -193,5 +200,16 @@ class TestCustomSequences {
       assertTrue(year.contains(member.first()));
       assertTrue(year.contains(member.last()));
     }
+  }
+
+  @Test
+  void customSequenceCollidingWithCalendarKeyRejectedAtRegistryConstruction() {
+    var gregorianYear = GregorianSequences.Yearly;   // key "GY/"
+    var fakeCustom = CustomSequences.of(
+        new TimeSequenceKey('G', 'Y'),               // also "GY/"
+        List.of(new Epoch2kInterval(ofYMD(2024, 1, 8), ofYMD(2024, 5, 24))));
+
+    assertThrows(IllegalArgumentException.class,
+        () -> new TimeSequenceParser(List.of(gregorianYear, fakeCustom)));
   }
 }
