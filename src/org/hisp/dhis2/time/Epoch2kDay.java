@@ -4,8 +4,7 @@ import static java.lang.Math.abs;
 
 import java.util.function.LongSupplier;
 
-@TimeOffset
-public record Epoch2kDay(@TimeOffset int daysSince2k) implements Comparable<Epoch2kDay> {
+public record Epoch2kDay(@ZeroBased int daysSince2k) implements Comparable<Epoch2kDay> {
 
   private static final long MILLIS_UTC_T0_UNTIL_2K_MIDNIGHT = 946_684_800_000L;
   private static final long MILLIS_IN_A_DAY = 86_400_000L;
@@ -14,13 +13,13 @@ public record Epoch2kDay(@TimeOffset int daysSince2k) implements Comparable<Epoc
     return today(System::currentTimeMillis);
   }
 
-  public static Epoch2kDay today(@TimeOffset LongSupplier nowUTC) {
+  public static Epoch2kDay today(LongSupplier nowUTC) {
     long millisSince2k = nowUTC.getAsLong() - MILLIS_UTC_T0_UNTIL_2K_MIDNIGHT;
     int daysSince2k = (int) (millisSince2k / MILLIS_IN_A_DAY);
     return new Epoch2kDay(daysSince2k);
   }
 
-  static Epoch2kDay ofYMD(int year, int month, int dayOfMonth) {
+  static Epoch2kDay ofYMD(int year,@OneBased int month, @OneBased int dayOfMonth) {
     if (month < 1 || month > 12)
       throw new IllegalArgumentException("month must be 1-12, got: " + month);
     int max = daysInMonth(year, month - 1);   // ← 1-based → 0-based at the boundary
@@ -43,7 +42,7 @@ public record Epoch2kDay(@TimeOffset int daysSince2k) implements Comparable<Epoc
     return ofJanuary1stInYear(year).plusDays(3).previousOrSame(day1);
   }
 
-  @TimeOffset
+  @ZeroBased
   public enum DayOfWeek {
     // In ISO order with Monday being the ISO start of the week
     Monday,
@@ -55,7 +54,7 @@ public record Epoch2kDay(@TimeOffset int daysSince2k) implements Comparable<Epoc
     Sunday
   }
 
-  @TimeOffset
+  @ZeroBased
   public enum MonthOfYear {
     January,
     February,
@@ -72,12 +71,12 @@ public record Epoch2kDay(@TimeOffset int daysSince2k) implements Comparable<Epoc
   }
 
   /**
-   * @param years relative to fixpoint
-   * @param months relative to start of the year, 0-11, 0=January
-   * @param days relative to start of the month, 0-30, 0=1st of month
+   * Calendar coordinates. {@code years} is the absolute Gregorian year (e.g. 2024);
+   * {@code months} is 0-based (0 = January); {@code days} is 0-based within the
+   * month (0 = 1st). Use {@link #toString} for the human-readable YYYY-MM-DD form,
+   * which applies the +1 conversions.
    */
-  public record OffsetYMD(
-      @TimeOffset int years, @TimeOffset int months, @TimeOffset int days) {
+  public record OffsetYMD(int years, @ZeroBased int months, @ZeroBased int days) {
 
     int daysInMonth() {
       return Epoch2kDay.daysInMonth(years, months);
@@ -136,7 +135,7 @@ public record Epoch2kDay(@TimeOffset int daysSince2k) implements Comparable<Epoc
   }
 
   public Epoch2kDay day1InYear() {
-    return minusDays(dayOfYear());
+    return minusDays(dayOfYearOffset());
   }
 
   /**
@@ -147,7 +146,7 @@ public record Epoch2kDay(@TimeOffset int daysSince2k) implements Comparable<Epoc
     int year = year();
     int daysToDay1 = 0;
     for (int m = 0; m < month.ordinal(); m++) daysToDay1 += daysInMonth(year, m);
-    return new Epoch2kDay(daysSince2k - dayOfYear() + daysToDay1);
+    return new Epoch2kDay(daysSince2k - dayOfYearOffset() + daysToDay1);
   }
 
   /*
@@ -156,12 +155,11 @@ public record Epoch2kDay(@TimeOffset int daysSince2k) implements Comparable<Epoc
 
   public OffsetYMD offset() {
     int year = year();
-    return new OffsetYMD(year, month(year), dayOfMonth(year));
+    return new OffsetYMD(year, monthOffset(year), dayOfMonthOffset(year));
   }
 
   private static final int DAYS_IN_4_YEARS = 366 + 3 * 365;
 
-  @TimeOffset
   public int year() {
     int daysRem = daysSince2k % DAYS_IN_4_YEARS;
     int years0to3 = daysRem < 0
@@ -170,22 +168,27 @@ public record Epoch2kDay(@TimeOffset int daysSince2k) implements Comparable<Epoc
     return 2000 + ((daysSince2k / DAYS_IN_4_YEARS) * 4) + years0to3;
   }
 
-  @TimeOffset
-  public int dayOfYear() {
+  /**
+   * @return 0-based offset within the year: 0 for January 1st, 364 for
+   *     December 31st in a non-leap year. Note this differs from
+   *     {@link java.time.LocalDate#getDayOfYear()} which is 1-based.
+   */
+  @ZeroBased
+  public int dayOfYearOffset() {
     int daysRem = daysSince2k % DAYS_IN_4_YEARS;
     return daysRem < 0
         ? daysRem % 365 == 0 ? 0 : 365 - abs(daysRem % 365)
         : daysRem < 366 ? daysRem : (daysRem - 366) % 365;
   }
 
-  @TimeOffset
-  public int month() {
-    return month(year());
+  @ZeroBased
+  public int monthOffset() {
+    return monthOffset(year());
   }
 
-  @TimeOffset
-  public int month(@TimeOffset int year) {
-    int dayOfYear = dayOfYear();
+  @ZeroBased
+  public int monthOffset(int year) {
+    int dayOfYear = dayOfYearOffset();
     int month = 0;
     int daysInMonth = daysInMonth(year, month);
     int daysRem = dayOfYear;
@@ -196,14 +199,14 @@ public record Epoch2kDay(@TimeOffset int daysSince2k) implements Comparable<Epoc
     return month;
   }
 
-  @TimeOffset
-  public int dayOfMonth() {
-    return dayOfMonth(year());
+  @ZeroBased
+  public int dayOfMonthOffset() {
+    return dayOfMonthOffset(year());
   }
 
-  @TimeOffset
-  private int dayOfMonth(@TimeOffset int year) {
-    int dayOfYear = dayOfYear();
+  @ZeroBased
+  private int dayOfMonthOffset(int year) {
+    int dayOfYear = dayOfYearOffset();
     int month = 0;
     int daysInMonth = daysInMonth(year, month);
     int daysRem = dayOfYear;
@@ -214,7 +217,20 @@ public record Epoch2kDay(@TimeOffset int daysSince2k) implements Comparable<Epoc
     return daysRem;
   }
 
-  public int dayOfWeek(DayOfWeek day1) {
+  /**
+   * The offset of this day from the previous (or same) occurrence of
+   * {@code day1}: 0 for {@code day1} itself, up to 6.
+   *
+   * <p>Note this differs from {@link java.time.LocalDate#getDayOfWeek()} which
+   * returns a {@link java.time.DayOfWeek} enum, and from
+   * {@link java.util.Calendar#DAY_OF_WEEK} which is 1-based. This method is
+   * intended for offset arithmetic; use {@code DayOfWeek} directly if a label
+   * is what you need.
+   *
+   * @return 0..6
+   */
+  @ZeroBased
+  public int dayOfWeekOffset(DayOfWeek day1) {
     int weekday2k = DayOfWeek.Saturday.ordinal(); // 2000-01-01 is a Saturday
     int weekday = (weekday2k + daysSince2k) % 7;
     return Math.floorMod(weekday - day1.ordinal(), 7);
@@ -224,7 +240,7 @@ public record Epoch2kDay(@TimeOffset int daysSince2k) implements Comparable<Epoc
     31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31
   };
 
-  static int daysInMonth(@TimeOffset int year, @TimeOffset int month0) {
+  static int daysInMonth(int year, @ZeroBased int month0) {
     int days = NON_LEAP_MONTH_LENGTHS[month0];
     if (month0 == 1 && isLeapYear(year)) days++;
     return days;
@@ -275,7 +291,7 @@ public record Epoch2kDay(@TimeOffset int daysSince2k) implements Comparable<Epoc
 
   public Epoch2kInterval containingQuarter(MonthOfYear month1) {
     Epoch2kDay yearDay1 = yearCycleStart(month1);
-    int monthsSinceYearStart = Math.floorMod(month() - month1.ordinal(), 12);
+    int monthsSinceYearStart = Math.floorMod(monthOffset() - month1.ordinal(), 12);
     Epoch2kDay quarterDay1 = yearDay1.plusMonths((monthsSinceYearStart / 3) * 3);
     return new Epoch2kInterval(quarterDay1, quarterDay1.plusMonths(3).minusDays(1));
   }
@@ -285,8 +301,8 @@ public record Epoch2kDay(@TimeOffset int daysSince2k) implements Comparable<Epoc
    */
   public Epoch2kDay plusMonths(int n) {
     int y = year();
-    int m = month();
-    int d = dayOfMonth();
+    int m = monthOffset();
+    int d = dayOfMonthOffset();
     int totalMonths = y * 12 + m + n;
     int targetYear = Math.floorDiv(totalMonths, 12);
     int targetMonth = Math.floorMod(totalMonths, 12);
@@ -294,8 +310,11 @@ public record Epoch2kDay(@TimeOffset int daysSince2k) implements Comparable<Epoc
     return fromYMD(targetYear, targetMonth, targetDay);
   }
 
-  /** Inverse of {@link #offset()}; all three args 0-based (month 0=Jan, day 0=1st). */
-  private static Epoch2kDay fromYMD(int year, int month, int dayOfMonth) {
+  /**
+   * Inverse of {@link #offset()}. {@code year} is the absolute Gregorian year;
+   * {@code month} is 0-based (0 = January); {@code dayOfMonth} is 0-based (0 = 1st).
+   */
+  private static Epoch2kDay fromYMD(int year, @ZeroBased int month, @ZeroBased int dayOfMonth) {
     int days = 0;
     if (year >= 2000) {
       for (int y = 2000; y < year; y++) days += isLeapYear(y) ? 366 : 365;
@@ -316,12 +335,12 @@ public record Epoch2kDay(@TimeOffset int daysSince2k) implements Comparable<Epoc
 
   /** @return the first {@code day} on or after this day */
   public Epoch2kDay nextOrSame(DayOfWeek day) {
-    return plusDays((7 - dayOfWeek(day)) % 7);
+    return plusDays((7 - dayOfWeekOffset(day)) % 7);
   }
 
   /** @return the last {@code day} on or before this day */
   public Epoch2kDay previousOrSame(DayOfWeek day) {
-    return minusDays(dayOfWeek(day));
+    return minusDays(dayOfWeekOffset(day));
   }
 
 }

@@ -91,7 +91,7 @@ class TestEpoch2kDay {
   void ofWeek1InYearIsSameDayOfWeekAsDay1() {
     for (int y : new int[] {2000, 2023, 2024, 2025, 2099}) {
       for (Epoch2kDay.DayOfWeek d : Epoch2kDay.DayOfWeek.values()) {
-        assertEquals(0, ofWeek1InYear(y, d).dayOfWeek(d),
+        assertEquals(0, ofWeek1InYear(y, d).dayOfWeekOffset(d),
             () -> "year " + y + " day1 " + d);
       }
     }
@@ -214,16 +214,16 @@ class TestEpoch2kDay {
   void yearMonthDayAccessorsAreZeroBasedExceptYear() {
     var d = ofYMD(2024, 3, 15);
     assertEquals(2024, d.year());
-    assertEquals(2, d.month());
-    assertEquals(14, d.dayOfMonth());
-    assertEquals(74, d.dayOfYear());
+    assertEquals(2, d.monthOffset());
+    assertEquals(14, d.dayOfMonthOffset());
+    assertEquals(74, d.dayOfYearOffset());
   }
 
   @Test
   void dayOfYearBoundaries() {
-    assertEquals(0, ofYMD(2024, 1, 1).dayOfYear());
-    assertEquals(364, ofYMD(2023, 12, 31).dayOfYear());
-    assertEquals(365, ofYMD(2024, 12, 31).dayOfYear());
+    assertEquals(0, ofYMD(2024, 1, 1).dayOfYearOffset());
+    assertEquals(364, ofYMD(2023, 12, 31).dayOfYearOffset());
+    assertEquals(365, ofYMD(2024, 12, 31).dayOfYearOffset());
   }
 
   @Test
@@ -246,28 +246,28 @@ class TestEpoch2kDay {
 
   @Test
   void dayOfWeekFor2000_01_01WhichIsSaturday() {
-    assertEquals(0, new Epoch2kDay(0).dayOfWeek(Saturday));
-    assertEquals(6, new Epoch2kDay(0).dayOfWeek(Sunday));
-    assertEquals(5, new Epoch2kDay(0).dayOfWeek(Monday));
+    assertEquals(0, new Epoch2kDay(0).dayOfWeekOffset(Saturday));
+    assertEquals(6, new Epoch2kDay(0).dayOfWeekOffset(Sunday));
+    assertEquals(5, new Epoch2kDay(0).dayOfWeekOffset(Monday));
   }
 
   @Test
   void dayOfWeekForKnownMondayIn2024() {
     var monday = ofYMD(2024, 3, 11); // known Monday
-    assertEquals(0, monday.dayOfWeek(Monday));
-    assertEquals(6, monday.dayOfWeek(Tuesday));
-    assertEquals(5, monday.dayOfWeek(Wednesday));
-    assertEquals(4, monday.dayOfWeek(Thursday));
-    assertEquals(3, monday.dayOfWeek(Friday));
-    assertEquals(2, monday.dayOfWeek(Saturday));
-    assertEquals(1, monday.dayOfWeek(Sunday));
+    assertEquals(0, monday.dayOfWeekOffset(Monday));
+    assertEquals(6, monday.dayOfWeekOffset(Tuesday));
+    assertEquals(5, monday.dayOfWeekOffset(Wednesday));
+    assertEquals(4, monday.dayOfWeekOffset(Thursday));
+    assertEquals(3, monday.dayOfWeekOffset(Friday));
+    assertEquals(2, monday.dayOfWeekOffset(Saturday));
+    assertEquals(1, monday.dayOfWeekOffset(Sunday));
   }
 
   @Test
   void dayOfWeekForKnownSundayIn2024() {
     var sunday = ofYMD(2024, 3, 17); // known Sunday
-    assertEquals(0, sunday.dayOfWeek(Sunday));
-    assertEquals(6, sunday.dayOfWeek(Monday));
+    assertEquals(0, sunday.dayOfWeekOffset(Sunday));
+    assertEquals(6, sunday.dayOfWeekOffset(Monday));
   }
 
   // ── nextOrSame / previousOrSame ─────────────────────────────────────
