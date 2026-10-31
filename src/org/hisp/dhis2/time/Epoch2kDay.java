@@ -20,8 +20,21 @@ public record Epoch2kDay(@TimeOffset int daysSince2k) {
     return new Epoch2kDay(daysSince2k);
   }
 
+  /** @return January 1st of the given year */
+  public static Epoch2kDay ofJanuary1stIn(int year) {
+    return new Epoch2kDay(0).plusYears(year - 2000); // 0 == 2000-01-01
+  }
+
+  /**
+   * Start of the first week of the given year, where the week containing January 4th
+   * is the first week (ISO-style generalised to any {@code day1}).
+   */
+  public static Epoch2kDay ofWeek1In(int year, DayOfWeek day1) {
+    return ofJanuary1stIn(year).plusDays(3).previousOrSame(day1);
+  }
+
   @TimeOffset
-  public enum Weekday {
+  public enum DayOfWeek {
     // In ISO order with Monday being the ISO start of the week
     Monday,
     Tuesday,
@@ -33,7 +46,7 @@ public record Epoch2kDay(@TimeOffset int daysSince2k) {
   }
 
   @TimeOffset
-  public enum Month {
+  public enum MonthOfYear {
     January,
     February,
     March,
@@ -107,24 +120,6 @@ public record Epoch2kDay(@TimeOffset int daysSince2k) {
     return plusDays(1);
   }
 
-  /**
-   * @param n number of months to add starting with the month of this day
-   * @return the day n month later (which can effectively be n+1 month later of this day of the
-   *     month exceeds the days in the month n month from this day's month)
-   */
-  public Epoch2kDay plusMonths(int n) {
-    int year = year();
-    int startMonth = month();
-    int days = daysSince2k;
-    for (int i = 0; i < n; i++) {
-      int monthOffset = startMonth + i;
-      int month = monthOffset % 12;
-      int yearOffset = monthOffset / 12;
-      days += daysInMonth(year + yearOffset, month);
-    }
-    return new Epoch2kDay(days);
-  }
-
   public Epoch2kDay day1InYear() {
     return minusDays(dayOfYear());
   }
@@ -133,7 +128,7 @@ public record Epoch2kDay(@TimeOffset int daysSince2k) {
    * @param month the month to find the 1st day of
    * @return the 1st day in the given month in the same year as this day's year
    */
-  public Epoch2kDay day1InMonth(Month month) {
+  public Epoch2kDay day1InMonth(MonthOfYear month) {
     int year = year();
     int daysToDay1 = 0;
     for (int m = 0; m < month.ordinal(); m++) daysToDay1 += daysInMonth(year, m);
@@ -204,10 +199,10 @@ public record Epoch2kDay(@TimeOffset int daysSince2k) {
     return daysRem;
   }
 
-  public int dayOfWeek(Weekday day1) {
-    int weekday2k = Weekday.Saturday.ordinal(); // 2000-01-01 is a Saturday
+  public int dayOfWeek(DayOfWeek day1) {
+    int weekday2k = DayOfWeek.Saturday.ordinal(); // 2000-01-01 is a Saturday
     int weekday = (weekday2k + daysSince2k) % 7;
-    return (weekday - day1.ordinal()) % 7;
+    return Math.floorMod(weekday - day1.ordinal(), 7);
   }
 
   private static final int[] NON_LEAP_MONTH_LENGTHS = {
@@ -229,12 +224,11 @@ public record Epoch2kDay(@TimeOffset int daysSince2k) {
    * @return the interval of the week (starting Monday) containing this day
    */
   public Epoch2kInterval containingWeek() {
-    return containingWeek(Weekday.Monday);
+    return containingWeek(DayOfWeek.Monday);
   }
 
-  public Epoch2kInterval containingWeek(Weekday day1) {
-    Epoch2kDay start = minusDays(dayOfWeek(day1));
-    //TODO two cases as well?
+  public Epoch2kInterval containingWeek(DayOfWeek day1) {
+    Epoch2kDay start = previousOrSame(day1);
     return new Epoch2kInterval(start, start.plusDays(6));
   }
 
@@ -251,25 +245,56 @@ public record Epoch2kDay(@TimeOffset int daysSince2k) {
    * @return the interval of the year containing this day
    */
   public Epoch2kInterval containingYear() {
-    return containingYear(Month.January);
+    return containingYear(MonthOfYear.January);
   }
 
-  public Epoch2kInterval containingYear(Month month1) {
-    Epoch2kDay yearDay1 = day1InMonth(month1);
-    //TODO this day can be before or after year day1 - 2 cases
-    Epoch2kDay yearLastDay = yearDay1.plusMonths(12).minusDays(1);
-    return new Epoch2kInterval(yearDay1, yearLastDay);
+  /** start of the year-cycle (starting in {@code month1}) that contains this day */
+  public Epoch2kDay yearCycleStart(MonthOfYear month1) {
+    Epoch2kDay day1 = day1InMonth(month1);
+    return day1.after(this) ? day1.minusMonths(12) : day1;
   }
 
-  public Epoch2kInterval containingQuarter(Month month1) {
-    Epoch2kDay yearDay1 = day1InMonth(month1);
-    if (yearDay1.after(this)) {
+  public Epoch2kInterval containingYear(MonthOfYear month1) {
+    Epoch2kDay yearDay1 = yearCycleStart(month1);
+    return new Epoch2kInterval(yearDay1, yearDay1.plusMonths(12).minusDays(1));
+  }
 
-    } else {
+  public Epoch2kInterval containingQuarter(MonthOfYear month1) {
+    Epoch2kDay yearDay1 = yearCycleStart(month1);
+    int monthsSinceYearStart = Math.floorMod(month() - month1.ordinal(), 12);
+    Epoch2kDay quarterDay1 = yearDay1.plusMonths((monthsSinceYearStart / 3) * 3);
+    return new Epoch2kInterval(quarterDay1, quarterDay1.plusMonths(3).minusDays(1));
+  }
 
+  /** @param n number of months; negative moves backwards, day-of-month preserved where possible */
+  public Epoch2kDay plusMonths(int n) {
+    int year = year();
+    int startMonth = month();
+    int days = daysSince2k;
+    int step = Integer.signum(n);
+    for (int i = 0; i < Math.abs(n); i++) {
+      // forward: skip months M, M+1, ..., M+n-1
+      // backward: skip months M-1, M-2, ..., M-|n|
+      int monthOffset = step > 0 ? startMonth + i : startMonth - (i + 1);
+      int month = Math.floorMod(monthOffset, 12);
+      int yearOffset = Math.floorDiv(monthOffset, 12);
+      days += step * daysInMonth(year + yearOffset, month);
     }
-    Epoch2kDay qX = yearDay1.plusMonths(3).minusDays(1);
-
-    return null;
+    return new Epoch2kDay(days);
   }
+
+  public Epoch2kDay minusMonths(int n) { return plusMonths(-n); }
+  public Epoch2kDay plusYears(int n)   { return plusMonths(12 * n); }
+  public Epoch2kDay minusYears(int n)  { return plusMonths(-12 * n); }
+
+  /** @return the first {@code day} on or after this day */
+  public Epoch2kDay nextOrSame(DayOfWeek day) {
+    return plusDays((7 - dayOfWeek(day)) % 7);
+  }
+
+  /** @return the last {@code day} on or before this day */
+  public Epoch2kDay previousOrSame(DayOfWeek day) {
+    return minusDays(dayOfWeek(day));
+  }
+
 }

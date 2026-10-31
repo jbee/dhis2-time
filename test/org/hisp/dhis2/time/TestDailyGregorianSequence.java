@@ -8,7 +8,7 @@ class TestDailyGregorianSequence {
 
   @Test
   void testNext() {
-    TimeSequence daily = new GregorianSequences.DailyGregorianSequence(new TimeSequence.Code('G', 'D'));
+    TimeSequence daily = GregorianSequences.Daily;
     Epoch2kInterval epochDay1 = daily.today(() -> 0);
     assertEquals("1970-01-01+1", epochDay1.toString());
     Epoch2kInterval epochDay2 = daily.next(epochDay1);
@@ -19,7 +19,7 @@ class TestDailyGregorianSequence {
 
   @Test
   void testPrevious() {
-    TimeSequence daily = new GregorianSequences.DailyGregorianSequence(new TimeSequence.Code('G', 'D'));
+    TimeSequence daily = GregorianSequences.Daily;
     Epoch2kInterval epochDay1 = daily.today(() -> 0);
     assertEquals("1970-01-01+1", epochDay1.toString());
     Epoch2kInterval epochDay2 = daily.previous(epochDay1);
