@@ -288,4 +288,11 @@ class TestTimeSequenceParserCustom {
     // July 2024 — no term overlaps that month.
     assertThrows(IllegalArgumentException.class, () -> PARSER.parse("ST/2024-07:1"));
   }
+
+  @Test
+  void noSuffixOnCustomSequenceResolvesViaIntervalOrAfter() {
+    assertEquals(SPRING_2024, parseInterval("ST/2024"));
+    assertEquals(SPRING_2024, parseInterval("ST/2024-03-15"));
+    assertEquals(AUTUMN_2024, parseInterval("ST/2024-09-15"));
+  }
 }

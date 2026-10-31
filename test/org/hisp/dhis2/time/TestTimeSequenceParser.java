@@ -9,6 +9,7 @@ import org.junit.jupiter.api.Test;
 class TestTimeSequenceParser {
 
   private static final TimeSequenceParser PARSER = new TimeSequenceParser(List.of(
+      GregorianSequences.Daily,
       GregorianSequences.Quarterly,
       GregorianSequences.Monthly,
       GregorianSequences.Yearly,
@@ -136,11 +137,6 @@ class TestTimeSequenceParser {
   // ── Error cases ──────────────────────────────────────────────────
 
   @Test
-  void missingSeparatorThrows() {
-    assertThrows(IllegalArgumentException.class, () -> PARSER.parse("GQ/2022"));
-  }
-
-  @Test
   void mixingPlusAndColonThrows() {
     assertThrows(IllegalArgumentException.class, () -> PARSER.parse("GQ/2022:2+92"));
     assertThrows(IllegalArgumentException.class, () -> PARSER.parse("GQ/2022+92:2"));
@@ -232,5 +228,137 @@ class TestTimeSequenceParser {
       assertEquals(first.interval(), second.interval(),
           () -> "round-trip failed for: " + s);
     }
+  }
+
+  @Test
+  void compactAndDashedFormsAreEquivalent() {
+    for (var pair : List.of(
+        List.of("GQ/2024-03-15+1", "GQ/20240315+1"),
+        List.of("GQ/2024-03:1",    "GQ/202403:1"),
+        List.of("GQ/2024:1",       "GQ/2024:1"))) {
+      assertEquals(
+          PARSER.parse(pair.get(0)).interval(),
+          PARSER.parse(pair.get(1)).interval(),
+          () -> pair.get(0) + " vs " + pair.get(1));
+    }
+  }
+
+  @Test
+  void variableWidthDashedComponentsAccepted() {
+    assertEquals(
+        PARSER.parse("GQ/2024-3-5+1").interval(),
+        PARSER.parse("GQ/20240305+1").interval());
+  }
+
+  @Test
+  void compactFormRejectsInvalidLengths() {
+    assertThrows(IllegalArgumentException.class, () -> PARSER.parse("GQ/20241+1"));
+    assertThrows(IllegalArgumentException.class, () -> PARSER.parse("GQ/2024031+1"));
+    assertThrows(IllegalArgumentException.class, () -> PARSER.parse("GQ/202403151+1"));
+  }
+
+  @Test
+  void compactFormRespectsCalendarValidation() {
+    assertThrows(IllegalArgumentException.class, () -> PARSER.parse("GQ/20230229+1"));
+    assertEquals(
+        new Epoch2kInterval(ofYMD(2024, 2, 29), ofYMD(2024, 2, 29)),
+        PARSER.parse("GQ/20240229+1").interval());
+  }
+
+  @Test
+  void compactFormRejectsNonDigits() {
+    assertThrows(IllegalArgumentException.class, () -> PARSER.parse("GQ/2024ab+1"));
+    assertThrows(IllegalArgumentException.class, () -> PARSER.parse("GQ/20A403+1"));
+  }
+
+  @Test
+  void rejectsOverlongNumeric() {
+    assertThrows(IllegalArgumentException.class, () -> PARSER.parse("GQ/2024:99999999999"));
+  }
+
+  @Test
+  void acceptsArbitraryCharSequence() {
+    var sb = new StringBuilder("GQ/2024:2");
+    assertEquals(PARSER.parse("GQ/2024:2").interval(), PARSER.parse(sb).interval());
+  }
+
+  @Test
+  void compactAndDashedFormsAreEquivalentForExplicitLength() {
+    for (String form : List.of(
+        "GQ/2024-03-15+1", "GQ/20240315+1")) {
+      assertEquals(
+          new Epoch2kInterval(ofYMD(2024, 3, 15), ofYMD(2024, 3, 15)),
+          PARSER.parse(form).interval(),
+          () -> "failed for: " + form);
+    }
+  }
+
+  @Test
+  void compactAndDashedFormsAreEquivalentForWalkYear() {
+    assertEquals(
+        PARSER.parse("GQ/2024:1").interval(),
+        PARSER.parse("GQ/2024:1").interval());   // trivially true, but locks the year form
+  }
+
+  @Test
+  void compactAndDashedFormsAreEquivalentForWalkMonth() {
+    assertEquals(
+        PARSER.parse("GQ/2024-03:1").interval(),
+        PARSER.parse("GQ/202403:1").interval());
+  }
+
+  @Test
+  void compactAndDashedFormsAreEquivalentForWalkDay() {
+    assertEquals(
+        PARSER.parse("GQ/2024-03-15:1").interval(),
+        PARSER.parse("GQ/20240315:1").interval());
+  }
+
+  @Test
+  void compactFormRespectsOfYMDValidation() {
+    // 2023 is not a leap year, so Feb 29 fails at the calendar layer.
+    assertThrows(IllegalArgumentException.class, () -> PARSER.parse("GQ/20230229+1"));
+    // Same day in 2024 succeeds.
+    assertEquals(
+        new Epoch2kInterval(ofYMD(2024, 2, 29), ofYMD(2024, 2, 29)),
+        PARSER.parse("GQ/20240229+1").interval());
+  }
+
+  @Test
+  void noSuffixEqualsPositionOne() {
+    for (String s : List.of(
+        "GQ/2024", "GQ/2024-01", "GQ/2024-01-01", "GQ/2024-03-15", "GQ/2024:1")) {
+      assertEquals(
+          PARSER.parse("GQ/2024:1").interval(),
+          PARSER.parse(s).interval(),
+          () -> "failed for: " + s);
+    }
+  }
+
+  @Test
+  void dailySequenceWithYearAnchorYieldsFirstDayOfYear() {
+    // No suffix = first interval overlapping the anchor period.
+    // For GD over a year, that's January 1st — use +366 for the whole year.
+    assertEquals(
+        new Epoch2kInterval(ofYMD(2024, 1, 1)),
+        PARSER.parse("GD/2024").interval());
+  }
+
+  @Test
+  void noSuffixOnDailySequenceIsSingleDay() {
+    assertEquals(
+        new Epoch2kInterval(ofYMD(2024, 3, 15)),
+        PARSER.parse("GD/2024-03-15").interval());
+    assertEquals(
+        new Epoch2kInterval(ofYMD(2024, 3, 15)),
+        PARSER.parse("GD/2024-03-15+1").interval());
+  }
+
+  @Test
+  void noSuffixOnQuarterlySequenceIsContainingQuarter() {
+    var q1 = new Epoch2kInterval(ofYMD(2024, 1, 1), ofYMD(2024, 3, 31));
+    assertEquals(q1, PARSER.parse("GQ/2024-01-01").interval());
+    assertEquals(q1, PARSER.parse("GQ/2024-03-15").interval());
+    assertEquals(q1, PARSER.parse("GQ/2024").interval());
   }
 }
