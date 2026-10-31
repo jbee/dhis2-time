@@ -18,73 +18,104 @@ public final class GregorianSequences {
   public static final TimeFamilyKey FiscalQuarter = new TimeFamilyKey('F', 'Q');
   public static final TimeFamilyKey FiscalYear = new TimeFamilyKey('F', 'Y');
 
-  // ── Typical calendar-Gregorian ──────────────────────────────────────
+  // ── Common constants ────────────────────────────────────────────────
 
-  public static final TimeSequence Daily =
-      new DailyGregorianSequence(
-          new TimeSequenceKey('G', 'D'),
-          Set.of(Week, BiWeek, Month, Quarter, Year),
-          Set.of(Week, BiWeek, Month, Quarter, Year));
+  public static final TimeSequence Daily = daily();
 
-  public static final TimeSequence Weekly =
-      new WeeklyGregorianSequence(
-          TimeSequenceKey.weekly('G', Epoch2kDay.DayOfWeek.Monday),
-          Epoch2kDay.DayOfWeek.Monday,
-          Set.of(BiWeek),
-          Set.of(BiWeek, Month, Quarter, Year));
+  public static final TimeSequence Weekly = weekly(Epoch2kDay.DayOfWeek.Monday);
+  public static final TimeSequence BiWeekly = biWeekly(Epoch2kDay.DayOfWeek.Monday);
 
-  public static final TimeSequence BiWeekly =
-      new BiWeeklyGregorianSequence(
-          TimeSequenceKey.biWeekly('G', Epoch2kDay.DayOfWeek.Monday),
-          Epoch2kDay.DayOfWeek.Monday,
-          Set.of(),
-          Set.of(Month, Quarter, Year));
+  public static final TimeSequence Monthly = monthly();
+  public static final TimeSequence Quarterly = quarterly(Epoch2kDay.MonthOfYear.January);
+  public static final TimeSequence Yearly = yearly(Epoch2kDay.MonthOfYear.January);
 
-  public static final TimeSequence Monthly =
-      new MonthlyGregorianSequence(
-          new TimeSequenceKey('G', 'M'), Set.of(Quarter, Year), Set.of(Quarter, Year));
+  // ── Common fiscal constants (July-start) ────────────────────────────
 
-  public static final TimeSequence Quarterly =
-      new QuarterlyGregorianSequence(
-          new TimeSequenceKey('G', 'Q'),
-          Epoch2kDay.MonthOfYear.January,
-          Set.of(Year),
-          Set.of(Year));
+  public static final TimeSequence FiscalMonthlyJuly = fiscalMonthly(Epoch2kDay.MonthOfYear.July);
+  public static final TimeSequence FiscalQuarterlyJuly = fiscalQuarterly(Epoch2kDay.MonthOfYear.July);
+  public static final TimeSequence FiscalYearlyJuly = fiscalYearly(Epoch2kDay.MonthOfYear.July);
 
-  public static final TimeSequence Yearly =
-      new YearlyGregorianSequence(
-          new TimeSequenceKey('G', 'Y'), Epoch2kDay.MonthOfYear.January, Set.of(), Set.of());
-
-  // ── Typical fiscal (July-start) ─────────────────────────────────────
-
-  public static final TimeSequence FiscalMonthlyJuly =
-      new MonthlyGregorianSequence(
-          TimeSequenceKey.monthly('F', Epoch2kDay.MonthOfYear.July),
-          Set.of(FiscalQuarter, FiscalYear),
-          Set.of(FiscalQuarter, FiscalYear));
-
-  public static final TimeSequence FiscalQuarterlyJuly =
-      new QuarterlyGregorianSequence(
-          TimeSequenceKey.quarterly('F', Epoch2kDay.MonthOfYear.July),
-          Epoch2kDay.MonthOfYear.July,
-          Set.of(FiscalYear),
-          Set.of(FiscalYear));
-
-  public static final TimeSequence FiscalYearlyJuly =
-      new YearlyGregorianSequence(
-          TimeSequenceKey.yearly('F', Epoch2kDay.MonthOfYear.July),
-          Epoch2kDay.MonthOfYear.July,
-          Set.of(),
-          Set.of());
-
-  // ── Parameterised factories ─────────────────────────────────────────
+  // ── Factories ───────────────────────────────────────────────────────
   //
-  // public static TimeSequence weekly(Epoch2kDay.DayOfWeek day1) { … }
-  // public static TimeSequence biWeekly(Epoch2kDay.DayOfWeek day1) { … }
-  // public static TimeSequence quarterly(Epoch2kDay.MonthOfYear month1) { … }
-  // public static TimeSequence yearly(Epoch2kDay.MonthOfYear month1) { … }
+  // Calendar-family factories use system 'G'. The key carries NO_OFFSET ('-')
+  // when the start is January (the calendar default) and an explicit offset
+  // otherwise (e.g. GQ4 for April quarters, GY7 for July-start calendar years).
+  //
+  // Fiscal-family factories use system 'F' and always carry an explicit
+  // start-month offset (e.g. FQ7, FY7).
+  //
+  // Weeks are never fiscal — weekly/bi-weekly always use system 'G'.
 
-  // ── Records ─────────────────────────────────────────────────────────
+  public static TimeSequence daily() {
+    return new DailyGregorianSequence(
+        new TimeSequenceKey('G', 'D'),
+        Set.of(Week, BiWeek, Month, Quarter, Year),
+        Set.of(Week, BiWeek, Month, Quarter, Year));
+  }
+
+  public static TimeSequence weekly(Epoch2kDay.DayOfWeek day1) {
+    return new WeeklyGregorianSequence(
+        TimeSequenceKey.weekly('G', day1),
+        day1,
+        Set.of(BiWeek),
+        Set.of(BiWeek, Month, Quarter, Year));
+  }
+
+  public static TimeSequence biWeekly(Epoch2kDay.DayOfWeek day1) {
+    return new BiWeeklyGregorianSequence(
+        TimeSequenceKey.biWeekly('G', day1),
+        day1,
+        Set.of(),
+        Set.of(Month, Quarter, Year));
+  }
+
+  public static TimeSequence monthly() {
+    return new MonthlyGregorianSequence(
+        new TimeSequenceKey('G', 'M'),
+        Set.of(Quarter, Year),
+        Set.of(Quarter, Year));
+  }
+
+  public static TimeSequence fiscalMonthly(Epoch2kDay.MonthOfYear start) {
+    return new MonthlyGregorianSequence(
+        TimeSequenceKey.monthly('F', start),
+        Set.of(FiscalQuarter, FiscalYear),
+        Set.of(FiscalQuarter, FiscalYear));
+  }
+
+  public static TimeSequence quarterly(Epoch2kDay.MonthOfYear month1) {
+    TimeSequenceKey key =
+        month1 == Epoch2kDay.MonthOfYear.January
+            ? new TimeSequenceKey('G', 'Q')
+            : TimeSequenceKey.quarterly('G', month1);
+    return new QuarterlyGregorianSequence(key, month1, Set.of(Year), Set.of(Year));
+  }
+
+  public static TimeSequence fiscalQuarterly(Epoch2kDay.MonthOfYear month1) {
+    return new QuarterlyGregorianSequence(
+        TimeSequenceKey.quarterly('F', month1),
+        month1,
+        Set.of(FiscalYear),
+        Set.of(FiscalYear));
+  }
+
+  public static TimeSequence yearly(Epoch2kDay.MonthOfYear month1) {
+    TimeSequenceKey key =
+        month1 == Epoch2kDay.MonthOfYear.January
+            ? new TimeSequenceKey('G', 'Y')
+            : TimeSequenceKey.yearly('G', month1);
+    return new YearlyGregorianSequence(key, month1, Set.of(), Set.of());
+  }
+
+  public static TimeSequence fiscalYearly(Epoch2kDay.MonthOfYear month1) {
+    return new YearlyGregorianSequence(
+        TimeSequenceKey.yearly('F', month1),
+        month1,
+        Set.of(),
+        Set.of());
+  }
+
+  // ── Implementation ─────────────────────────────────────────────────────────
 
   public record DailyGregorianSequence(
       TimeSequenceKey key, Set<TimeFamilyKey> partitions, Set<TimeFamilyKey> aggregatesTo)

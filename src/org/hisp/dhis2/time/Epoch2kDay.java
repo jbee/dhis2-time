@@ -20,6 +20,12 @@ public record Epoch2kDay(@TimeOffset int daysSince2k) {
     return new Epoch2kDay(daysSince2k);
   }
 
+  static Epoch2kDay of(int year, int month, int dayOfMonth) {
+    return Epoch2kDay.ofJanuary1stIn(year)
+        .plusMonths(month - 1)
+        .plusDays(dayOfMonth - 1);
+  }
+
   /** @return January 1st of the given year */
   public static Epoch2kDay ofJanuary1stIn(int year) {
     return new Epoch2kDay(0).plusYears(year - 2000); // 0 == 2000-01-01
