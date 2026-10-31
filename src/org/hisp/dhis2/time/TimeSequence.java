@@ -81,11 +81,8 @@ public interface TimeSequence {
     return List.copyOf(result);
   }
 
-  private static boolean majorityInside(Epoch2kInterval child, Epoch2kInterval parent) {
-    int first = Math.max(child.first().daysSince2k(), parent.first().daysSince2k());
-    int last  = Math.min(child.last().daysSince2k(),  parent.last().daysSince2k());
-    int inside = Math.max(0, last - first + 1);
-    return inside * 2 > child.lengthInDays();   // strict majority
+  static boolean majorityInside(Epoch2kInterval child, Epoch2kInterval parent) {
+    return child.overlapLength(parent) * 2 > child.lengthInDays();
   }
 
   /** Invariant check used by every implementation's compact constructor. */

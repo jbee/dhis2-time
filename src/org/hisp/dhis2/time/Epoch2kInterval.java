@@ -60,4 +60,11 @@ public record Epoch2kInterval(Epoch2kDay first, Epoch2kDay last) {
     return first.daysSince2k() <= other.last.daysSince2k()
         && other.first.daysSince2k() <= last.daysSince2k();
   }
+
+  /** @return the number of days shared by this interval and {@code other}; 0 if disjoint. */
+  public int overlapLength(Epoch2kInterval other) {
+    int first = Math.max(this.first.daysSince2k(), other.first.daysSince2k());
+    int last  = Math.min(this.last.daysSince2k(),  other.last.daysSince2k());
+    return Math.max(0, last - first + 1);
+  }
 }

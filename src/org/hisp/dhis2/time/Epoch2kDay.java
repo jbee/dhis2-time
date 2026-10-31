@@ -5,7 +5,7 @@ import java.util.function.LongSupplier;
 import static java.lang.Math.abs;
 
 @TimeOffset
-public record Epoch2kDay(@TimeOffset int daysSince2k) {
+public record Epoch2kDay(@TimeOffset int daysSince2k) implements Comparable<Epoch2kDay> {
 
   private static final long MILLIS_UTC_T0_UNTIL_2K_MIDNIGHT = 946_684_800_000L;
   private static final long MILLIS_IN_A_DAY = 86_400_000L;
@@ -104,6 +104,11 @@ public record Epoch2kDay(@TimeOffset int daysSince2k) {
   @Override
   public String toString() {
     return offset().toString();
+  }
+
+  @Override
+  public int compareTo(Epoch2kDay other) {
+    return Integer.compare(daysSince2k, other.daysSince2k);
   }
 
   public long toUTCMillis() {

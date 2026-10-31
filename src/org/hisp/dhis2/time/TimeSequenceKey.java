@@ -4,6 +4,11 @@ public record TimeSequenceKey(char system, char interval, char offset) {
 
   public static final char NO_OFFSET = '-';
 
+  /** A custom (table-driven) sequence key: system {@code 'C'}, no offset. */
+  public static TimeSequenceKey custom(char interval) {
+    return new TimeSequenceKey('C', interval, NO_OFFSET);
+  }
+
   // ── Typed factories (the only public way to set an offset) ─────────
 
   public static TimeSequenceKey weekly(char system, Epoch2kDay.DayOfWeek day1) {
