@@ -60,7 +60,7 @@ public final class EthiopianSequences {
 
     @Override
     public Epoch2kInterval interval(Epoch2kDay day) {
-      return EthiopianCalendar.monthInterval(day);
+      return EthiopianCalendar.toEpochIntervalOfEthiopianMonthContaining(day);
     }
   }
 
@@ -74,7 +74,7 @@ public final class EthiopianSequences {
 
     @Override
     public Epoch2kInterval interval(Epoch2kDay day) {
-      return EthiopianCalendar.yearInterval(day);
+      return EthiopianCalendar.toEpochIntervalOfEthiopianYearContaining(day);
     }
   }
 }

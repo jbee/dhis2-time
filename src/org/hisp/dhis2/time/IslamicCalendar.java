@@ -10,9 +10,9 @@ import java.util.List;
  * astronomical conditions evaluated for Mecca. This class therefore encodes the
  * tabulated month lengths directly.
  *
- * <p>Supported range: AH {@link #MIN_YEAR} - {@link #MAX_YEAR} inclusive. Methods
+ * <p>Supported range: AH {@link #MIN_YEAR_IC} - {@link #MAX_YEAR_IC} inclusive. Methods
  * that take a year throw {@link IllegalArgumentException} for unsupported years;
- * {@link #year(Epoch2kDay)} throws for days outside the supported range. The range
+ * {@link #yearInIC(Epoch2kDay)} throws for days outside the supported range. The range
  * is limited by the availability of the official KACST table; extending it means
  * inserting rows into {@link #TABLE} and moving {@link #SENTINEL}.
  */
@@ -64,8 +64,8 @@ public final class IslamicCalendar {
   private static final YearRow SENTINEL =
       new YearRow(1451, -1, Epoch2kDay.ofYMD(2029, 5, 14));
 
-  public static final int MIN_YEAR = TABLE.get(0).year();
-  public static final int MAX_YEAR = TABLE.get(TABLE.size() - 1).year();
+  public static final int MIN_YEAR_IC = TABLE.get(0).year();
+  public static final int MAX_YEAR_IC = TABLE.get(TABLE.size() - 1).year();
 
   /** {@code YEAR_START_2K[i]} = daysSince2k of 1 Muharram of {@code TABLE.get(i).year()}. */
   private static final int[] YEAR_START_2K;
@@ -110,22 +110,22 @@ public final class IslamicCalendar {
 
   private static int indexOf(int year) {
     requireSupported(year);
-    return year - MIN_YEAR;
+    return year - MIN_YEAR_IC;
   }
 
   private static void requireSupported(int year) {
-    if (year < MIN_YEAR || year > MAX_YEAR)
+    if (year < MIN_YEAR_IC || year > MAX_YEAR_IC)
       throw new IllegalArgumentException(
-          "Umm al-Qura year " + year + " outside supported range " + MIN_YEAR + "-" + MAX_YEAR);
+          "Umm al-Qura year " + year + " outside supported range " + MIN_YEAR_IC + "-" + MAX_YEAR_IC);
   }
 
-  public static boolean isSupported(int year) {
-    return year >= MIN_YEAR && year <= MAX_YEAR;
+  public static boolean isSupportedYearInIC(int year) {
+    return year >= MIN_YEAR_IC && year <= MAX_YEAR_IC;
   }
 
   /**
    * The full supported range as a closed interval. Useful for tests and for callers
-   * that want to bound a query without inspecting {@link #MIN_YEAR} / {@link #MAX_YEAR}.
+   * that want to bound a query without inspecting {@link #MIN_YEAR_IC} / {@link #MAX_YEAR_IC}.
    */
   public static Epoch2kInterval supportedRange() {
     return new Epoch2kInterval(
@@ -134,18 +134,18 @@ public final class IslamicCalendar {
   }
 
   /** daysSince2k of 1 Muharram of the given year. */
-  public static int newYearOffset(int year) {
+  public static int newYearOffsetInIC(int year) {
     return YEAR_START_2K[indexOf(year)];
   }
 
   /** @param month 1..12 */
-  public static int daysInMonth(int year, int month) {
+  public static int daysInMonthInIC(int year, int month) {
     if (month < 1 || month > 12)
       throw new IllegalArgumentException("month must be 1-12, got: " + month);
     return ((TABLE.get(indexOf(year)).monthMask() >> (month - 1)) & 1) == 1 ? 30 : 29;
   }
 
-  public static int daysInYear(int year) {
+  public static int daysInYearInIC(int year) {
     return TABLE.get(indexOf(year)).daysInYear();
   }
 
@@ -153,20 +153,20 @@ public final class IslamicCalendar {
    * An Umm al-Qura leap year is simply a year with 355 days. Unlike the tabular
    * Islamic calendar there is no arithmetic rule; the result follows the table.
    */
-  public static boolean isLeapYear(int year) {
-    return daysInYear(year) == 355;
+  public static boolean isLeapYearInIC(int year) {
+    return daysInYearInIC(year) == 355;
   }
 
   /** @param month 1..12, {@code dayOfMonth} 1..29/30 */
-  public static Epoch2kDay day(int year, int month, int dayOfMonth) {
+  public static Epoch2kDay toEpochDayInIC(int year, int month, int dayOfMonth) {
     int idx = indexOf(year);
     int days = YEAR_START_2K[idx];
-    for (int m = 1; m < month; m++) days += daysInMonth(year, m);
+    for (int m = 1; m < month; m++) days += daysInMonthInIC(year, m);
     return new Epoch2kDay(days + dayOfMonth - 1);
   }
 
   /** @return the Umm al-Qura year containing the given day */
-  public static int year(Epoch2kDay day) {
+  public static int yearInIC(Epoch2kDay day) {
     int d = day.daysSince2k();
     if (d < YEAR_START_2K[0] || d >= SENTINEL_START_2K)
       throw new IllegalArgumentException(
@@ -182,15 +182,15 @@ public final class IslamicCalendar {
         hi = mid - 1;
       }
     }
-    return MIN_YEAR + result;
+    return MIN_YEAR_IC + result;
   }
 
   /** @return 1..12 */
-  public static int month(Epoch2kDay day) {
-    int y = year(day);
+  public static int monthInIC(Epoch2kDay day) {
+    int y = yearInIC(day);
     int remaining = day.daysSince2k() - YEAR_START_2K[indexOf(y)];
     for (int m = 1; m <= 12; m++) {
-      int len = daysInMonth(y, m);
+      int len = daysInMonthInIC(y, m);
       if (remaining < len) return m;
       remaining -= len;
     }
@@ -200,24 +200,24 @@ public final class IslamicCalendar {
   }
 
   /** @return 1..30 */
-  public static int dayOfMonth(Epoch2kDay day) {
-    int y = year(day);
-    int m = month(day);
+  public static int dayOfMonthInIC(Epoch2kDay day) {
+    int y = yearInIC(day);
+    int m = monthInIC(day);
     int remaining = day.daysSince2k() - YEAR_START_2K[indexOf(y)];
-    for (int i = 1; i < m; i++) remaining -= daysInMonth(y, i);
+    for (int i = 1; i < m; i++) remaining -= daysInMonthInIC(y, i);
     return remaining + 1;
   }
 
-  public static Epoch2kInterval monthInterval(Epoch2kDay day) {
-    int y = year(day);
-    int m = month(day);
-    Epoch2kDay first = day(y, m, 1);
-    return new Epoch2kInterval(first, first.plusDays(daysInMonth(y, m) - 1));
+  public static Epoch2kInterval toEpochIntervalOfIslamicMonthContaining(Epoch2kDay day) {
+    int y = yearInIC(day);
+    int m = monthInIC(day);
+    Epoch2kDay first = toEpochDayInIC(y, m, 1);
+    return new Epoch2kInterval(first, first.plusDays(daysInMonthInIC(y, m) - 1));
   }
 
-  public static Epoch2kInterval yearInterval(Epoch2kDay day) {
-    int y = year(day);
+  public static Epoch2kInterval toEpochIntervalOfIslamicYearContaining(Epoch2kDay day) {
+    int y = yearInIC(day);
     Epoch2kDay first = new Epoch2kDay(YEAR_START_2K[indexOf(y)]);
-    return new Epoch2kInterval(first, first.plusDays(daysInYear(y) - 1));
+    return new Epoch2kInterval(first, first.plusDays(daysInYearInIC(y) - 1));
   }
 }

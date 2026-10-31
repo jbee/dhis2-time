@@ -1,7 +1,7 @@
 package org.hisp.dhis2.time;
 
 import static org.hisp.dhis2.time.EthiopianSequences.*;
-import static org.hisp.dhis2.time.EthiopianCalendar.day;
+import static org.hisp.dhis2.time.EthiopianCalendar.toEpochDayInEC;
 import static org.junit.jupiter.api.Assertions.*;
 
 import java.util.Set;
@@ -11,16 +11,16 @@ class TestEthiopianSequences {
 
   @Test
   void dailyIntervalIsSingleDay() {
-    var i = Daily.interval(day(1992, 4, 22));
+    var i = Daily.interval(toEpochDayInEC(1992, 4, 22));
     assertEquals(1, i.lengthInDays());
-    assertEquals(day(1992, 4, 22), i.first());
-    assertEquals(day(1992, 4, 22), i.last());
+    assertEquals(toEpochDayInEC(1992, 4, 22), i.first());
+    assertEquals(toEpochDayInEC(1992, 4, 22), i.last());
   }
 
   @Test
   void monthlyIntervalContainsItsDay() {
     for (Epoch2kDay d : new Epoch2kDay[] {
-        day(1992, 4, 22), day(1995, 13, 3), day(2017, 1, 1)}) {
+        toEpochDayInEC(1992, 4, 22), toEpochDayInEC(1995, 13, 3), toEpochDayInEC(2017, 1, 1)}) {
       assertTrue(Monthly.interval(d).contains(d));
     }
   }
@@ -28,7 +28,7 @@ class TestEthiopianSequences {
   @Test
   void yearlyIntervalContainsItsDay() {
     for (Epoch2kDay d : new Epoch2kDay[] {
-        day(1992, 4, 22), day(1995, 13, 3), day(2017, 1, 1)}) {
+        toEpochDayInEC(1992, 4, 22), toEpochDayInEC(1995, 13, 3), toEpochDayInEC(2017, 1, 1)}) {
       assertTrue(Yearly.interval(d).contains(d));
     }
   }
@@ -37,33 +37,33 @@ class TestEthiopianSequences {
   void monthlyNextIsFollowingEthiopianMonth() {
     var tahsas = Monthly.interval(new Epoch2kDay(0));  // Tahsas 1992
     var tir = Monthly.next(tahsas);                    // Tir 1992
-    assertEquals(day(1992, 5, 1), tir.first());
-    assertEquals(day(1992, 5, 30), tir.last());
+    assertEquals(toEpochDayInEC(1992, 5, 1), tir.first());
+    assertEquals(toEpochDayInEC(1992, 5, 30), tir.last());
   }
 
   @Test
   void monthlyNextFromPagumeCrossesEthiopianYear() {
     // Pagume 1995 is the last month; next is Meskerem 1996.
-    var pagume = Monthly.interval(day(1995, 13, 1));
+    var pagume = Monthly.interval(toEpochDayInEC(1995, 13, 1));
     var meskerem = Monthly.next(pagume);
-    assertEquals(day(1996, 1, 1), meskerem.first());
+    assertEquals(toEpochDayInEC(1996, 1, 1), meskerem.first());
   }
 
   @Test
   void yearlyNextIsFollowingEthiopianYear() {
     var y1992 = Yearly.interval(new Epoch2kDay(0));
     var y1993 = Yearly.next(y1992);
-    assertEquals(day(1993, 1, 1), y1993.first());
-    assertEquals(day(1993, 13, 5), y1993.last());
+    assertEquals(toEpochDayInEC(1993, 1, 1), y1993.first());
+    assertEquals(toEpochDayInEC(1993, 13, 5), y1993.last());
   }
 
   @Test
   void nextAndPreviousAreInverses() {
-    var month = Monthly.interval(day(1995, 13, 3));
+    var month = Monthly.interval(toEpochDayInEC(1995, 13, 3));
     assertEquals(month, Monthly.previous(Monthly.next(month)));
     assertEquals(month, Monthly.next(Monthly.previous(month)));
 
-    var year = Yearly.interval(day(1995, 6, 15));
+    var year = Yearly.interval(toEpochDayInEC(1995, 6, 15));
     assertEquals(year, Yearly.previous(Yearly.next(year)));
     assertEquals(year, Yearly.next(Yearly.previous(year)));
   }
@@ -76,20 +76,20 @@ class TestEthiopianSequences {
 
   @Test
   void dailyPartitionOfLeapPagumeYields6Days() {
-    var pagume = Monthly.interval(day(1995, 13, 1));
+    var pagume = Monthly.interval(toEpochDayInEC(1995, 13, 1));
     var days = Daily.partition(pagume);
     assertEquals(6, days.size());
-    assertEquals(day(1995, 13, 1), days.get(0).first());
-    assertEquals(day(1995, 13, 6), days.get(5).last());
+    assertEquals(toEpochDayInEC(1995, 13, 1), days.get(0).first());
+    assertEquals(toEpochDayInEC(1995, 13, 6), days.get(5).last());
   }
 
   @Test
   void monthlyPartitionOfEthiopianYearYields13Months() {
-    var year = Yearly.interval(day(1995, 6, 15));
+    var year = Yearly.interval(toEpochDayInEC(1995, 6, 15));
     var months = Monthly.partition(year);
     assertEquals(13, months.size());
-    assertEquals(day(1995, 1, 1), months.get(0).first());
-    assertEquals(day(1995, 13, 6), months.get(12).last());
+    assertEquals(toEpochDayInEC(1995, 1, 1), months.get(0).first());
+    assertEquals(toEpochDayInEC(1995, 13, 6), months.get(12).last());
   }
 
   @Test
@@ -111,7 +111,7 @@ class TestEthiopianSequences {
 
   @Test
   void ethiopianAndGregorianYearlyDoNotInteract() {
-    var ethYear = Yearly.interval(day(1995, 6, 15));
+    var ethYear = Yearly.interval(toEpochDayInEC(1995, 6, 15));
     var gregYear = GregorianSequences.Yearly.interval(Epoch2kDay.ofYMD(2002, 1, 1));
     assertTrue(ethYear.overlaps(gregYear));
     // But the Ethiopian sequence does not claim to aggregate to Gregorian years.

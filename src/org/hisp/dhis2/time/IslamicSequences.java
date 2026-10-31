@@ -59,7 +59,7 @@ public final class IslamicSequences {
 
     @Override
     public Epoch2kInterval interval(Epoch2kDay day) {
-      return IslamicCalendar.monthInterval(day);
+      return IslamicCalendar.toEpochIntervalOfIslamicMonthContaining(day);
     }
   }
 
@@ -73,7 +73,7 @@ public final class IslamicSequences {
 
     @Override
     public Epoch2kInterval interval(Epoch2kDay day) {
-      return IslamicCalendar.yearInterval(day);
+      return IslamicCalendar.toEpochIntervalOfIslamicYearContaining(day);
     }
   }
 }

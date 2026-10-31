@@ -120,4 +120,39 @@ class BiWeeklyGregorianSequenceTest {
           () -> "member " + m + " has only " + inside + " of " + m.lengthInDays() + " days inside");
     }
   }
+
+  @Test
+  void biWeeklyStraddlingMonth50_50GoesToEarlierMonth() {
+    // Bi-week starting Monday 2024-03-25 runs Mar 25 – Apr 7: 7 days in each month.
+    var straddler = BiWeekly.interval(Epoch2kDay.ofYMD(2024, 3, 25));
+    assertEquals(14, straddler.lengthInDays());
+    assertEquals(Epoch2kDay.ofYMD(2024, 3, 25), straddler.first());
+    assertEquals(Epoch2kDay.ofYMD(2024, 4, 7), straddler.last());
+
+    var march = Monthly.interval(Epoch2kDay.ofYMD(2024, 3, 15));
+    var april = Monthly.interval(Epoch2kDay.ofYMD(2024, 4, 15));
+
+    assertTrue(BiWeekly.contributorsTo(march).contains(straddler),
+        "tie should go to the earlier parent (March)");
+    assertFalse(BiWeekly.contributorsTo(april).contains(straddler),
+        "tie should not also appear in April");
+  }
+
+  @Test
+  void everyBiWeekIsAttributedToExactlyOneMonthAcross2024() {
+    var year = Epoch2kInterval.ofYear(2024);
+    var months = Monthly.partition(year);
+    var count = new java.util.HashMap<Epoch2kInterval, Integer>();
+
+    for (var month : months) {
+      for (var bw : BiWeekly.contributorsTo(month)) {
+        count.merge(bw, 1, Integer::sum);
+      }
+    }
+
+    for (var e : count.entrySet()) {
+      assertEquals(1, e.getValue(),
+          () -> "bi-week " + e.getKey() + " attributed to " + e.getValue() + " months");
+    }
+  }
 }

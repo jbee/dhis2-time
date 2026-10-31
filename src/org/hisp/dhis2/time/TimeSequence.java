@@ -340,27 +340,36 @@ public interface TimeSequence {
   }
 
   /**
-   * Whether {@code child} has a strict majority of its days inside {@code parent}.
+   * Whether {@code child} is attributed to {@code parent} under the
+   * majority-of-days rule.
    *
-   * <p>Exposed for sequence implementations that attribute intervals from their
-   * own source (custom sequences, non-tiling calendars) rather than walking
-   * day-by-day via {@link #interval(Epoch2kDay)}.
+   * <p>A child is attributed to a parent when more than half its days lie inside
+   * it. When the split is exactly 50/50 — possible only when the child has even
+   * length and straddles two adjacent parents — the tie is broken toward the
+   * <b>earlier</b> parent, defined as the one containing the child's first day.
+   * This makes attribution total: every child is attributed to exactly one parent
+   * across a family, with no day silently dropped.
    *
-   * <p>"Strict majority" means {@code overlap * 2 > child.lengthInDays()}. A child
-   * of even length straddling two parents exactly at 50/50 returns {@code false}
-   * for both — i.e. it is attributed to neither. No current Gregorian sequence
-   * exercises this case: weeks are 7 (odd), and months, quarters, and years nest
-   * cleanly. A future calendar with even-length straddling children would need an
-   * explicit tie-breaking policy; this method deliberately leaves it undefined
-   * rather than guess one.
+   * <p>{@code BiWeekly} into a calendar month is the one current case that
+   * exercises the tie: a 14-day bi-week straddling a month boundary has 7 days in
+   * each month, and is attributed to the earlier month.
+   *
+   * <p>The tie-break is defined for any pair {@code (child, parent)} where the
+   * overlap is exactly half the child, regardless of whether the parent is one of
+   * a canonical family. If {@code parent} contains {@code child.first()}, its
+   * overlap is a prefix of the child (the "earlier" side); otherwise it is a
+   * suffix (the "later" side).
    *
    * @param child the candidate interval
    * @param parent the interval to attribute {@code child} to
-   * @return {@code true} if more than half of {@code child}'s days lie inside
-   *     {@code parent}
+   * @return {@code true} if {@code child} is attributed to {@code parent}
    */
   static boolean majorityInside(Epoch2kInterval child, Epoch2kInterval parent) {
-    return child.overlapLength(parent) * 2 > child.lengthInDays();
+    int overlap = child.overlapLength(parent);
+    int childLength = child.lengthInDays();
+    if (overlap * 2 != childLength) return overlap * 2 > childLength;
+    // Exact 50/50: attribute to the earlier parent — the one containing child.first().
+    return parent.contains(child.first());
   }
 
   /**
