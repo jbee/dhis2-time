@@ -342,43 +342,10 @@ public interface TimeSequence {
     Epoch2kInterval child = interval(parent.firstDay());
     List<Epoch2kInterval> result = new ArrayList<>();
     while (!child.firstDay().after(parent.lastDay())) {
-      if (majorityInside(child, parent)) result.add(child);
+      if (child.contributesTo(parent)) result.add(child);
       child = interval(child.lastDay().tomorrow());
     }
     return List.copyOf(result);
-  }
-
-  /**
-   * Whether {@code child} is attributed to {@code parent} under the
-   * majority-of-days rule.
-   *
-   * <p>A child is attributed to a parent when more than half its days lie inside
-   * it. When the split is exactly 50/50 — possible only when the child has even
-   * length and straddles two adjacent parents — the tie is broken toward the
-   * <b>earlier</b> parent, defined as the one containing the child's first day.
-   * This makes attribution total: every child is attributed to exactly one parent
-   * across a family, with no day silently dropped.
-   *
-   * <p>{@code BiWeekly} into a calendar month is the one current case that
-   * exercises the tie: a 14-day bi-week straddling a month boundary has 7 days in
-   * each month, and is attributed to the earlier month.
-   *
-   * <p>The tie-break is defined for any pair {@code (child, parent)} where the
-   * overlap is exactly half the child, regardless of whether the parent is one of
-   * a canonical family. If {@code parent} contains {@code child.first()}, its
-   * overlap is a prefix of the child (the "earlier" side); otherwise it is a
-   * suffix (the "later" side).
-   *
-   * @param child the candidate interval
-   * @param parent the interval to attribute {@code child} to
-   * @return {@code true} if {@code child} is attributed to {@code parent}
-   */
-  static boolean majorityInside(Epoch2kInterval child, Epoch2kInterval parent) {
-    int overlap = child.overlapLength(parent);
-    int childLength = child.lengthInDays();
-    if (overlap * 2 != childLength) return overlap * 2 > childLength;
-    // Exact 50/50: attribute to the earlier parent — the one containing child.first().
-    return parent.contains(child.firstDay());
   }
 
   /**

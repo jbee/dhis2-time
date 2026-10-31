@@ -62,9 +62,30 @@ public record Epoch2kInterval(Epoch2kDay firstDay, Epoch2kDay lastDay) {
   }
 
   /** @return the number of days shared by this interval and {@code other}; 0 if disjoint. */
-  public int overlapLength(Epoch2kInterval other) {
+  public int overlapInDays(Epoch2kInterval other) {
     int first = Math.max(this.firstDay.daysSince2k(), other.firstDay.daysSince2k());
     int last  = Math.min(this.lastDay.daysSince2k(),  other.lastDay.daysSince2k());
     return Math.max(0, last - first + 1);
+  }
+
+  /**
+   * Whether this interval contributes to {@code parent} under the attribution rule:
+   * a majority of its days lie inside {@code parent}, with an exact 50/50 split
+   * going to the earlier parent — the one containing this interval's
+   * {@link #firstDay()}. This makes attribution total: any interval is attributed
+   * to exactly one parent across a family, with no day silently dropped.
+   *
+   * <p>Used by {@link TimeSequence#contributorsTo(Epoch2kInterval)} and by
+   * {@link CustomSequences.CustomSequence#contributorsTo(Epoch2kInterval)}.
+   *
+   * @param parent the candidate parent interval
+   * @return {@code true} if this interval is attributed to {@code parent}
+   */
+  public boolean contributesTo(Epoch2kInterval parent) {
+    int overlap = overlapInDays(parent);
+    int childLength = lengthInDays();
+    if (overlap * 2 != childLength) return overlap * 2 > childLength;
+    // Exact 50/50: attribute to the earlier parent — the one containing firstDay().
+    return parent.contains(firstDay());
   }
 }

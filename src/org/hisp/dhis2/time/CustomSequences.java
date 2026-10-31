@@ -152,9 +152,7 @@ public final class CustomSequences {
      */
     @Override
     public List<Epoch2kInterval> contributorsTo(Epoch2kInterval parent) {
-      return intervals.stream()
-          .filter(i -> TimeSequence.majorityInside(i, parent))
-          .toList();
+      return intervals.stream().filter(i -> i.contributesTo(parent)).toList();
     }
   }
 }
