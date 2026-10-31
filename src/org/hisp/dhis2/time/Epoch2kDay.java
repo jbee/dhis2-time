@@ -21,9 +21,13 @@ public record Epoch2kDay(@TimeOffset int daysSince2k) implements Comparable<Epoc
   }
 
   static Epoch2kDay ofYMD(int year, int month, int dayOfMonth) {
-    return Epoch2kDay.ofJanuary1stInYear(year)
-        .plusMonths(month - 1)
-        .plusDays(dayOfMonth - 1);
+    if (month < 1 || month > 12)
+      throw new IllegalArgumentException("month must be 1-12, got: " + month);
+    int max = daysInMonth(year, month - 1);   // ← 1-based → 0-based at the boundary
+    if (dayOfMonth < 1 || dayOfMonth > max)
+      throw new IllegalArgumentException(
+          "day must be 1-" + max + " for " + year + "-" + month + ", got: " + dayOfMonth);
+    return ofJanuary1stInYear(year).plusMonths(month - 1).plusDays(dayOfMonth - 1);
   }
 
   /** @return January 1st of the given year */
@@ -220,9 +224,9 @@ public record Epoch2kDay(@TimeOffset int daysSince2k) implements Comparable<Epoc
     31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31
   };
 
-  private static int daysInMonth(int year, int month) {
-    int days = NON_LEAP_MONTH_LENGTHS[month];
-    if (month == 1 && isLeapYear(year)) days++;
+  static int daysInMonth(@TimeOffset int year, @TimeOffset int month0) {
+    int days = NON_LEAP_MONTH_LENGTHS[month0];
+    if (month0 == 1 && isLeapYear(year)) days++;
     return days;
   }
 

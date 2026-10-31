@@ -395,6 +395,29 @@ class TestEpoch2kDay {
     assertDayEquals("2024-03-31", i.last());
   }
 
+  @Test
+  void ofYMDRejectsAllInvalidMonthDayCombinations() {
+    assertThrows(IllegalArgumentException.class, () -> Epoch2kDay.ofYMD(2024, 0, 1));
+    assertThrows(IllegalArgumentException.class, () -> Epoch2kDay.ofYMD(2024, 13, 1));
+    assertThrows(IllegalArgumentException.class, () -> Epoch2kDay.ofYMD(2024, 4, 31));
+    assertThrows(IllegalArgumentException.class, () -> Epoch2kDay.ofYMD(2023, 2, 29));
+    assertThrows(IllegalArgumentException.class, () -> Epoch2kDay.ofYMD(2024, 6, 0));
+    assertThrows(IllegalArgumentException.class, () -> Epoch2kDay.ofYMD(2024, 6, 31));
+  }
+
+  @Test
+  void ofYMDAcceptsAllValidMonthDayCombinations() {
+    // Every month's boundary days must be accepted.
+    for (int m = 1; m <= 12; m++) {
+      Epoch2kDay.ofYMD(2024, m, 1);                    // 1st always valid
+      Epoch2kDay.ofYMD(2024, m, Epoch2kDay.daysInMonth(2024, m - 1)); // last always valid
+    }
+    // Leap day specifically.
+    Epoch2kDay.ofYMD(2024, 2, 29);
+    // Year-end / year-start boundary.
+    Epoch2kDay.ofYMD(2024, 12, 31);
+  }
+
   // ── Helper ──────────────────────────────────────────────────────────
 
   private static void assertDayEquals(String expected, Epoch2kDay actual) {
