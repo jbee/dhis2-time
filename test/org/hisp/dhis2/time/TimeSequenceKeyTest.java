@@ -117,8 +117,7 @@ class TimeSequenceKeyTest {
 
   @Test
   void familyStripsOffset() {
-    assertEquals(new TimeFamilyKey('G', 'W'),
-        TimeSequenceKey.weekly('G', Monday).family());
+    assertEquals(new TimeFamilyKey('G', 'W'), TimeSequenceKey.weekly('G', Monday).family());
   }
 
   @Test

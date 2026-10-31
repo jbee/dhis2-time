@@ -1,9 +1,9 @@
 package org.hisp.dhis2.time;
 
-import org.junit.jupiter.api.Test;
-
 import static java.lang.Integer.parseInt;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+
+import org.junit.jupiter.api.Test;
 
 class TestEpoch2kDay {
 

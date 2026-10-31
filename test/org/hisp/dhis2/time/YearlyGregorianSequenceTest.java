@@ -10,47 +10,47 @@ class YearlyGregorianSequenceTest {
 
   @Test
   void calendarYearIsFullYear() {
-    assertInterval(Yearly.interval(day(2024, 6, 15)), 2024, 1, 1, 2024, 12, 31);
+    assertInterval(Yearly.interval(Epoch2kDay.of(2024, 6, 15)), 2024, 1, 1, 2024, 12, 31);
   }
 
   @Test
   void leapYearHas366Days() {
-    assertEquals(366, Yearly.interval(day(2024, 1, 1)).lengthInDays());
+    assertEquals(366, Yearly.interval(Epoch2kDay.of(2024, 1, 1)).lengthInDays());
   }
 
   @Test
   void nonLeapYearHas365Days() {
-    assertEquals(365, Yearly.interval(day(2023, 1, 1)).lengthInDays());
+    assertEquals(365, Yearly.interval(Epoch2kDay.of(2023, 1, 1)).lengthInDays());
   }
 
   @Test
   void julyAnchoredYearStartsJulyFirst() {
     var y = yearly(Epoch2kDay.MonthOfYear.July);
-    assertInterval(y.interval(day(2024, 8, 15)), 2024, 7, 1, 2025, 6, 30);
+    assertInterval(y.interval(Epoch2kDay.of(2024, 8, 15)), 2024, 7, 1, 2025, 6, 30);
   }
 
   @Test
   void julyAnchoredYearForJanuaryBelongsToPriorCycle() {
     var y = yearly(Epoch2kDay.MonthOfYear.July);
-    assertInterval(y.interval(day(2024, 1, 15)), 2023, 7, 1, 2024, 6, 30);
+    assertInterval(y.interval(Epoch2kDay.of(2024, 1, 15)), 2023, 7, 1, 2024, 6, 30);
   }
 
   @Test
   void nextIsFollowingYear() {
-    assertInterval(Yearly.next(Yearly.interval(day(2024, 6, 15))),
-        2025, 1, 1, 2025, 12, 31);
+    assertInterval(
+        Yearly.next(Yearly.interval(Epoch2kDay.of(2024, 6, 15))), 2025, 1, 1, 2025, 12, 31);
   }
 
   @Test
   void nextAndPreviousAreInverses() {
-    var i = Yearly.interval(day(2024, 6, 15));
+    var i = Yearly.interval(Epoch2kDay.of(2024, 6, 15));
     assertEquals(i, Yearly.previous(Yearly.next(i)));
     assertEquals(i, Yearly.next(Yearly.previous(i)));
   }
 
   @Test
   void partitionReflexive() {
-    var year = Yearly.interval(day(2024, 6, 15));
+    var year = Yearly.interval(Epoch2kDay.of(2024, 6, 15));
     var parts = Yearly.partition(year);
     assertEquals(1, parts.size());
     assertEquals(year, parts.get(0));
@@ -58,11 +58,11 @@ class YearlyGregorianSequenceTest {
 
   @Test
   void partitionTwoYearRangeIntoTwo() {
-    var twoYears = interval(2024, 1, 1, 2025, 12, 31);
+    var twoYears = Epoch2kInterval.ofYearRange(2024, 2025);
     var parts = Yearly.partition(twoYears);
     assertEquals(2, parts.size());
-    assertEquals(day(2024, 1, 1), parts.get(0).first());
-    assertEquals(day(2025, 12, 31), parts.get(1).last());
+    assertEquals(Epoch2kDay.of(2024, 1, 1), parts.get(0).first());
+    assertEquals(Epoch2kDay.of(2025, 12, 31), parts.get(1).last());
   }
 
   @Test

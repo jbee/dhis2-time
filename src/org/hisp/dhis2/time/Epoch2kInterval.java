@@ -8,6 +8,31 @@ package org.hisp.dhis2.time;
  */
 public record Epoch2kInterval(Epoch2kDay first, Epoch2kDay last) {
 
+  /**
+   * The calendar year {@code [year-01-01, year-12-31]} — the whole of the given
+   * Gregorian year, regardless of any sequence's fiscal start.
+   */
+  public static Epoch2kInterval ofYear(int year) {
+    return new Epoch2kInterval(
+        Epoch2kDay.ofJanuary1stIn(year),
+        Epoch2kDay.ofJanuary1stIn(year + 1).minusDays(1));
+  }
+
+  /**
+   * The calendar-year span {@code [year1-01-01, year2-12-31]} — from the start of
+   * {@code year1} to the end of {@code year2}, inclusive.
+   *
+   * @throws IllegalArgumentException if {@code year2 < year1}
+   */
+  public static Epoch2kInterval ofYearRange(int year1, int year2) {
+    if (year2 < year1)
+      throw new IllegalArgumentException(
+          "year2 (" + year2 + ") must not be before year1 (" + year1 + ")");
+    return new Epoch2kInterval(
+        Epoch2kDay.ofJanuary1stIn(year1),
+        Epoch2kDay.ofJanuary1stIn(year2 + 1).minusDays(1));
+  }
+
   Epoch2kInterval(Epoch2kDay day) {
     this(day, day);
   }

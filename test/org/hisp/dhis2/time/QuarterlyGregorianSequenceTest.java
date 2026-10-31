@@ -11,59 +11,59 @@ class QuarterlyGregorianSequenceTest {
 
   @Test
   void calendarQuarterQ1() {
-    assertInterval(Quarterly.interval(day(2024, 2, 15)), 2024, 1, 1, 2024, 3, 31);
+    assertInterval(Quarterly.interval(Epoch2kDay.of(2024, 2, 15)), 2024, 1, 1, 2024, 3, 31);
   }
 
   @Test
   void calendarQuarterQ2() {
-    assertInterval(Quarterly.interval(day(2024, 5, 15)), 2024, 4, 1, 2024, 6, 30);
+    assertInterval(Quarterly.interval(Epoch2kDay.of(2024, 5, 15)), 2024, 4, 1, 2024, 6, 30);
   }
 
   @Test
   void calendarQuarterQ3() {
-    assertInterval(Quarterly.interval(day(2024, 8, 15)), 2024, 7, 1, 2024, 9, 30);
+    assertInterval(Quarterly.interval(Epoch2kDay.of(2024, 8, 15)), 2024, 7, 1, 2024, 9, 30);
   }
 
   @Test
   void calendarQuarterQ4() {
-    assertInterval(Quarterly.interval(day(2024, 11, 15)), 2024, 10, 1, 2024, 12, 31);
+    assertInterval(Quarterly.interval(Epoch2kDay.of(2024, 11, 15)), 2024, 10, 1, 2024, 12, 31);
   }
 
   @Test
   void julyAnchoredQuarterContainsAugust() {
     var q = quarterly(Epoch2kDay.MonthOfYear.July);
-    assertInterval(q.interval(day(2024, 8, 15)), 2024, 7, 1, 2024, 9, 30);
+    assertInterval(q.interval(Epoch2kDay.of(2024, 8, 15)), 2024, 7, 1, 2024, 9, 30);
   }
 
   @Test
   void julyAnchoredQuarterForJanuaryBelongsToPreviousJulyStart() {
     var q = quarterly(Epoch2kDay.MonthOfYear.July);
     // Jan 2024 falls in Q3 of the fiscal year that started Jul 2023.
-    assertInterval(q.interval(day(2024, 1, 15)), 2024, 1, 1, 2024, 3, 31);
+    assertInterval(q.interval(Epoch2kDay.of(2024, 1, 15)), 2024, 1, 1, 2024, 3, 31);
   }
 
   @Test
   void julyAnchoredQuarterForJuneClosesPriorCycle() {
     var q = quarterly(Epoch2kDay.MonthOfYear.July);
-    assertInterval(q.interval(day(2024, 6, 15)), 2024, 4, 1, 2024, 6, 30);
+    assertInterval(q.interval(Epoch2kDay.of(2024, 6, 15)), 2024, 4, 1, 2024, 6, 30);
   }
 
   @Test
   void nextFromQ4CrossesToQ1OfFollowingYear() {
-    assertInterval(Quarterly.next(Quarterly.interval(day(2024, 11, 15))),
-        2025, 1, 1, 2025, 3, 31);
+    assertInterval(
+        Quarterly.next(Quarterly.interval(Epoch2kDay.of(2024, 11, 15))), 2025, 1, 1, 2025, 3, 31);
   }
 
   @Test
   void nextAndPreviousAreInverses() {
-    var i = Quarterly.interval(day(2024, 5, 15));
+    var i = Quarterly.interval(Epoch2kDay.of(2024, 5, 15));
     assertEquals(i, Quarterly.previous(Quarterly.next(i)));
     assertEquals(i, Quarterly.next(Quarterly.previous(i)));
   }
 
   @Test
   void partitionYearIntoFourQuarters() {
-    var y = interval(2024, 1, 1, 2024, 12, 31);
+    var y = Epoch2kInterval.ofYear(2024);
     var parts = Quarterly.partition(y);
     assertEquals(4, parts.size());
     assertInterval(parts.get(0), 2024, 1, 1, 2024, 3, 31);
@@ -94,10 +94,13 @@ class QuarterlyGregorianSequenceTest {
 
   @Test
   void compactConstructorRejectsKeyAndRecordMonthMismatch() {
-    assertThrows(IllegalArgumentException.class,
-        () -> new GregorianSequences.QuarterlyGregorianSequence(
-            TimeSequenceKey.quarterly('G', Epoch2kDay.MonthOfYear.July),
-            Epoch2kDay.MonthOfYear.April,
-            Set.of(Year), Set.of(Year)));
+    assertThrows(
+        IllegalArgumentException.class,
+        () ->
+            new GregorianSequences.QuarterlyGregorianSequence(
+                TimeSequenceKey.quarterly('G', Epoch2kDay.MonthOfYear.July),
+                Epoch2kDay.MonthOfYear.April,
+                Set.of(Year),
+                Set.of(Year)));
   }
 }
