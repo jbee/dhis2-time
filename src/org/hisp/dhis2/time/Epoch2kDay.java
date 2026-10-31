@@ -6,7 +6,7 @@ import java.util.function.LongSupplier;
 
 public record Epoch2kDay(@ZeroBased int daysSince2k) implements Comparable<Epoch2kDay> {
 
-  private static final long MILLIS_UTC_T0_UNTIL_2K_MIDNIGHT = 946_684_800_000L;
+  private static final long MILLIS_UTC_0_UNTIL_2K_MIDNIGHT = 946_684_800_000L;
   private static final long MILLIS_IN_A_DAY = 86_400_000L;
 
   public static Epoch2kDay today() {
@@ -14,7 +14,7 @@ public record Epoch2kDay(@ZeroBased int daysSince2k) implements Comparable<Epoch
   }
 
   public static Epoch2kDay today(LongSupplier nowUTC) {
-    long millisSince2k = nowUTC.getAsLong() - MILLIS_UTC_T0_UNTIL_2K_MIDNIGHT;
+    long millisSince2k = nowUTC.getAsLong() - MILLIS_UTC_0_UNTIL_2K_MIDNIGHT;
     int daysSince2k = (int) (millisSince2k / MILLIS_IN_A_DAY);
     return new Epoch2kDay(daysSince2k);
   }
@@ -35,13 +35,33 @@ public record Epoch2kDay(@ZeroBased int daysSince2k) implements Comparable<Epoch
   }
 
   /**
-   * Start of the first week of the given year, where the week containing January 4th
-   * is the first week (ISO-style generalised to any {@code day1}).
+   * Start of the first week of the given year.
+   *
+   * <p>A week belongs to the year containing the majority of its days. A 7-day
+   * week can straddle at most one year boundary and cannot split evenly, so
+   * every week has a unique owning year. Week 1 of year Y is therefore the
+   * earliest week whose majority of days lies in Y.
+   *
+   * <p>Equivalently for any {@code day1}: week 1 is the earliest week whose
+   * 4th day — the day 3 days after {@code day1} — falls in Y. For a Monday-start
+   * week this is the week containing January 4th, which is the phrasing usually
+   * encountered in ISO 8601; the majority rule is the underlying reason, and
+   * it is what generalises to {@code day1} choices other than Monday.
+   *
+   * @param year the year whose first week's start is returned
+   * @param day1 the day on which each week starts (Monday for ISO weeks)
+   * @return the first {@code day1} of week 1 of {@code year}
    */
   public static Epoch2kDay ofWeek1InYear(int year, DayOfWeek day1) {
     return ofJanuary1stInYear(year).plusDays(3).previousOrSame(day1);
   }
 
+  /**
+   * Days of the week in ISO order: {@link #Monday} has ordinal 0, {@link #Sunday}
+   * has ordinal 6. Used both as a label and — via
+   * {@link Epoch2kDay#dayOfWeekOffset(DayOfWeek)} and the week factories in
+   * {@link GregorianSequences} — as the base for day-offset arithmetic.
+   */
   @ZeroBased
   public enum DayOfWeek {
     // In ISO order with Monday being the ISO start of the week
@@ -115,11 +135,11 @@ public record Epoch2kDay(@ZeroBased int daysSince2k) implements Comparable<Epoch
   }
 
   public long toUTCMillis() {
-    return MILLIS_UTC_T0_UNTIL_2K_MIDNIGHT + daysSince2k * MILLIS_IN_A_DAY;
+    return MILLIS_UTC_0_UNTIL_2K_MIDNIGHT + daysSince2k * MILLIS_IN_A_DAY;
   }
 
   public Epoch2kDay plusDays(int n) {
-    return new Epoch2kDay(daysSince2k + n);
+    return n == 0 ? this : new Epoch2kDay(daysSince2k + n);
   }
 
   public Epoch2kDay minusDays(int n) {

@@ -53,6 +53,12 @@ public final class GregorianSequences {
         Set.of(Week, BiWeek, Month, Quarter, Year));
   }
 
+  /**
+   * Weekly intervals starting on {@code day1}.
+   *
+   * @param day1 the first day of each week; {@link Epoch2kDay.DayOfWeek#Monday}
+   *     gives ISO 8601 weeks
+   */
   public static TimeSequence weekly(Epoch2kDay.DayOfWeek day1) {
     return new WeeklyGregorianSequence(
         TimeSequenceKey.weekly('G', day1),
@@ -61,6 +67,16 @@ public final class GregorianSequences {
         Set.of(BiWeek, Month, Quarter, Year));
   }
 
+  /**
+   * Bi-weekly intervals starting on {@code day1}.
+   *
+   * <p>Weeks are grouped two at a time within the week-year. The week-year is
+   * resolved by majority of days (see {@link Epoch2kDay#ofWeek1InYear}); for
+   * Monday-start weeks this is ISO 8601 week-year numbering. In a 53-week year
+   * the 27th bi-week is a single week.
+   *
+   * @param day1 the first day of each week
+   */
   public static TimeSequence biWeekly(Epoch2kDay.DayOfWeek day1) {
     return new BiWeeklyGregorianSequence(
         TimeSequenceKey.biWeekly('G', day1),
@@ -174,7 +190,9 @@ public final class GregorianSequences {
       Epoch2kInterval week = day.containingWeek(day1);
       Epoch2kDay weekStart = week.firstDay();
 
-      // ISO-style week-year: week 1 of Y contains Jan 4 of Y.
+      // Week-year by majority of days: a week belongs to the year containing more
+      // than half its days. For Monday-start weeks this reduces to "the week
+      // containing Jan 4". ofWeek1InYear implements the general form.
       int year = weekStart.year();
       Epoch2kDay week1 = Epoch2kDay.ofWeek1InYear(year, day1);
       if (weekStart.before(week1)) {
