@@ -1,9 +1,9 @@
 package org.hisp.dhis2.time;
 
-import org.junit.jupiter.api.Test;
-
 import static org.hisp.dhis2.time.Epoch2kDay.ofYMD;
 import static org.junit.jupiter.api.Assertions.*;
+
+import org.junit.jupiter.api.Test;
 
 class TestEpoch2kInterval {
 

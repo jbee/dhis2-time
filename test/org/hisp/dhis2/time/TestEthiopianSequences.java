@@ -1,7 +1,7 @@
 package org.hisp.dhis2.time;
 
-import static org.hisp.dhis2.time.EthiopianSequences.*;
 import static org.hisp.dhis2.time.EthiopianCalendar.toEpochDayInEC;
+import static org.hisp.dhis2.time.EthiopianSequences.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 import java.util.Set;

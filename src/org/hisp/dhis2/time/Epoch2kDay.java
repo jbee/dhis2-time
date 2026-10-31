@@ -1,8 +1,8 @@
 package org.hisp.dhis2.time;
 
-import java.util.function.LongSupplier;
-
 import static java.lang.Math.abs;
+
+import java.util.function.LongSupplier;
 
 @TimeOffset
 public record Epoch2kDay(@TimeOffset int daysSince2k) implements Comparable<Epoch2kDay> {

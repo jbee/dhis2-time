@@ -1,7 +1,5 @@
 package org.hisp.dhis2.time;
 
-import org.junit.jupiter.api.Test;
-
 import static java.lang.Integer.parseInt;
 import static org.hisp.dhis2.time.Epoch2kDay.DayOfWeek.*;
 import static org.hisp.dhis2.time.Epoch2kDay.MonthOfYear.*;
@@ -9,6 +7,8 @@ import static org.hisp.dhis2.time.Epoch2kDay.ofJanuary1stInYear;
 import static org.hisp.dhis2.time.Epoch2kDay.ofWeek1InYear;
 import static org.hisp.dhis2.time.Epoch2kDay.ofYMD;
 import static org.junit.jupiter.api.Assertions.*;
+
+import org.junit.jupiter.api.Test;
 
 class TestEpoch2kDay {
 

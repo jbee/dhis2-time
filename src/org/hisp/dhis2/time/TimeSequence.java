@@ -1,11 +1,11 @@
 package org.hisp.dhis2.time;
 
+import static java.util.Objects.requireNonNull;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.function.LongSupplier;
-
-import static java.util.Objects.requireNonNull;
 
 /**
  * A named way of slicing the timeline into intervals.
