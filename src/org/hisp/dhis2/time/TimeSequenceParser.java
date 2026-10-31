@@ -1,7 +1,9 @@
 package org.hisp.dhis2.time;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 
@@ -72,6 +74,12 @@ public final class TimeSequenceParser {
     return new TimeSequenceInput(key, new Epoch2kInterval(first, first.plusDays(length - 1)));
   }
 
+  /**
+   * The :n form resolves to the n-th interval of the sequence that overlaps the anchor's calendar
+   * period. The period is determined by the anchor's precision: a YYYY anchor denotes the whole
+   * year, YYYY-MM the month, YYYY-MM-DD the single day. If fewer than n intervals overlap the
+   * period, the input is rejected.
+   */
   private TimeSequenceInput parseWalk(
       TimeSequenceKey key, String datePart, String nPart, String whole) {
     TimeSequence sequence = registry.get(key);
@@ -79,18 +87,68 @@ public final class TimeSequenceParser {
       throw new IllegalArgumentException(
           "no sequence registered for key " + key + " (in: " + whole + ")");
 
-    Epoch2kDay anchor = parseDate(datePart, whole);
+    Epoch2kInterval period = parsePeriod(datePart, whole);
     int position = parsePositive(nPart, "position", whole);
 
+    List<Epoch2kInterval> overlapping = overlapping(sequence, period);
+    if (position > overlapping.size())
+      throw new IllegalArgumentException(
+          "position " + position + " exceeds the " + overlapping.size()
+              + " interval(s) of " + key + " overlapping " + period
+              + " (in: " + whole + ")");
+
+    return new TimeSequenceInput(key, overlapping.get(position - 1));
+  }
+
+  /**
+   * Parses the anchor as a period at the precision given: {@code YYYY} → year,
+   * {@code YYYY-MM} → month, {@code YYYY-MM-DD} → single day. Missing components
+   * expand to {@code 1} (January, first of month).
+   */
+  private static Epoch2kInterval parsePeriod(String s, String whole) {
+    String[] parts = s.split("-", -1);
+    if (parts.length < 1 || parts.length > 3)
+      throw new IllegalArgumentException("bad date '" + s + "' in: " + whole);
+
+    int year = parseYear(parts[0], whole);
+    if (parts.length == 1) {
+      var first = Epoch2kDay.ofYMD(year, 1, 1);
+      return new Epoch2kInterval(first, first.plusYears(1).minusDays(1));
+    }
+    int month = parseNumeric(parts[1], "month", whole);
+    var first = Epoch2kDay.ofYMD(year, month, 1);
+    if (parts.length == 2)
+      return new Epoch2kInterval(first, first.plusMonths(1).minusDays(1));
+    int day = parseNumeric(parts[2], "day", whole);
+    return new Epoch2kInterval(Epoch2kDay.ofYMD(year, month, day));
+  }
+
+  /**
+   * Enumerates the intervals of {@code sequence} that overlap {@code period},
+   * in sequence order. Starts from {@link TimeSequence#intervalOrAfter} so gap
+   * anchors resolve forward rather than throwing, and continues via
+   * {@link TimeSequence#next} while the result remains at or before
+   * {@code period.last()}.
+   */
+  private static List<Epoch2kInterval> overlapping(
+      TimeSequence sequence, Epoch2kInterval period) {
     Epoch2kInterval current;
     try {
-      current = sequence.interval(anchor);
-      for (int i = 1; i < position; i++) current = sequence.next(current);
-    } catch (IllegalArgumentException | NoSuchElementException e) {
-      throw new IllegalArgumentException(
-          "cannot resolve " + whole + " against " + key + ": " + e.getMessage(), e);
+      current = sequence.intervalOrAfter(period.first());
+    } catch (IllegalArgumentException e) {
+      return List.of();
     }
-    return new TimeSequenceInput(key, current);
+
+    List<Epoch2kInterval> result = new ArrayList<>();
+    while (current.first().notAfter(period.last())) {
+      result.add(current);   // guaranteed to overlap — see invariant below
+      try {
+        current = sequence.next(current);
+      } catch (RuntimeException e) {
+        break;
+      }
+    }
+    return List.copyOf(result);
   }
 
   private static Epoch2kDay parseDate(String s, String whole) {

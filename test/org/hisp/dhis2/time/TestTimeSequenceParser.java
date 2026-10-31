@@ -79,10 +79,9 @@ class TestTimeSequenceParser {
   }
 
   @Test
-  void walkPastBlockEndContinuesLinearly() {
-    // :5 from Q1 2022 lands on Q1 2023 (quarter 5 in linear terms).
-    var p = PARSER.parse("GQ/2022:5");
-    assertEquals(new Epoch2kInterval(ofYMD(2023, 1, 1), ofYMD(2023, 3, 31)), p.interval());
+  void walkPastAnchorYearThrows() {
+    // 2022 has 4 quarters; :5 has no candidate within the anchor period.
+    assertThrows(IllegalArgumentException.class, () -> PARSER.parse("GQ/2022:5"));
   }
 
   @Test
@@ -96,10 +95,15 @@ class TestTimeSequenceParser {
   }
 
   @Test
-  void walkWithMonthShortFormAnchor() {
-    // GM/2022-03 anchors at Mar 1; :2 walks once -> April
-    var p = PARSER.parse("GM/2022-03:2");
-    assertEquals(new Epoch2kInterval(ofYMD(2022, 4, 1), ofYMD(2022, 4, 30)), p.interval());
+  void monthAnchorResolvesToThatMonth() {
+    var p = PARSER.parse("GM/2022-03:1");
+    assertEquals(new Epoch2kInterval(ofYMD(2022, 3, 1), ofYMD(2022, 3, 31)), p.interval());
+  }
+
+  @Test
+  void monthAnchorPastFirstPositionThrows() {
+    // A single month overlaps exactly one monthly interval; :2 has no candidate.
+    assertThrows(IllegalArgumentException.class, () -> PARSER.parse("GM/2022-03:2"));
   }
 
   @Test
@@ -175,18 +179,6 @@ class TestTimeSequenceParser {
   }
 
   @Test
-  void canonicalFormReParsesToSameInterval() {
-    for (String s : List.of(
-        "GQ/2022:1", "GQ/2022:3", "GM/2022-03:2", "GY/2022:2",
-        "GQ/2022-04-01+91", "GY/2022+365")) {
-      var first = PARSER.parse(s);
-      var second = PARSER.parse(first.toString());
-      assertEquals(first.interval(), second.interval(),
-          () -> "round-trip failed for: " + s);
-    }
-  }
-
-  @Test
   void customSequenceCollidingWithCalendarKeyRejectedAtRegistryConstruction() {
     var gregorianYear = GregorianSequences.Yearly;   // key "GY/"
     var fakeCustom = CustomSequences.of(
@@ -195,5 +187,50 @@ class TestTimeSequenceParser {
 
     assertThrows(IllegalArgumentException.class,
         () -> new TimeSequenceParser(List.of(gregorianYear, fakeCustom)));
+  }
+
+  @Test
+  void quarterlyFromYearAnchorResolvesWithinYear() {
+    assertEquals(new Epoch2kInterval(ofYMD(2024, 1, 1), ofYMD(2024, 3, 31)),
+        PARSER.parse("GQ/2024:1").interval());
+    assertEquals(new Epoch2kInterval(ofYMD(2024, 4, 1), ofYMD(2024, 6, 30)),
+        PARSER.parse("GQ/2024:2").interval());
+    assertEquals(new Epoch2kInterval(ofYMD(2024, 7, 1), ofYMD(2024, 9, 30)),
+        PARSER.parse("GQ/2024:3").interval());
+    assertEquals(new Epoch2kInterval(ofYMD(2024, 10, 1), ofYMD(2024, 12, 31)),
+        PARSER.parse("GQ/2024:4").interval());
+    assertThrows(IllegalArgumentException.class, () -> PARSER.parse("GQ/2024:5"));
+  }
+
+  @Test
+  void monthlyFromYearAnchorReachesDecemberAndNoFurther() {
+    assertEquals(new Epoch2kInterval(ofYMD(2024, 12, 1), ofYMD(2024, 12, 31)),
+        PARSER.parse("GM/2024:12").interval());
+    assertThrows(IllegalArgumentException.class, () -> PARSER.parse("GM/2024:13"));
+  }
+
+  @Test
+  void quarterlyFromYearAnchorPastEndThrows() {
+    assertThrows(IllegalArgumentException.class, () -> PARSER.parse("GQ/2022:5"));
+  }
+
+  @Test
+  void monthlyFromMonthAnchorAllowsOnlyOne() {
+    assertEquals(new Epoch2kInterval(ofYMD(2022, 3, 1), ofYMD(2022, 3, 31)),
+        PARSER.parse("GM/2022-03:1").interval());
+    assertThrows(IllegalArgumentException.class, () -> PARSER.parse("GM/2022-03:2"));
+  }
+
+  @Test
+  void canonicalFormReParsesToSameInterval() {
+    for (String s : List.of(
+        "GQ/2022:1", "GQ/2022:3",
+        "GM/2022-03:1", "GY/2022:1",
+        "GQ/2022-04-01+91", "GY/2022+365")) {
+      var first = PARSER.parse(s);
+      var second = PARSER.parse(first.toString());
+      assertEquals(first.interval(), second.interval(),
+          () -> "round-trip failed for: " + s);
+    }
   }
 }

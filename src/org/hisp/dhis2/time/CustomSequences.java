@@ -84,6 +84,20 @@ public final class CustomSequences {
           "day " + day + " is not covered by any interval in custom sequence " + key);
     }
 
+    @Override
+    public Epoch2kInterval intervalOrAfter(Epoch2kDay day) {
+      int lo = 0, hi = intervals.size() - 1, result = -1;
+      while (lo <= hi) {
+        int mid = (lo + hi) >>> 1;
+        if (intervals.get(mid).last().notBefore(day)) { result = mid; hi = mid - 1; }
+        else { lo = mid + 1; }
+      }
+      if (result < 0)
+        throw new IllegalArgumentException(
+            "no interval in " + key + " ends at or after " + day);
+      return intervals.get(result);
+    }
+
     /** Non-throwing variant of {@link #interval}: empty when the day falls in a gap. */
     public Optional<Epoch2kInterval> intervalOrEmpty(Epoch2kDay day) {
       int lo = 0, hi = intervals.size() - 1;

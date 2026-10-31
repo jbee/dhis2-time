@@ -157,6 +157,19 @@ public interface TimeSequence {
   Epoch2kInterval interval(Epoch2kDay day);
 
   /**
+   * The first interval of this sequence whose last day is on or after {@code day}.
+   *
+   * <p>For sequences without gaps this is identical to {@link #interval(Epoch2kDay)}.
+   * Sequences with gaps (custom sequences) override this to walk forward to the next
+   * interval, so a day in a gap resolves to the following interval rather than throwing.
+   *
+   * @throws IllegalArgumentException if no interval of this sequence ends at or after {@code day}
+   */
+  default Epoch2kInterval intervalOrAfter(Epoch2kDay day) {
+    return interval(day);
+  }
+
+  /**
    * The interval of this sequence containing today, in UTC.
    *
    * @param nowUTC current time in milliseconds since 1970-01-01T00:00Z, as given
