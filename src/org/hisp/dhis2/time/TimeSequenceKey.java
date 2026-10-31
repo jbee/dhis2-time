@@ -26,6 +26,14 @@ public record TimeSequenceKey(char system, char interval, char offset) {
     return new TimeSequenceKey(system, 'Y', monthChar(month1));
   }
 
+  public static TimeSequenceKey sixMonthly(char system, Epoch2kDay.MonthOfYear month1) {
+    return new TimeSequenceKey(system, 'S', monthChar(month1));
+  }
+
+  public static TimeSequenceKey biMonthly(char system, Epoch2kDay.MonthOfYear month1) {
+    return new TimeSequenceKey(system, 'T', monthChar(month1));
+  }
+
   // ── Constructors ─────────────────────────────────────────────────────
 
   public TimeSequenceKey(char system, char interval) {
@@ -73,7 +81,8 @@ public record TimeSequenceKey(char system, char interval, char offset) {
   }
 
   public Epoch2kDay.MonthOfYear month1() {
-    if (interval != 'M' && interval != 'Q' && interval != 'Y')
+    if (interval != 'M' && interval != 'Q' && interval != 'Y'
+        && interval != 'S' && interval != 'T')
       throw new IllegalStateException(interval + " has no month offset");
     return monthFromChar(offset);
   }

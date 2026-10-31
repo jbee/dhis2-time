@@ -100,7 +100,7 @@ class WeeklyGregorianSequenceTest {
 
   @Test
   void aggregatesToContainsBiWeekMonthQuarterYear() {
-    assertEquals(Set.of(BiWeek, Month, Quarter, Year), Weekly.contributesTo());
+    assertEquals(Set.of(BiWeek, Month, BiMonth, Quarter, SixMonth, Year), Weekly.contributesTo());
   }
 
   @Test

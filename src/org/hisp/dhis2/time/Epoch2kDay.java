@@ -310,11 +310,35 @@ public record Epoch2kDay(@ZeroBased int daysSince2k) implements Comparable<Epoch
   }
 
   public Epoch2kInterval containingQuarter(MonthOfYear month1) {
+    return containingNMonthPeriod(month1, 3);
+  }
+
+  public Epoch2kInterval containingSixMonth(MonthOfYear month1) {
+    return containingNMonthPeriod(month1, 6);
+  }
+
+  public Epoch2kInterval containingBiMonth(MonthOfYear month1) {
+    return containingNMonthPeriod(month1, 2);
+  }
+
+  /**
+   * The interval of the cycle starting in {@code month1} that contains this day,
+   * where each interval is {@code periodLengthInMonths} calendar months long.
+   * Requires {@code periodLengthInMonths} to divide 12 evenly.
+   */
+  private Epoch2kInterval containingNMonthPeriod(MonthOfYear month1, int periodLengthInMonths) {
+    if (periodLengthInMonths <= 0 || 12 % periodLengthInMonths != 0)
+      throw new IllegalArgumentException(
+          "periodLengthInMonths must be a positive divisor of 12, got: " + periodLengthInMonths);
     Epoch2kDay yearDay1 = yearCycleStart(month1);
     int monthsSinceYearStart = Math.floorMod(monthOffset() - month1.ordinal(), 12);
-    Epoch2kDay quarterDay1 = yearDay1.plusMonths((monthsSinceYearStart / 3) * 3);
-    return new Epoch2kInterval(quarterDay1, quarterDay1.plusMonths(3).minusDays(1));
+    Epoch2kDay periodDay1 = yearDay1.plusMonths(
+        (monthsSinceYearStart / periodLengthInMonths) * periodLengthInMonths);
+    return new Epoch2kInterval(
+        periodDay1, periodDay1.plusMonths(periodLengthInMonths).minusDays(1));
   }
+
+
 
   /**
    * @param n number of months; negative moves backwards, day-of-month clamped to target month length
