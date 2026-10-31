@@ -21,7 +21,7 @@ import java.util.Map;
  * writing {@code :1}. For {@code GD/2024-03-15} this yields the single day
  * 2024-03-15 (GD's intervals are one day); for {@code GQ/2024-01-01} it yields
  * Q1 2024; for {@code ST/2024} it yields Spring 2024 (the first term
- * overlapping 2024, resolved via {@link TimeSequence#intervalOrAfter}).
+ * overlapping 2024, resolved via {@link TimeSequence#intervalOrNext}).
  *
  * <p>The date is always Gregorian — it is what allows a valid
  * {@link Epoch2kInterval} to be computed without knowing which calendar the
@@ -224,7 +224,7 @@ public final class TimeSequenceParser {
       TimeSequence sequence, Epoch2kInterval period) {
     Epoch2kInterval current;
     try {
-      current = sequence.intervalOrAfter(period.first());
+      current = sequence.intervalOrNext(period.first());
     } catch (IllegalArgumentException e) {
       return List.of();
     }

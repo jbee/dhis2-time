@@ -59,14 +59,6 @@ class TestCustomSequences {
         () -> TERMS.interval(ofYMD(2025, 1, 1)));
   }
 
-  @Test
-  void intervalOrEmptyReturnsEmptyInGap() {
-    assertTrue(((CustomSequences.CustomSequence) TERMS)
-        .intervalOrEmpty(ofYMD(2024, 7, 1)).isEmpty());
-    assertEquals(SPRING, ((CustomSequences.CustomSequence) TERMS)
-        .intervalOrEmpty(ofYMD(2024, 3, 15)).orElseThrow());
-  }
-
   // ── next / previous ────────────────────────────────────────────────
 
   @Test

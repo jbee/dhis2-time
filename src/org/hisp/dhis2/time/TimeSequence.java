@@ -140,10 +140,6 @@ public interface TimeSequence {
    * any day maps to exactly one interval, and {@code interval(d).contains(d)}
    * holds.
    *
-   * <p>For custom sequences, this may throw {@link IllegalArgumentException} when
-   * {@code day} falls in a gap. Callers that want the "or nothing" variant should
-   * use {@link CustomSequences.CustomSequence#intervalOrEmpty(Epoch2kDay)}.
-   *
    * <p>This is the primitive from which every other operation derives:
    * {@link #next}, {@link #previous}, {@link #partition}, and
    * {@link #contributorsTo} are all defined in terms of it (custom sequences
@@ -165,7 +161,7 @@ public interface TimeSequence {
    *
    * @throws IllegalArgumentException if no interval of this sequence ends at or after {@code day}
    */
-  default Epoch2kInterval intervalOrAfter(Epoch2kDay day) {
+  default Epoch2kInterval intervalOrNext(Epoch2kDay day) {
     return interval(day);
   }
 
