@@ -15,10 +15,10 @@ import java.util.Set;
  * Plans an ordered set of {@link Aggregation} steps that transform values
  * from a source sequence into values in one or more target sequences.
  *
- * <p>An aggregation step's {@link AggregationType} reflects whether the source
+ * <p>An aggregation step's {@link AggregationExactness} reflects whether the source
  * contributes to the target by {@link TimeSequence#partitions() partition}
- * ({@link AggregationType#EXACT}) or by {@link TimeSequence#contributesTo()
- * majority attribution} ({@link AggregationType#APPROXIMATION}).
+ * ({@link AggregationExactness#EXACT}) or by {@link TimeSequence#contributesTo()
+ * majority attribution} ({@link AggregationExactness#APPROXIMATION}).
  *
  * <h2>Chaining through intermediates</h2>
  *
@@ -44,21 +44,6 @@ import java.util.Set;
  * are considered.
  */
 public final class AggregationResolver {
-
-  /** Whether a step preserves the value exactly, or approximates it. */
-  public enum AggregationType {
-    /** Sum of source intervals equals the target interval — no boundary loss. */
-    EXACT,
-    /** Source intervals are attributed to the target by majority; sums approximate. */
-    APPROXIMATION
-  }
-
-  /**
-   * One step in an aggregation plan: compute {@code target} from {@code source}.
-   * Both endpoints are concrete keys, so the caller can look up the sequences
-   * and execute the step.
-   */
-  public record Aggregation(TimeSequenceKey source, TimeSequenceKey target, AggregationType type) {}
 
   /**
    * Sample day used to measure each sequence's typical interval length for
@@ -175,8 +160,8 @@ public final class AggregationResolver {
       if (bestSource != null) {
         var type =
             byKey.get(bestSource).partitions().contains(target)
-                ? AggregationType.EXACT
-                : AggregationType.APPROXIMATION;
+                ? AggregationExactness.EXACT
+                : AggregationExactness.APPROXIMATION;
         edges.add(new Aggregation(bestSource, target, type));
         reached.add(target);
       } else {
@@ -250,7 +235,7 @@ public final class AggregationResolver {
           node,
           path,
           path.size(),
-          (int) path.stream().filter(a -> a.type() == AggregationType.APPROXIMATION).count());
+          (int) path.stream().filter(a -> a.exactness() == AggregationExactness.APPROXIMATION).count());
     }
   }
 
@@ -283,7 +268,7 @@ public final class AggregationResolver {
             new Reach(
                 target,
                 append(current.path(), new Aggregation(
-                    current.node(), target, AggregationType.EXACT))));
+                    current.node(), target, AggregationExactness.EXACT))));
       }
 
       if (allowApproximations) {
@@ -296,7 +281,7 @@ public final class AggregationResolver {
               new Reach(
                   target,
                   append(current.path(), new Aggregation(
-                      current.node(), target, AggregationType.APPROXIMATION))));
+                      current.node(), target, AggregationExactness.APPROXIMATION))));
         }
       }
     }

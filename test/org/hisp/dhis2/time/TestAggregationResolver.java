@@ -1,7 +1,7 @@
 package org.hisp.dhis2.time;
 
-import static org.hisp.dhis2.time.AggregationResolver.AggregationType.APPROXIMATION;
-import static org.hisp.dhis2.time.AggregationResolver.AggregationType.EXACT;
+import static org.hisp.dhis2.time.AggregationExactness.APPROXIMATION;
+import static org.hisp.dhis2.time.AggregationExactness.EXACT;
 import static org.hisp.dhis2.time.GregorianSequences.GF_;
 import static org.hisp.dhis2.time.GregorianSequences.GD_;
 import static org.hisp.dhis2.time.GregorianSequences.GM;
@@ -23,7 +23,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import org.hisp.dhis2.time.AggregationResolver.Aggregation;
+
 import org.hisp.dhis2.time.Epoch2kDay.MonthOfYear;
 import org.junit.jupiter.api.Test;
 
@@ -97,7 +97,7 @@ class TestAggregationResolver {
     var resolver = new AggregationResolver(GREGORIAN);
     var plan = resolver.resolveAuto(GW_.key(), Set.of(GY));
     var edge = plan.get(0);
-    assertEquals(APPROXIMATION, edge.type());
+    assertEquals(APPROXIMATION, edge.exactness());
     assertTrue(GW_.contributesTo().contains(edge.target()));
     assertFalse(GW_.partitions().contains(edge.target()));
   }
@@ -389,7 +389,7 @@ class TestAggregationResolver {
               .findFirst()
               .orElseThrow(() -> new AssertionError("unknown source " + edge.source()));
       var expected = sourceSeq.partitions().contains(edge.target()) ? EXACT : APPROXIMATION;
-      assertEquals(expected, edge.type(), () -> "edge " + edge);
+      assertEquals(expected, edge.exactness(), () -> "edge " + edge);
     }
   }
 
