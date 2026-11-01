@@ -8,6 +8,7 @@ import static org.hisp.dhis2.time.GregorianSequences.GM;
 import static org.hisp.dhis2.time.GregorianSequences.GM_;
 import static org.hisp.dhis2.time.GregorianSequences.GQ;
 import static org.hisp.dhis2.time.GregorianSequences.GQ_;
+import static org.hisp.dhis2.time.GregorianSequences.GS;
 import static org.hisp.dhis2.time.GregorianSequences.GS_;
 import static org.hisp.dhis2.time.GregorianSequences.GT;
 import static org.hisp.dhis2.time.GregorianSequences.GT_;
@@ -178,7 +179,7 @@ class TestAggregationResolver {
     // Quarterly and six-monthly both reachable from daily, but neither
     // partitions the other, so no chain forms.
     var resolver = new AggregationResolver(GREGORIAN);
-    var plan = resolver.resolveAuto(GD_.key(), Set.of(GregorianSequences.GS, GQ));
+    var plan = resolver.resolveAuto(GD_.key(), Set.of(GS, GQ));
 
     assertEquals(2, plan.size());
     assertEquals(
@@ -197,7 +198,7 @@ class TestAggregationResolver {
     //     source even though GQ has a shorter interval length. Exactness wins
     //     before coarseness.
     var resolver = new AggregationResolver(GREGORIAN);
-    var plan = resolver.resolveAuto(GD_.key(), Set.of(GM, GQ, GregorianSequences.GS));
+    var plan = resolver.resolveAuto(GD_.key(), Set.of(GM, GQ, GS));
 
     assertEquals(
         List.of(
@@ -205,6 +206,29 @@ class TestAggregationResolver {
             new Aggregation(GM_.key(), GQ_.key(), EXACT),
             new Aggregation(GM_.key(), GS_.key(), EXACT)),
         plan);
+  }
+
+  @Test
+  void addingMonthToIndependentTargetsCollapsesToChain() {
+    // Without GM: GD → GQ, GD → GS (two flat edges from source).
+    // With GM:    GD → GM → {GQ, GS} (one prefix, two consumers).
+    // The total edge count increases by one, but the raw-day reads drop from
+    // (365 + 365) to 365 (for GM) + 3 + 2 (for GQ, GS from GM's 12 intervals).
+    var resolver = new AggregationResolver(GREGORIAN);
+
+    var withoutMonth = resolver.resolveAuto(GD_.key(), Set.of(GQ, GS));
+    assertEquals(2, withoutMonth.size());
+    assertTrue(withoutMonth.stream().allMatch(e -> e.source().equals(GD_.key())));
+
+    var withMonth = resolver.resolveAuto(GD_.key(), Set.of(GM, GQ, GS));
+    assertEquals(3, withMonth.size());
+    assertEquals(new Aggregation(GD_.key(), GM_.key(), EXACT), withMonth.get(0));
+    assertEquals(
+        Set.of(GM_.key()),
+        withMonth.stream()
+            .skip(1)
+            .map(Aggregation::source)
+            .collect(java.util.stream.Collectors.toSet()));
   }
 
   // ── Degenerate cases ─────────────────────────────────────────────
