@@ -1,7 +1,11 @@
 package org.hisp.dhis2.time;
 
 import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.EnumSet;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Set;
 
 /**
@@ -109,24 +113,12 @@ public enum AggregationFunction {
     return dependsOn;
   }
 
-  /**
-   * The given target set plus the transitive closure of its dependencies.
-   * The result contains, for each requested function, every
-   * {@link AggregationClass#ASSOCIATIVE} column that must be materialised and
-   * every intermediate {@link AggregationClass#DERIVED} function that must be
-   * added as a generated column.
-   *
-   * <p>Example: {@code withDependencies(Set.of(AVERAGE, STDDEV))} returns
-   * {@code {AVERAGE, STDDEV, SUM, COUNT, SUM_SQ}}.
-   */
-  public static Set<AggregationFunction> withDependencies(
-      Set<AggregationFunction> targets) {
-    var expanded = new HashSet<AggregationFunction>();
-    var queue = new ArrayDeque<>(targets);
-    while (!queue.isEmpty()) {
-      var f = queue.poll();
-      if (expanded.add(f)) queue.addAll(f.dependsOn());
-    }
-    return Set.copyOf(expanded);
+  public static Set<AggregationFunction> withDependencies(Set<AggregationFunction> targets) {
+    var expanded = EnumSet.noneOf(AggregationFunction.class);
+    expanded.addAll(targets);
+    for (AggregationFunction f : targets)
+      expanded.addAll(f.dependsOn);
+    // must remain EnumSet for order
+    return Collections.unmodifiableSet(expanded);
   }
 }
