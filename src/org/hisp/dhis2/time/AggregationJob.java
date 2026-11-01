@@ -4,13 +4,13 @@ import java.util.List;
 
 /**
  * One concrete unit of work produced by {@link AggregationJobPlanner}: aggregate
- * {@code sourceIntervals} (all of sequence {@code source}) into
- * {@code targetInterval} (of sequence {@code target}), under {@code type}'s
+ * {@code sources} (all of sequence {@code sourceKey}) into
+ * {@code target} (of sequence {@code targetKey}), under {@code exactness}'s
  * attribution rule.
  */
 public record AggregationJob(
-    TimeSequenceKey source,
-    TimeSequenceKey target,
-    Epoch2kInterval targetInterval,
-    List<Epoch2kInterval> sourceIntervals,
+    TimeSequenceKey sourceKey,
+    TimeSequenceKey targetKey,
+    Epoch2kInterval target,
+    List<Epoch2kInterval> sources,
     AggregationExactness exactness) {}

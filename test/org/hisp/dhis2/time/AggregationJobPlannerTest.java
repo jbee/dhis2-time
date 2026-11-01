@@ -36,13 +36,13 @@ class AggregationJobPlannerTest {
     assertEquals(12, jobs.size());
     for (var job : jobs) {
       assertEquals(AggregationExactness.EXACT, job.exactness());
-      assertEquals(GD_.key(), job.source());
-      assertEquals(GM_.key(), job.target());
+      assertEquals(GD_.key(), job.sourceKey());
+      assertEquals(GM_.key(), job.targetKey());
     }
     // First job is January: 31 daily intervals
-    assertEquals(31, jobs.get(0).sourceIntervals().size());
+    assertEquals(31, jobs.get(0).sources().size());
     // Second job is February: 29 (leap)
-    assertEquals(29, jobs.get(1).sourceIntervals().size());
+    assertEquals(29, jobs.get(1).sources().size());
   }
 
   @Test
@@ -53,8 +53,8 @@ class AggregationJobPlannerTest {
     var jobs = jobPlanner.plan(GD_.key(), Epoch2kInterval.ofYear(2024), plan);
 
     assertEquals(17, jobs.size());  // 12 + 4 + 1
-    var yearJob = jobs.stream().filter(j -> j.target().equals(GY_.key())).findFirst().orElseThrow();
-    assertEquals(4, yearJob.sourceIntervals().size());
+    var yearJob = jobs.stream().filter(j -> j.targetKey().equals(GY_.key())).findFirst().orElseThrow();
+    assertEquals(4, yearJob.sources().size());
     assertEquals(AggregationExactness.EXACT, yearJob.exactness());
   }
 
@@ -71,24 +71,24 @@ class AggregationJobPlannerTest {
     assertEquals(1, jobs.size());
 
     var job = jobs.get(0);
-    assertEquals(GY_.key(), job.target());
-    assertEquals(Epoch2kInterval.ofYear(2024), job.targetInterval());
+    assertEquals(GY_.key(), job.targetKey());
+    assertEquals(Epoch2kInterval.ofYear(2024), job.target());
     assertEquals(AggregationExactness.APPROXIMATE, job.exactness());
 
     // 52 weeks are majority-in-2024
-    assertEquals(52, job.sourceIntervals().size());
+    assertEquals(52, job.sources().size());
 
     // Every attributed week is majority-in the target interval
-    for (var week : job.sourceIntervals()) {
+    for (var week : job.sources()) {
       assertTrue(
-          week.overlapInDays(job.targetInterval()) * 2 > week.lengthInDays(),
-          () -> week + " not majority in " + job.targetInterval());
+          week.overlapInDays(job.target()) * 2 > week.lengthInDays(),
+          () -> week + " not majority in " + job.target());
     }
 
     // The excluded boundary week is not among the source intervals
     var boundaryWeekStart = ofYMD(2024, 12, 30);
     assertTrue(
-        job.sourceIntervals().stream()
+        job.sources().stream()
             .noneMatch(w -> w.firstDay().equals(boundaryWeekStart)),
         "boundary week should belong to frame 2025's expansion, not 2024's");
   }
@@ -105,7 +105,7 @@ class AggregationJobPlannerTest {
     // Count how many times each week is attributed to a target across both expansions
     var attributions = new java.util.HashMap<Epoch2kInterval, Integer>();
     for (var job : java.util.stream.Stream.concat(year2024.stream(), year2025.stream()).toList()) {
-      for (var week : job.sourceIntervals()) {
+      for (var week : job.sources()) {
         attributions.merge(week, 1, Integer::sum);
       }
     }

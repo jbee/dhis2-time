@@ -48,7 +48,7 @@ import java.util.Set;
  *
  * <p>Target intervals that overlap the frame but have only partial source
  * coverage (because the frame is narrower than the target) still produce jobs;
- * the partial coverage is visible in {@link AggregationJob#sourceIntervals()}.
+ * the partial coverage is visible in {@link AggregationJob#sources()}.
  * Skipping partial targets is an executor policy, not an expansion concern.
  */
 public final class AggregationJobPlanner {
@@ -108,7 +108,7 @@ public final class AggregationJobPlanner {
    *
    * <p>Targets that overlap the frame but only partially cover it still
    * produce jobs; the partial coverage is visible in
-   * {@link AggregationJob#sourceIntervals()}. Skipping partial targets is an
+   * {@link AggregationJob#sources()}. Skipping partial targets is an
    * executor policy, not an expansion concern.
    *
    * @param sourceKey the key of the sequence raw data arrives in
