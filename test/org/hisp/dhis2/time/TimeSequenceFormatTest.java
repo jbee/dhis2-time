@@ -148,14 +148,14 @@ class TimeSequenceFormatTest {
   }
 
   @Test
-  void biWeeklyFormatsAsFirstDay() {
+  void fortnightlyFormatsAsFirstDay() {
     // 2024-03-15 falls in the bi-week starting Monday 2024-03-11.
     var bw = GT_.interval(ofYMD(2024, 3, 15));
     assertEquals("GT/2024-03-11", GT_.format(bw));
   }
 
   @Test
-  void biWeeklyStubFormatsAndRoundTrips() {
+  void fortnightlyStubFormatsAndRoundTrips() {
     // 2020 has 53 ISO weeks; BW27 is the 1-week stub.
     var stub = GT_.interval(ofYMD(2020, 12, 28));
     assertEquals(7, stub.lengthInDays());

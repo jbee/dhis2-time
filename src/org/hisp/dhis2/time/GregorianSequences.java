@@ -29,7 +29,7 @@ public final class GregorianSequences {
   public static final TimeSequence GD_ = daily();
 
   public static final TimeSequence GW_ = weekly(DayOfWeek.Monday);
-  public static final TimeSequence GT_ = biWeekly(DayOfWeek.Monday);
+  public static final TimeSequence GT_ = fortnightly(DayOfWeek.Monday);
 
   public static final TimeSequence GM_ = monthly();
   public static final TimeSequence GB_ = bimester(MonthOfYear.January);
@@ -109,8 +109,8 @@ public final class GregorianSequences {
    *
    * @param day1 the first day of each week
    */
-  public static TimeSequence biWeekly(DayOfWeek day1) {
-    return new BiWeeklyGregorianSequence(
+  public static TimeSequence fortnightly(DayOfWeek day1) {
+    return new FortnightlyGregorianSequence(
         GT.offsetBy(day1),
         day1,
         Set.of(),
@@ -216,14 +216,14 @@ public final class GregorianSequences {
     }
   }
 
-  private record BiWeeklyGregorianSequence(
+  private record FortnightlyGregorianSequence(
       TimeSequenceKey key,
       DayOfWeek day1,
       Set<TimeSequenceKey> partitions,
       Set<TimeSequenceKey> contributesTo)
       implements TimeSequence {
 
-    BiWeeklyGregorianSequence {
+    FortnightlyGregorianSequence {
       if (key.offsetAsDay() != day1)
         throw new IllegalArgumentException(
             "key " + key + " implies day1 " + key.offsetAsDay() + " but record has " + day1);

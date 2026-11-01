@@ -86,7 +86,7 @@ class TestAggregationResolver {
   }
 
   @Test
-  void biWeeklyReachesYearViaApproximation() {
+  void fortnightlyReachesYearViaApproximation() {
     var resolver = new AggregationResolver(GREGORIAN);
     var plan = resolver.resolveAuto(GT_.key(), Set.of(GY));
     assertEquals(List.of(new Aggregation(GT_.key(), GY_.key(), APPROXIMATION)), plan);

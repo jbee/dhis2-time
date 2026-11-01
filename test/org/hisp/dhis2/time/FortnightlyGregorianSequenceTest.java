@@ -7,7 +7,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import java.util.Set;
 import org.junit.jupiter.api.Test;
 
-class BiWeeklyGregorianSequenceTest {
+class FortnightlyGregorianSequenceTest {
 
   @Test
   void intervalIsTwoWeeks() {
@@ -122,7 +122,7 @@ class BiWeeklyGregorianSequenceTest {
   }
 
   @Test
-  void biWeeklyStraddlingMonth50_50GoesToEarlierMonth() {
+  void fortnightlyStraddlingMonth50_50GoesToEarlierMonth() {
     // Bi-week starting Monday 2024-03-25 runs Mar 25 – Apr 7: 7 days in each month.
     var straddler = GT_.interval(Epoch2kDay.ofYMD(2024, 3, 25));
     assertEquals(14, straddler.lengthInDays());
