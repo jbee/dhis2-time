@@ -150,9 +150,8 @@ public final class GregorianSequences {
 
   public static TimeSequence bimester(MonthOfYear month1) {
     return new BimesterGregorianSequence(
-        GB.offsetBy(month1),
-        month1,
-        Set.of(GY.offsetBy(month1)),
+        GB.offsetBy(month1), month1,
+        Set.of(GS.offsetBy(month1), GY.offsetBy(month1)),
         Set.of(GQ.offsetBy(month1), GS.offsetBy(month1), GY.offsetBy(month1)));
   }
 
@@ -163,9 +162,8 @@ public final class GregorianSequences {
 
   public static TimeSequence quarterly(MonthOfYear month1) {
     return new QuarterlyGregorianSequence(
-        GQ.offsetBy(month1),
-        month1,
-        Set.of(GY.offsetBy(month1)),
+        GQ.offsetBy(month1), month1,
+        Set.of(GS.offsetBy(month1), GY.offsetBy(month1)),
         Set.of(GS.offsetBy(month1), GY.offsetBy(month1)));
   }
 
@@ -177,13 +175,15 @@ public final class GregorianSequences {
   public static TimeSequence fiscalMonthly(MonthOfYear start) {
     return new MonthlyGregorianSequence(
         FM.offsetBy(start),
-        Set.of(FQ.offsetBy(start), FY.offsetBy(start)),
-        Set.of(FQ.offsetBy(start), FY.offsetBy(start)));
+        Set.of(FH.offsetBy(start), FQ.offsetBy(start), FY.offsetBy(start)),
+        Set.of(FH.offsetBy(start), FQ.offsetBy(start), FY.offsetBy(start)));
   }
 
   public static TimeSequence fiscalQuarterly(MonthOfYear month1) {
     return new QuarterlyGregorianSequence(
-        FQ.offsetBy(month1), month1, Set.of(FY.offsetBy(month1)), Set.of(FY.offsetBy(month1)));
+        FQ.offsetBy(month1), month1,
+        Set.of(FH.offsetBy(month1), FY.offsetBy(month1)),
+        Set.of(FH.offsetBy(month1), FY.offsetBy(month1)));
   }
 
   public static TimeSequence yearly(MonthOfYear month1) {

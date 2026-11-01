@@ -94,11 +94,8 @@ class QuarterlyGregorianSequenceTest {
   }
 
   @Test
-  void quarterlyDeclaresNoSixMonthPartition() {
-    // SixMonth is not in Quarterly.partitions() because Quarterly(April) cannot
-    // tile Semester(February) — the family key doesn't encode offset, so the
-    // declaration must hold for every (quarterly offset, semester offset) pair.
-    assertFalse(GQ_.partitions(GS));
+  void quarterlyDeclaresSemesterPartition() {
+    assertTrue(GQ_.partitions(GS));
   }
 
   @Test

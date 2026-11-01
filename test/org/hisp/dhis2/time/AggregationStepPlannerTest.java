@@ -12,6 +12,7 @@ import static org.hisp.dhis2.time.GregorianSequences.GS;
 import static org.hisp.dhis2.time.GregorianSequences.GS_;
 import static org.hisp.dhis2.time.GregorianSequences.GB;
 import static org.hisp.dhis2.time.GregorianSequences.GB_;
+import static org.hisp.dhis2.time.GregorianSequences.GW;
 import static org.hisp.dhis2.time.GregorianSequences.GW_;
 import static org.hisp.dhis2.time.GregorianSequences.GY;
 import static org.hisp.dhis2.time.GregorianSequences.GY_;
@@ -20,8 +21,10 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.hisp.dhis2.time.Epoch2kDay.MonthOfYear;
@@ -37,15 +40,15 @@ class AggregationStepPlannerTest {
 
   @Test
   void singleHopExact() {
-    var resolver = new AggregationStepPlanner(GREGORIAN);
-    var plan = resolver.planFindOffsets(GD_.key(), Set.of(GY));
+    var planner = new AggregationStepPlanner(GREGORIAN);
+    var plan = planner.planFindOffsets(GD_.key(), Set.of(GY));
     assertEquals(List.of(new AggregationStep(GD_.key(), GY_.key(), EXACT)), plan);
   }
 
   @Test
   void explicitKeyResolutionWorks() {
-    var resolver = new AggregationStepPlanner(GREGORIAN);
-    var plan = resolver.plan(GD_.key(), Set.of(GY_.key()));
+    var planner = new AggregationStepPlanner(GREGORIAN);
+    var plan = planner.plan(GD_.key(), Set.of(GY_.key()));
     assertEquals(List.of(new AggregationStep(GD_.key(), GY_.key(), EXACT)), plan);
   }
 
@@ -55,16 +58,16 @@ class AggregationStepPlannerTest {
   void offsetPropagatesFromSourceToTarget() {
     var gq4 = GregorianSequences.quarterly(MonthOfYear.April);
     var gy4 = GregorianSequences.yearly(MonthOfYear.April);
-    var resolver = new AggregationStepPlanner(List.of(gq4, gy4));
+    var planner = new AggregationStepPlanner(List.of(gq4, gy4));
 
-    var plan = resolver.planFindOffsets(gq4.key(), Set.of(GY));
+    var plan = planner.planFindOffsets(gq4.key(), Set.of(GY));
     assertEquals(List.of(new AggregationStep(gq4.key(), gy4.key(), EXACT)), plan);
   }
 
   @Test
   void defaultOffsetWhenSourceHasNone() {
-    var resolver = new AggregationStepPlanner(GREGORIAN);
-    var plan = resolver.planFindOffsets(GD_.key(), Set.of(GQ));
+    var planner = new AggregationStepPlanner(GREGORIAN);
+    var plan = planner.planFindOffsets(GD_.key(), Set.of(GQ));
     assertEquals(List.of(new AggregationStep(GD_.key(), GQ_.key(), EXACT)), plan);
     assertFalse(plan.get(0).target().isOffset());
   }
@@ -73,29 +76,29 @@ class AggregationStepPlannerTest {
 
   @Test
   void approximationWhenOnlyContributesToExists() {
-    var resolver = new AggregationStepPlanner(GREGORIAN);
-    var plan = resolver.planFindOffsets(GW_.key(), Set.of(GY));
+    var planner = new AggregationStepPlanner(GREGORIAN);
+    var plan = planner.planFindOffsets(GW_.key(), Set.of(GY));
     assertEquals(List.of(new AggregationStep(GW_.key(), GY_.key(), APPROXIMATE)), plan);
   }
 
   @Test
   void exactOnlyRejectsWeeklyToYear() {
-    var resolver = new AggregationStepPlanner(GREGORIAN);
+    var planner = new AggregationStepPlanner(GREGORIAN);
     assertThrows(
-        IllegalArgumentException.class, () -> resolver.planFindOffsets(GW_.key(), Set.of(GY), false));
+        IllegalArgumentException.class, () -> planner.planFindOffsets(GW_.key(), Set.of(GY), false));
   }
 
   @Test
   void fortnightlyReachesYearViaApproximation() {
-    var resolver = new AggregationStepPlanner(GREGORIAN);
-    var plan = resolver.planFindOffsets(GF_.key(), Set.of(GY));
+    var planner = new AggregationStepPlanner(GREGORIAN);
+    var plan = planner.planFindOffsets(GF_.key(), Set.of(GY));
     assertEquals(List.of(new AggregationStep(GF_.key(), GY_.key(), APPROXIMATE)), plan);
   }
 
   @Test
   void approximationEdgeIsInContributesToButNotPartitions() {
-    var resolver = new AggregationStepPlanner(GREGORIAN);
-    var plan = resolver.planFindOffsets(GW_.key(), Set.of(GY));
+    var planner = new AggregationStepPlanner(GREGORIAN);
+    var plan = planner.planFindOffsets(GW_.key(), Set.of(GY));
     var edge = plan.get(0);
     assertEquals(APPROXIMATE, edge.exactness());
     assertTrue(GW_.contributesTo().contains(edge.target()));
@@ -108,8 +111,8 @@ class AggregationStepPlannerTest {
   void multiTargetChainsThroughIntermediates() {
     // The classic case: asking for month, quarter and year from daily data.
     // The plan folds each stage into the next rather than re-summing raw days.
-    var resolver = new AggregationStepPlanner(GREGORIAN);
-    var plan = resolver.planFindOffsets(GD_.key(), Set.of(GM, GQ, GY));
+    var planner = new AggregationStepPlanner(GREGORIAN);
+    var plan = planner.planFindOffsets(GD_.key(), Set.of(GM, GQ, GY));
 
     assertEquals(
         List.of(
@@ -122,8 +125,8 @@ class AggregationStepPlannerTest {
   @Test
   void chainFormsWhenCoarserIntermediateIsTarget() {
     // GM is a target, so GY is reached via GM (fewer reads than GD → GY).
-    var resolver = new AggregationStepPlanner(GREGORIAN);
-    var plan = resolver.planFindOffsets(GD_.key(), Set.of(GM, GY));
+    var planner = new AggregationStepPlanner(GREGORIAN);
+    var plan = planner.planFindOffsets(GD_.key(), Set.of(GM, GY));
 
     assertEquals(
         List.of(
@@ -135,8 +138,8 @@ class AggregationStepPlannerTest {
   @Test
   void singleTargetIsDirectNotChained() {
     // No intermediate targets, so no intermediates are introduced.
-    var resolver = new AggregationStepPlanner(GREGORIAN);
-    var plan = resolver.planFindOffsets(GD_.key(), Set.of(GY));
+    var planner = new AggregationStepPlanner(GREGORIAN);
+    var plan = planner.planFindOffsets(GD_.key(), Set.of(GY));
 
     assertEquals(List.of(new AggregationStep(GD_.key(), GY_.key(), EXACT)), plan);
   }
@@ -144,8 +147,8 @@ class AggregationStepPlannerTest {
   @Test
   void chainThroughExactIntermediateThenApproximate() {
     // GB is a target; GY is reached via GB (approximation) rather than GW directly.
-    var resolver = new AggregationStepPlanner(GREGORIAN);
-    var plan = resolver.planFindOffsets(GW_.key(), Set.of(GregorianSequences.GF, GY));
+    var planner = new AggregationStepPlanner(GREGORIAN);
+    var plan = planner.planFindOffsets(GW_.key(), Set.of(GregorianSequences.GF, GY));
 
     assertEquals(
         List.of(
@@ -157,8 +160,8 @@ class AggregationStepPlannerTest {
   @Test
   void multiTargetWithMixedGranularity() {
     // Month, bi-month, year: each step prefers the coarsest already-reached source.
-    var resolver = new AggregationStepPlanner(GREGORIAN);
-    var plan = resolver.planFindOffsets(GD_.key(), Set.of(GM, GB, GY));
+    var planner = new AggregationStepPlanner(GREGORIAN);
+    var plan = planner.planFindOffsets(GD_.key(), Set.of(GM, GB, GY));
 
     // Sorted by interval length: GM (~30), GT (~61), GY (~365)
     //   GD → GM  (GD is only candidate)
@@ -175,75 +178,97 @@ class AggregationStepPlannerTest {
   // ── Multi-target (non-chained where no chain exists) ───────────
 
   @Test
-  void multipleIndependentTargetFamilies() {
-    // Quarterly and six-monthly both reachable from daily, but neither
-    // partitions the other, so no chain forms.
-    var resolver = new AggregationStepPlanner(GREGORIAN);
-    var plan = resolver.planFindOffsets(GD_.key(), Set.of(GS, GQ));
+  void addingFinerTargetDeepensChain() {
+    var planner = new AggregationStepPlanner(GREGORIAN);
 
-    assertEquals(2, plan.size());
+    // Without GM: GQ is reached from GD, then GS is reached from GQ.
+    // Two hops.
+    var withoutMonth = planner.planFindOffsets(GD_.key(), Set.of(GQ, GS));
     assertEquals(
-        Set.of(
+        List.of(
             new AggregationStep(GD_.key(), GQ_.key(), EXACT),
-            new AggregationStep(GD_.key(), GS_.key(), EXACT)),
-        new HashSet<>(plan));
-  }
+            new AggregationStep(GQ_.key(), GS_.key(), EXACT)),
+        withoutMonth);
 
-  @Test
-  void chainedPlanWithSharedMonthIntermediate() {
-    // Adding GM to the previous case changes the plan shape entirely:
-    //   - GM is processed first (finest target), so GD → GM is emitted.
-    //   - GQ and GS are both processed after; both are reachable EXACTLY from GM.
-    //   - GQ contributesTo GS only via APPROXIMATION, so GM is preferred as GS's
-    //     source even though GQ has a shorter interval length. Exactness wins
-    //     before coarseness.
-    var resolver = new AggregationStepPlanner(GREGORIAN);
-    var plan = resolver.planFindOffsets(GD_.key(), Set.of(GM, GQ, GS));
-
+    // With GM: the chain gains a step (GD → GM → GQ), and GQ is now
+    // computed from 12 monthly values instead of 365 daily values.
+    // GS is still computed from GQ — that edge is unchanged.
+    var withMonth = planner.planFindOffsets(GD_.key(), Set.of(GM, GQ, GS));
     assertEquals(
         List.of(
             new AggregationStep(GD_.key(), GM_.key(), EXACT),
             new AggregationStep(GM_.key(), GQ_.key(), EXACT),
-            new AggregationStep(GM_.key(), GS_.key(), EXACT)),
+            new AggregationStep(GQ_.key(), GS_.key(), EXACT)),
+        withMonth);
+  }
+
+  @Test
+  void nestedTargetsFormLinearChain() {
+    var planner = new AggregationStepPlanner(GREGORIAN);
+    var plan = planner.planFindOffsets(GD_.key(), Set.of(GM, GQ, GS));
+
+    // Processed finest-to-coarsest: GM (31d), GQ (91d), GS (182d).
+    // Each target is reached from the previous coarser source.
+    assertEquals(
+        List.of(
+            new AggregationStep(GD_.key(), GM_.key(), EXACT),
+            new AggregationStep(GM_.key(), GQ_.key(), EXACT),
+            new AggregationStep(GQ_.key(), GS_.key(), EXACT)),
         plan);
   }
 
   @Test
-  void addingMonthToIndependentTargetsCollapsesToChain() {
-    // Without GM: GD → GQ, GD → GS (two flat edges from source).
-    // With GM:    GD → GM → {GQ, GS} (one prefix, two consumers).
-    // The total edge count increases by one, but the raw-day reads drop from
-    // (365 + 365) to 365 (for GM) + 3 + 2 (for GQ, GS from GM's 12 intervals).
-    var resolver = new AggregationStepPlanner(GREGORIAN);
+  void planIsTopologicallyOrdered() {
+    var planner = new AggregationStepPlanner(GREGORIAN);
+    var plan = planner.planFindOffsets(GD_.key(), Set.of(GM, GQ, GS));
 
-    var withoutMonth = resolver.planFindOffsets(GD_.key(), Set.of(GQ, GS));
-    assertEquals(2, withoutMonth.size());
-    assertTrue(withoutMonth.stream().allMatch(e -> e.source().equals(GD_.key())));
+    Map<AggregationStep, Integer> index = new HashMap<>();
+    for (int i = 0; i < plan.size(); i++) index.put(plan.get(i), i);
 
-    var withMonth = resolver.planFindOffsets(GD_.key(), Set.of(GM, GQ, GS));
-    assertEquals(3, withMonth.size());
-    assertEquals(new AggregationStep(GD_.key(), GM_.key(), EXACT), withMonth.get(0));
+    // Every step comes after the step that produces its source
+    for (var step : plan) {
+      if (step.source().equals(GD_.key())) continue;
+      var producerIndex =
+          plan.stream()
+              .filter(e -> e.target().equals(step.source()))
+              .findFirst()
+              .map(index::get)
+              .orElseThrow(() -> new AssertionError("no producer for " + step.source()));
+      assertTrue(
+          producerIndex < index.get(step),
+          () -> "producer of " + step.source() + " must precede " + step);
+    }
+  }
+
+  @Test
+  void independentTargetFamiliesBranchFromSource() {
+    var planner = new AggregationStepPlanner(GREGORIAN);
+    var plan = planner.planFindOffsets(GD_.key(), Set.of(GW, GM));
+
+    // Weekly and Monthly: GW.partitions() = {GF}, GM.partitions() =
+    // {GB, GQ, GS, GY}. Neither contains the other, so both branch
+    // from the source rather than chaining.
+    assertEquals(2, plan.size());
     assertEquals(
-        Set.of(GM_.key()),
-        withMonth.stream()
-            .skip(1)
-            .map(AggregationStep::source)
-            .collect(java.util.stream.Collectors.toSet()));
+        Set.of(
+            new AggregationStep(GD_.key(), GW_.key(), EXACT),
+            new AggregationStep(GD_.key(), GM_.key(), EXACT)),
+        new HashSet<>(plan));
   }
 
   // ── Degenerate cases ─────────────────────────────────────────────
 
   @Test
   void sourceInTargetsGivesEmptyPlan() {
-    var resolver = new AggregationStepPlanner(GREGORIAN);
-    var plan = resolver.planFindOffsets(GD_.key(), Set.of(GregorianSequences.GD));
+    var planner = new AggregationStepPlanner(GREGORIAN);
+    var plan = planner.planFindOffsets(GD_.key(), Set.of(GregorianSequences.GD));
     assertTrue(plan.isEmpty());
   }
 
   @Test
   void emptyTargetSetGivesEmptyPlan() {
-    var resolver = new AggregationStepPlanner(GREGORIAN);
-    var plan = resolver.planFindOffsets(GD_.key(), Set.of());
+    var planner = new AggregationStepPlanner(GREGORIAN);
+    var plan = planner.planFindOffsets(GD_.key(), Set.of());
     assertTrue(plan.isEmpty());
   }
 
@@ -262,37 +287,37 @@ class AggregationStepPlannerTest {
   void unreachableKeyThrows() {
     var gq_ = GregorianSequences.quarterly(MonthOfYear.January);
     var gy4 = GregorianSequences.yearly(MonthOfYear.April);
-    var resolver = new AggregationStepPlanner(List.of(gq_, gy4));
+    var planner = new AggregationStepPlanner(List.of(gq_, gy4));
 
     assertThrows(
-        IllegalArgumentException.class, () -> resolver.plan(gq_.key(), Set.of(gy4.key())));
+        IllegalArgumentException.class, () -> planner.plan(gq_.key(), Set.of(gy4.key())));
   }
 
   @Test
   void unregisteredSourceThrows() {
-    var resolver = new AggregationStepPlanner(GREGORIAN);
+    var planner = new AggregationStepPlanner(GREGORIAN);
     var unknown = new TimeSequenceKey('Z', 'D');
-    assertThrows(IllegalArgumentException.class, () -> resolver.planFindOffsets(unknown, Set.of(GY)));
+    assertThrows(IllegalArgumentException.class, () -> planner.planFindOffsets(unknown, Set.of(GY)));
   }
 
   @Test
   void unregisteredTargetKeyThrows() {
-    var resolver = new AggregationStepPlanner(GREGORIAN);
+    var planner = new AggregationStepPlanner(GREGORIAN);
     var unknown = new TimeSequenceKey('Z', 'Y');
     assertThrows(
-        IllegalArgumentException.class, () -> resolver.plan(GD_.key(), Set.of(unknown)));
+        IllegalArgumentException.class, () -> planner.plan(GD_.key(), Set.of(unknown)));
   }
 
   @Test
   void crossCalendarUnreachable() {
-    var resolver =
+    var planner =
         new AggregationStepPlanner(
             List.of(
                 IslamicSequences.ID_, IslamicSequences.IM_, IslamicSequences.IY_, GD_, GM_, GY_));
 
     assertThrows(
         IllegalArgumentException.class,
-        () -> resolver.planFindOffsets(IslamicSequences.ID_.key(), Set.of(GY)));
+        () -> planner.planFindOffsets(IslamicSequences.ID_.key(), Set.of(GY)));
   }
 
   @Test
@@ -315,7 +340,7 @@ class AggregationStepPlannerTest {
     var gq = GQ.noOffset();
     var gy = GY.noOffset();
 
-    var resolver =
+    var planner =
         new AggregationStepPlanner(
             List.of(
                 fakeSequence(st, Set.of(gm), Set.of(gm)),
@@ -323,7 +348,7 @@ class AggregationStepPlannerTest {
                 fakeSequence(gq, Set.of(gy), Set.of(gy)),
                 fakeSequence(gy, Set.of(), Set.of())));
 
-    var plan = resolver.planFindOffsets(st, Set.of(GY));
+    var plan = planner.planFindOffsets(st, Set.of(GY));
 
     assertEquals(
         List.of(
@@ -340,7 +365,7 @@ class AggregationStepPlannerTest {
     var gq = GQ.noOffset();
     var gy = GY.noOffset();
 
-    var resolver =
+    var planner =
         new AggregationStepPlanner(
             List.of(
                 fakeSequence(st, Set.of(gm), Set.of(gm)),
@@ -348,7 +373,7 @@ class AggregationStepPlannerTest {
                 fakeSequence(gq, Set.of(), Set.of()),
                 fakeSequence(gy, Set.of(), Set.of())));
 
-    var plan = resolver.planFindOffsets(st, Set.of(GQ, GY));
+    var plan = planner.planFindOffsets(st, Set.of(GQ, GY));
 
     assertEquals(3, plan.size());
     assertEquals(
@@ -360,26 +385,12 @@ class AggregationStepPlannerTest {
     assertEquals(new AggregationStep(st, gm, EXACT), plan.get(0));
   }
 
-  @Test
-  void sharedIntermediatePrecedesAllConsumers() {
-    var resolver = new AggregationStepPlanner(GREGORIAN);
-    var plan = resolver.planFindOffsets(GD_.key(), Set.of(GM, GQ, GS));
-
-    var gmIndex = plan.indexOf(new AggregationStep(GD_.key(), GM_.key(), EXACT));
-    var gqIndex = plan.indexOf(new AggregationStep(GM_.key(), GQ_.key(), EXACT));
-    var gsIndex = plan.indexOf(new AggregationStep(GM_.key(), GS_.key(), EXACT));
-
-    assertTrue(gmIndex >= 0);
-    assertTrue(gqIndex > gmIndex, () -> "GQ must be computed after GM; plan: " + plan);
-    assertTrue(gsIndex > gmIndex, () -> "GS must be computed after GM; plan: " + plan);
-  }
-
   // ── Invariants ───────────────────────────────────────────────────
 
   @Test
   void edgeTypeMatchesSequenceDeclaration() {
-    var resolver = new AggregationStepPlanner(GREGORIAN);
-    var plan = resolver.planFindOffsets(GW_.key(), Set.of(GM, GQ, GY), true);
+    var planner = new AggregationStepPlanner(GREGORIAN);
+    var plan = planner.planFindOffsets(GW_.key(), Set.of(GM, GQ, GY), true);
 
     assertFalse(plan.isEmpty());
     for (var edge : plan) {
@@ -391,6 +402,39 @@ class AggregationStepPlannerTest {
       var expected = sourceSeq.partitions().contains(edge.target()) ? EXACT : APPROXIMATE;
       assertEquals(expected, edge.exactness(), () -> "edge " + edge);
     }
+  }
+
+  @Test
+  void quarterlyChainsToSemester() {
+    var planner = new AggregationStepPlanner(GREGORIAN);
+    var plan = planner.planFindOffsets(GD_.key(), Set.of(GQ, GS));
+
+    // GQ.partitions() now includes GS (2 quarters = 1 semester).
+    // Chaining through GQ is preferred over re-reading 182 days for GS.
+    assertEquals(
+        List.of(
+            new AggregationStep(GD_.key(), GQ_.key(), EXACT),
+            new AggregationStep(GQ_.key(), GS_.key(), EXACT)),
+        plan);
+
+    // GS is not reached directly from GD
+    assertFalse(
+        plan.stream()
+            .anyMatch(s -> s.source().equals(GD_.key()) && s.target().equals(GS_.key())));
+  }
+
+  @Test
+  void bimesterChainsToSemester() {
+    var planner = new AggregationStepPlanner(GREGORIAN);
+    var plan = planner.planFindOffsets(GD_.key(), Set.of(GB, GS));
+
+    // GB.partitions() now includes GS (3 bimesters = 1 semester).
+    // GB (61d) processed before GS (182d), so GB → GS.
+    assertEquals(
+        List.of(
+            new AggregationStep(GD_.key(), GB_.key(), EXACT),
+            new AggregationStep(GB_.key(), GS_.key(), EXACT)),
+        plan);
   }
 
   // ── Helpers ──────────────────────────────────────────────────────

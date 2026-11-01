@@ -51,8 +51,8 @@ class BimesterGregorianSequenceTest {
   }
 
   @Test
-  void bimesterDeclaresNoSixMonthPartition() {
-    assertFalse(GB_.partitions(GS));
+  void bimesterDeclaresSemesterPartition() {
+    assertTrue(GB_.partitions(GS));
   }
 
   @Test

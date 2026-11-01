@@ -28,10 +28,10 @@ class AggregationJobPlannerTest {
 
   @Test
   void expandsSingleEdge() {
-    var resolver = new AggregationStepPlanner(GREGORIAN);
-    var expander = new AggregationJobPlanner(GREGORIAN);
-    var plan = resolver.planFindOffsets(GD_.key(), Set.of(GM));
-    var jobs = expander.plan(GD_.key(), Epoch2kInterval.ofYear(2024), plan);
+    var stepPlanner = new AggregationStepPlanner(GREGORIAN);
+    var jobPlanner = new AggregationJobPlanner(GREGORIAN);
+    var plan = stepPlanner.planFindOffsets(GD_.key(), Set.of(GM));
+    var jobs = jobPlanner.plan(GD_.key(), Epoch2kInterval.ofYear(2024), plan);
 
     assertEquals(12, jobs.size());
     for (var job : jobs) {
@@ -47,10 +47,10 @@ class AggregationJobPlannerTest {
 
   @Test
   void expandsChainedPlan() {
-    var resolver = new AggregationStepPlanner(GREGORIAN);
-    var expander = new AggregationJobPlanner(GREGORIAN);
-    var plan = resolver.planFindOffsets(GD_.key(), Set.of(GM, GQ, GY));
-    var jobs = expander.plan(GD_.key(), Epoch2kInterval.ofYear(2024), plan);
+    var stepPlanner = new AggregationStepPlanner(GREGORIAN);
+    var jobPlanner = new AggregationJobPlanner(GREGORIAN);
+    var plan = stepPlanner.planFindOffsets(GD_.key(), Set.of(GM, GQ, GY));
+    var jobs = jobPlanner.plan(GD_.key(), Epoch2kInterval.ofYear(2024), plan);
 
     assertEquals(17, jobs.size());  // 12 + 4 + 1
     var yearJob = jobs.stream().filter(j -> j.target().equals(GY_.key())).findFirst().orElseThrow();
@@ -60,10 +60,10 @@ class AggregationJobPlannerTest {
 
   @Test
   void expansionRespectsApproximationAttribution() {
-    var resolver = new AggregationStepPlanner(GREGORIAN);
-    var expander = new AggregationJobPlanner(GREGORIAN);
-    var plan = resolver.planFindOffsets(GW_.key(), Set.of(GY));
-    var jobs = expander.plan(GW_.key(), Epoch2kInterval.ofYear(2024), plan);
+    var stepPlanner = new AggregationStepPlanner(GREGORIAN);
+    var jobPlanner = new AggregationJobPlanner(GREGORIAN);
+    var plan = stepPlanner.planFindOffsets(GW_.key(), Set.of(GY));
+    var jobs = jobPlanner.plan(GW_.key(), Epoch2kInterval.ofYear(2024), plan);
 
     // Frame 2024 produces exactly one job: year 2024. The boundary week
     // starting 2024-12-30 is majority-in-2025 and belongs to frame 2025's
@@ -95,12 +95,12 @@ class AggregationJobPlannerTest {
 
   @Test
   void adjacentFramesDoNotDuplicateBoundaryWeek() {
-    var resolver = new AggregationStepPlanner(GREGORIAN);
-    var expander = new AggregationJobPlanner(GREGORIAN);
-    var plan = resolver.planFindOffsets(GW_.key(), Set.of(GY));
+    var stepPlanner = new AggregationStepPlanner(GREGORIAN);
+    var jobPlanner = new AggregationJobPlanner(GREGORIAN);
+    var plan = stepPlanner.planFindOffsets(GW_.key(), Set.of(GY));
 
-    var year2024 = expander.plan(GW_.key(), Epoch2kInterval.ofYear(2024), plan);
-    var year2025 = expander.plan(GW_.key(), Epoch2kInterval.ofYear(2025), plan);
+    var year2024 = jobPlanner.plan(GW_.key(), Epoch2kInterval.ofYear(2024), plan);
+    var year2025 = jobPlanner.plan(GW_.key(), Epoch2kInterval.ofYear(2025), plan);
 
     // Count how many times each week is attributed to a target across both expansions
     var attributions = new java.util.HashMap<Epoch2kInterval, Integer>();
