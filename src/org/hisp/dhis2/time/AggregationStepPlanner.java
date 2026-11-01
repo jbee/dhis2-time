@@ -12,19 +12,19 @@ import java.util.PriorityQueue;
 import java.util.Set;
 
 /**
- * Plans an ordered set of {@link Aggregation} steps that transform values
+ * Plans an ordered set of {@link AggregationStep} steps that transform values
  * from a source sequence into values in one or more target sequences.
  *
  * <p>An aggregation step's {@link AggregationExactness} reflects whether the source
  * contributes to the target by {@link TimeSequence#partitions() partition}
  * ({@link AggregationExactness#EXACT}) or by {@link TimeSequence#contributesTo()
- * majority attribution} ({@link AggregationExactness#APPROXIMATION}).
+ * majority attribution} ({@link AggregationExactness#APPROXIMATE}).
  *
  * <h2>Chaining through intermediates</h2>
  *
  * <p>When multiple targets are requested and one target can feed another,
  * the plan chains through the finer target rather than re-aggregating from
- * the source. For example, {@code resolveAuto(GD_, {GM, GQ, GY})} produces
+ * the source. For example, {@code expandFind(GD_, {GM, GQ, GY})} produces
  * {@code GD → GM → GQ → GY}, not three independent edges from {@code GD}.
  * Chained plans do far less work: each step aggregates from a small set of
  * intervals rather than re-summing raw day-level data.
@@ -43,7 +43,7 @@ import java.util.Set;
  * edges; if {@code allowApproximations} is {@code false}, only exact paths
  * are considered.
  */
-public final class AggregationResolver {
+public final class AggregationStepPlanner {
 
   /**
    * Sample day used to measure each sequence's typical interval length for
@@ -60,7 +60,7 @@ public final class AggregationResolver {
    * @param sequences all sequences the resolver may use, both as sources and
    *     as intermediates; duplicate keys are rejected so lookups are unambiguous
    */
-  public AggregationResolver(Collection<? extends TimeSequence> sequences) {
+  public AggregationStepPlanner(Collection<? extends TimeSequence> sequences) {
     var map = new HashMap<TimeSequenceKey, TimeSequence>();
     for (var seq : sequences) {
       var existing = map.putIfAbsent(seq.key(), seq);
@@ -83,9 +83,9 @@ public final class AggregationResolver {
 
   // ── Public API ─────────────────────────────────────────────────────
 
-  /** Equivalent to {@code resolveAuto(source, targetFamilies, true)}. */
-  public List<Aggregation> resolveAuto(TimeSequenceKey source, Set<TimeFamilyKey> targetFamilies) {
-    return resolveAuto(source, targetFamilies, true);
+  /** Equivalent to {@code planFindOffsets(source, targets, true)}. */
+  public List<AggregationStep> planFindOffsets(TimeSequenceKey source, Set<TimeFamilyKey> targets) {
+    return planFindOffsets(source, targets, true);
   }
 
   /**
@@ -97,19 +97,19 @@ public final class AggregationResolver {
    * @throws IllegalArgumentException if {@code source} is not registered, or
    *     any target family is not reachable under the given constraints
    */
-  public List<Aggregation> resolveAuto(
-      TimeSequenceKey source, Set<TimeFamilyKey> targetFamilies, boolean allowApproximations) {
+  public List<AggregationStep> planFindOffsets(
+      TimeSequenceKey source, Set<TimeFamilyKey> targets, boolean allowApproximations) {
     var reachable = reachableFrom(source, allowApproximations);
     var concreteTargets = new LinkedHashSet<TimeSequenceKey>();
-    for (var family : targetFamilies) {
+    for (var family : targets) {
       concreteTargets.add(pickKeyForFamily(reachable, source, family));
     }
     return chainAggregations(source, concreteTargets, allowApproximations, reachable);
   }
 
-  /** Equivalent to {@code resolveExact(source, targetKeys, true)}. */
-  public List<Aggregation> resolveExact(TimeSequenceKey source, Set<TimeSequenceKey> targetKeys) {
-    return resolveExact(source, targetKeys, true);
+  /** Equivalent to {@code resolveExact(source, targets, true)}. */
+  public List<AggregationStep> plan(TimeSequenceKey source, Set<TimeSequenceKey> targets) {
+    return plan(source, targets, true);
   }
 
   /**
@@ -120,7 +120,7 @@ public final class AggregationResolver {
    * @throws IllegalArgumentException if any target key is not registered or
    *     not reachable from {@code source}
    */
-  public List<Aggregation> resolveExact(
+  public List<AggregationStep> plan(
       TimeSequenceKey source, Set<TimeSequenceKey> targets, boolean allowApproximations) {
     for (var target : targets) {
       if (!byKey.containsKey(target))
@@ -136,7 +136,7 @@ public final class AggregationResolver {
    * coarsest already-reached source that can reach each. Targets that aren't
    * reachable from any already-reached key fall back to the shortest BFS path.
    */
-  private List<Aggregation> chainAggregations(
+  private List<AggregationStep> chainAggregations(
       TimeSequenceKey source,
       Set<TimeSequenceKey> targets,
       boolean allowApproximations,
@@ -146,7 +146,7 @@ public final class AggregationResolver {
     var reached = new LinkedHashSet<TimeSequenceKey>();
     reached.add(source);
 
-    var edges = new LinkedHashSet<Aggregation>();
+    var edges = new LinkedHashSet<AggregationStep>();
 
     var sortedTargets = new ArrayList<>(targets);
     sortedTargets.sort(Comparator.comparingInt(this::intervalLength));
@@ -161,8 +161,8 @@ public final class AggregationResolver {
         var type =
             byKey.get(bestSource).partitions().contains(target)
                 ? AggregationExactness.EXACT
-                : AggregationExactness.APPROXIMATION;
-        edges.add(new Aggregation(bestSource, target, type));
+                : AggregationExactness.APPROXIMATE;
+        edges.add(new AggregationStep(bestSource, target, type));
         reached.add(target);
       } else {
         if (reachable == null) reachable = reachableFrom(source, allowApproximations);
@@ -229,13 +229,13 @@ public final class AggregationResolver {
 
   // ── BFS over the declared aggregation graph (fallback path) ────────
 
-  private record Reach(TimeSequenceKey node, List<Aggregation> path, int hops, int approximations) {
-    Reach(TimeSequenceKey node, List<Aggregation> path) {
+  private record Reach(TimeSequenceKey node, List<AggregationStep> path, int hops, int approximations) {
+    Reach(TimeSequenceKey node, List<AggregationStep> path) {
       this(
           node,
           path,
           path.size(),
-          (int) path.stream().filter(a -> a.exactness() == AggregationExactness.APPROXIMATION).count());
+          (int) path.stream().filter(a -> a.exactness() == AggregationExactness.APPROXIMATE).count());
     }
   }
 
@@ -267,7 +267,7 @@ public final class AggregationResolver {
             pq,
             new Reach(
                 target,
-                append(current.path(), new Aggregation(
+                append(current.path(), new AggregationStep(
                     current.node(), target, AggregationExactness.EXACT))));
       }
 
@@ -280,8 +280,8 @@ public final class AggregationResolver {
               pq,
               new Reach(
                   target,
-                  append(current.path(), new Aggregation(
-                      current.node(), target, AggregationExactness.APPROXIMATION))));
+                  append(current.path(), new AggregationStep(
+                      current.node(), target, AggregationExactness.APPROXIMATE))));
         }
       }
     }
@@ -297,7 +297,7 @@ public final class AggregationResolver {
     }
   }
 
-  // ── Target selection for resolveAuto ───────────────────────────────
+  // ── Target selection for expandFind ───────────────────────────────
 
   private TimeSequenceKey pickKeyForFamily(
       Map<TimeSequenceKey, Reach> reachable, TimeSequenceKey source, TimeFamilyKey family) {
@@ -325,32 +325,32 @@ public final class AggregationResolver {
 
   // ── Path and edge utilities ────────────────────────────────────────
 
-  private static List<Aggregation> append(List<Aggregation> path, Aggregation edge) {
-    var next = new ArrayList<Aggregation>(path.size() + 1);
+  private static List<AggregationStep> append(List<AggregationStep> path, AggregationStep edge) {
+    var next = new ArrayList<AggregationStep>(path.size() + 1);
     next.addAll(path);
     next.add(edge);
     return List.copyOf(next);
   }
 
-  private static List<Aggregation> topoSortEdges(Collection<Aggregation> edges) {
+  private static List<AggregationStep> topoSortEdges(Collection<AggregationStep> edges) {
     if (edges.isEmpty()) return List.of();
 
-    var producing = new HashMap<TimeSequenceKey, List<Aggregation>>();
-    var consuming = new HashMap<TimeSequenceKey, List<Aggregation>>();
+    var producing = new HashMap<TimeSequenceKey, List<AggregationStep>>();
+    var consuming = new HashMap<TimeSequenceKey, List<AggregationStep>>();
     for (var edge : edges) {
       producing.computeIfAbsent(edge.target(), k -> new ArrayList<>()).add(edge);
       consuming.computeIfAbsent(edge.source(), k -> new ArrayList<>()).add(edge);
     }
 
-    var indegree = new HashMap<Aggregation, Integer>(edges.size());
+    var indegree = new HashMap<AggregationStep, Integer>(edges.size());
     for (var edge : edges) {
       indegree.put(edge, producing.getOrDefault(edge.source(), List.of()).size());
     }
 
-    var queue = new ArrayDeque<Aggregation>();
+    var queue = new ArrayDeque<AggregationStep>();
     for (var edge : edges) if (indegree.get(edge) == 0) queue.add(edge);
 
-    var result = new ArrayList<Aggregation>(edges.size());
+    var result = new ArrayList<AggregationStep>(edges.size());
     while (!queue.isEmpty()) {
       var current = queue.poll();
       result.add(current);

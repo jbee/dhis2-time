@@ -20,7 +20,7 @@ import static org.hisp.dhis2.time.GregorianSequences.GY_;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-class AggregationExpanderTest {
+class AggregationJobPlannerTest {
 
   /** All eight Gregorian sequences, keyed by their default-offset variants. */
   private static final List<TimeSequence> GREGORIAN =
@@ -28,10 +28,10 @@ class AggregationExpanderTest {
 
   @Test
   void expandsSingleEdge() {
-    var resolver = new AggregationResolver(GREGORIAN);
-    var expander = new AggregationExpander(GREGORIAN);
-    var plan = resolver.resolveAuto(GD_.key(), Set.of(GM));
-    var jobs = expander.expand(GD_.key(), Epoch2kInterval.ofYear(2024), plan);
+    var resolver = new AggregationStepPlanner(GREGORIAN);
+    var expander = new AggregationJobPlanner(GREGORIAN);
+    var plan = resolver.planFindOffsets(GD_.key(), Set.of(GM));
+    var jobs = expander.plan(GD_.key(), Epoch2kInterval.ofYear(2024), plan);
 
     assertEquals(12, jobs.size());
     for (var job : jobs) {
@@ -47,10 +47,10 @@ class AggregationExpanderTest {
 
   @Test
   void expandsChainedPlan() {
-    var resolver = new AggregationResolver(GREGORIAN);
-    var expander = new AggregationExpander(GREGORIAN);
-    var plan = resolver.resolveAuto(GD_.key(), Set.of(GM, GQ, GY));
-    var jobs = expander.expand(GD_.key(), Epoch2kInterval.ofYear(2024), plan);
+    var resolver = new AggregationStepPlanner(GREGORIAN);
+    var expander = new AggregationJobPlanner(GREGORIAN);
+    var plan = resolver.planFindOffsets(GD_.key(), Set.of(GM, GQ, GY));
+    var jobs = expander.plan(GD_.key(), Epoch2kInterval.ofYear(2024), plan);
 
     assertEquals(17, jobs.size());  // 12 + 4 + 1
     var yearJob = jobs.stream().filter(j -> j.target().equals(GY_.key())).findFirst().orElseThrow();
@@ -60,10 +60,10 @@ class AggregationExpanderTest {
 
   @Test
   void expansionRespectsApproximationAttribution() {
-    var resolver = new AggregationResolver(GREGORIAN);
-    var expander = new AggregationExpander(GREGORIAN);
-    var plan = resolver.resolveAuto(GW_.key(), Set.of(GY));
-    var jobs = expander.expand(GW_.key(), Epoch2kInterval.ofYear(2024), plan);
+    var resolver = new AggregationStepPlanner(GREGORIAN);
+    var expander = new AggregationJobPlanner(GREGORIAN);
+    var plan = resolver.planFindOffsets(GW_.key(), Set.of(GY));
+    var jobs = expander.plan(GW_.key(), Epoch2kInterval.ofYear(2024), plan);
 
     // Frame 2024 produces exactly one job: year 2024. The boundary week
     // starting 2024-12-30 is majority-in-2025 and belongs to frame 2025's
@@ -73,7 +73,7 @@ class AggregationExpanderTest {
     var job = jobs.get(0);
     assertEquals(GY_.key(), job.target());
     assertEquals(Epoch2kInterval.ofYear(2024), job.targetInterval());
-    assertEquals(AggregationExactness.APPROXIMATION, job.exactness());
+    assertEquals(AggregationExactness.APPROXIMATE, job.exactness());
 
     // 52 weeks are majority-in-2024
     assertEquals(52, job.sourceIntervals().size());
@@ -95,12 +95,12 @@ class AggregationExpanderTest {
 
   @Test
   void adjacentFramesDoNotDuplicateBoundaryWeek() {
-    var resolver = new AggregationResolver(GREGORIAN);
-    var expander = new AggregationExpander(GREGORIAN);
-    var plan = resolver.resolveAuto(GW_.key(), Set.of(GY));
+    var resolver = new AggregationStepPlanner(GREGORIAN);
+    var expander = new AggregationJobPlanner(GREGORIAN);
+    var plan = resolver.planFindOffsets(GW_.key(), Set.of(GY));
 
-    var year2024 = expander.expand(GW_.key(), Epoch2kInterval.ofYear(2024), plan);
-    var year2025 = expander.expand(GW_.key(), Epoch2kInterval.ofYear(2025), plan);
+    var year2024 = expander.plan(GW_.key(), Epoch2kInterval.ofYear(2024), plan);
+    var year2025 = expander.plan(GW_.key(), Epoch2kInterval.ofYear(2025), plan);
 
     // Count how many times each week is attributed to a target across both expansions
     var attributions = new java.util.HashMap<Epoch2kInterval, Integer>();

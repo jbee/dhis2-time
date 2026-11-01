@@ -10,18 +10,18 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * Expands an abstract aggregation plan (produced by {@link AggregationResolver})
+ * Expands an abstract aggregation plan (produced by {@link AggregationStepPlanner})
  * against a source time-frame into a concrete list of {@link AggregationJob}s.
  *
  * <p>A job pairs one target interval with the set of source intervals that feed
- * into it, under the edge's attribution rule:
+ * into it, under the step's attribution rule:
  *
  * <ul>
  *   <li>{@link AggregationExactness#EXACT} — the source intervals
  *       are {@code source.partition(targetInterval)}: they tile the target
  *       interval exactly, so the sum of their values is the target value with
  *       no boundary loss.</li>
- *   <li>{@link AggregationExactness#APPROXIMATION} — the source
+ *   <li>{@link AggregationExactness#APPROXIMATE} — the source
  *       intervals are {@code source.contributorsTo(targetInterval)}: each is
  *       attributed to {@code targetInterval} by majority of days, with ties
  *       broken toward the earlier parent (the one containing the source
@@ -51,11 +51,11 @@ import java.util.Set;
  * the partial coverage is visible in {@link AggregationJob#sourceIntervals()}.
  * Skipping partial targets is an executor policy, not an expansion concern.
  */
-public final class AggregationExpander {
+public final class AggregationJobPlanner {
 
   private final Map<TimeSequenceKey, TimeSequence> byKey;
 
-  public AggregationExpander(Collection<? extends TimeSequence> sequences) {
+  public AggregationJobPlanner(Collection<? extends TimeSequence> sequences) {
     var map = new HashMap<TimeSequenceKey, TimeSequence>();
     for (var seq : sequences) {
       var existing = map.putIfAbsent(seq.key(), seq);
@@ -67,18 +67,18 @@ public final class AggregationExpander {
   }
 
   /**
-   * Expands an abstract aggregation plan (produced by {@link AggregationResolver})
+   * Expands an abstract aggregation plan (produced by {@link AggregationStepPlanner})
    * against a source time-frame into a concrete list of {@link AggregationJob}s.
    *
    * <p>A job pairs one target interval with the set of source intervals that feed
-   * into it, under the edge's attribution rule:
+   * into it, under the step's attribution rule:
    *
    * <ul>
    *   <li>{@link AggregationExactness#EXACT} — the source intervals
    *       are {@code source.partition(targetInterval)}: they tile the target
    *       interval exactly, so the sum of their values is the target value with
    *       no boundary loss.</li>
-   *   <li>{@link AggregationExactness#APPROXIMATION} — the source
+   *   <li>{@link AggregationExactness#APPROXIMATE} — the source
    *       intervals are {@code source.contributorsTo(targetInterval)}: each is
    *       attributed to {@code targetInterval} by majority of days, with ties
    *       broken toward the earlier parent (the one containing the source
@@ -114,26 +114,26 @@ public final class AggregationExpander {
    * @param sourceKey the key of the sequence raw data arrives in
    * @param frame the source time-frame; source intervals overlapping this range
    *     are the seeds for the plan
-   * @param plan the abstract plan from {@link AggregationResolver}, in
+   * @param plan the abstract plan from {@link AggregationStepPlanner}, in
    *     topological order (sources before targets)
-   * @return the concrete jobs, in the same edge order as the plan, with jobs
-   *     for each edge grouped consecutively
+   * @return the concrete jobs, in the same step order as the plan, with jobs
+   *     for each step grouped consecutively
    * @throws IllegalArgumentException if {@code sourceKey} is not registered, or
    *     if {@code plan} references a key not registered with this expander
    */
-  public List<AggregationJob> expand(
-      TimeSequenceKey sourceKey, Epoch2kInterval frame, List<Aggregation> plan) {
+  public List<AggregationJob> plan(
+      TimeSequenceKey sourceKey, Epoch2kInterval frame, List<AggregationStep> plan) {
 
     var sourceSeq = byKey.get(sourceKey);
     if (sourceSeq == null)
       throw new IllegalArgumentException("no sequence registered for source key " + sourceKey);
-    for (var edge : plan) {
-      if (!byKey.containsKey(edge.source()))
+    for (var step : plan) {
+      if (!byKey.containsKey(step.source()))
         throw new IllegalArgumentException(
-            "no sequence registered for " + edge.source() + " (edge " + edge + ")");
-      if (!byKey.containsKey(edge.target()))
+            "no sequence registered for " + step.source() + " (step " + step + ")");
+      if (!byKey.containsKey(step.target()))
         throw new IllegalArgumentException(
-            "no sequence registered for " + edge.target() + " (edge " + edge + ")");
+            "no sequence registered for " + step.target() + " (step " + step + ")");
     }
 
     var active = new LinkedHashMap<TimeSequenceKey, Set<Epoch2kInterval>>();
@@ -141,12 +141,12 @@ public final class AggregationExpander {
 
     var jobs = new ArrayList<AggregationJob>();
 
-    for (var edge : plan) {
-      var sourceIntervals = active.getOrDefault(edge.source(), Set.of());
+    for (var step : plan) {
+      var sourceIntervals = active.getOrDefault(step.source(), Set.of());
       if (sourceIntervals.isEmpty()) continue;
 
-      var targetSeq = byKey.get(edge.target());
-      var sourceSeqForEdge = byKey.get(edge.source());
+      var targetSeq = byKey.get(step.target());
+      var sourceSeqForEdge = byKey.get(step.source());
 
       // Collect every target interval that any active source interval touches.
       // A straddling source interval contributes to two (or more) consecutive
@@ -170,15 +170,15 @@ public final class AggregationExpander {
 
       for (var ti : targetIntervals) {
         var feeding =
-            switch (edge.exactness()) {
+            switch (step.exactness()) {
               case EXACT -> sourceSeqForEdge.partition(ti);
-              case APPROXIMATION -> sourceSeqForEdge.contributorsTo(ti);
+              case APPROXIMATE -> sourceSeqForEdge.contributorsTo(ti);
             };
         var activeFeeding = feeding.stream().filter(sourceIntervals::contains).toList();
         if (activeFeeding.isEmpty()) continue;
 
-        jobs.add(new AggregationJob(edge.source(), edge.target(), ti, activeFeeding, edge.exactness()));
-        active.computeIfAbsent(edge.target(), k -> new LinkedHashSet<>()).add(ti);
+        jobs.add(new AggregationJob(step.source(), step.target(), ti, activeFeeding, step.exactness()));
+        active.computeIfAbsent(step.target(), k -> new LinkedHashSet<>()).add(ti);
       }
     }
     return List.copyOf(jobs);
