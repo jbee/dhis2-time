@@ -11,6 +11,22 @@ public record TimeFamilyKey(char system, char interval) {
           "interval must be A-Z, got: '" + interval + "' (" + (int) interval + ")");
   }
 
+  public TimeSequenceKey noOffset() {
+    return new TimeSequenceKey(system, interval);
+  }
+
+  public TimeSequenceKey offsetBy(int offset) {
+    return new TimeSequenceKey(system, interval, TimeSequenceKey.offsetChar(offset));
+  }
+
+  public TimeSequenceKey offsetBy(Epoch2kDay.DayOfWeek day1) {
+    return new TimeSequenceKey(system, interval, TimeSequenceKey.offsetChar(day1));
+  }
+
+  public TimeSequenceKey offsetBy(Epoch2kDay.MonthOfYear month1) {
+    return new TimeSequenceKey(system, interval, TimeSequenceKey.offsetChar(month1));
+  }
+
   @Override
   public String toString() {
     return "" + system + interval;

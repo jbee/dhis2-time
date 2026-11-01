@@ -11,7 +11,7 @@ class TestEthiopianSequences {
 
   @Test
   void dailyIntervalIsSingleDay() {
-    var i = Daily.interval(toEpochDayInEC(1992, 4, 22));
+    var i = ED_.interval(toEpochDayInEC(1992, 4, 22));
     assertEquals(1, i.lengthInDays());
     assertEquals(toEpochDayInEC(1992, 4, 22), i.firstDay());
     assertEquals(toEpochDayInEC(1992, 4, 22), i.lastDay());
@@ -21,7 +21,7 @@ class TestEthiopianSequences {
   void monthlyIntervalContainsItsDay() {
     for (Epoch2kDay d : new Epoch2kDay[] {
         toEpochDayInEC(1992, 4, 22), toEpochDayInEC(1995, 13, 3), toEpochDayInEC(2017, 1, 1)}) {
-      assertTrue(Monthly.interval(d).contains(d));
+      assertTrue(EM_.interval(d).contains(d));
     }
   }
 
@@ -29,14 +29,14 @@ class TestEthiopianSequences {
   void yearlyIntervalContainsItsDay() {
     for (Epoch2kDay d : new Epoch2kDay[] {
         toEpochDayInEC(1992, 4, 22), toEpochDayInEC(1995, 13, 3), toEpochDayInEC(2017, 1, 1)}) {
-      assertTrue(Yearly.interval(d).contains(d));
+      assertTrue(EY_.interval(d).contains(d));
     }
   }
 
   @Test
   void monthlyNextIsFollowingEthiopianMonth() {
-    var tahsas = Monthly.interval(new Epoch2kDay(0));  // Tahsas 1992
-    var tir = Monthly.next(tahsas);                    // Tir 1992
+    var tahsas = EM_.interval(new Epoch2kDay(0));  // Tahsas 1992
+    var tir = EM_.next(tahsas);                    // Tir 1992
     assertEquals(toEpochDayInEC(1992, 5, 1), tir.firstDay());
     assertEquals(toEpochDayInEC(1992, 5, 30), tir.lastDay());
   }
@@ -44,40 +44,40 @@ class TestEthiopianSequences {
   @Test
   void monthlyNextFromPagumeCrossesEthiopianYear() {
     // Pagume 1995 is the last month; next is Meskerem 1996.
-    var pagume = Monthly.interval(toEpochDayInEC(1995, 13, 1));
-    var meskerem = Monthly.next(pagume);
+    var pagume = EM_.interval(toEpochDayInEC(1995, 13, 1));
+    var meskerem = EM_.next(pagume);
     assertEquals(toEpochDayInEC(1996, 1, 1), meskerem.firstDay());
   }
 
   @Test
   void yearlyNextIsFollowingEthiopianYear() {
-    var y1992 = Yearly.interval(new Epoch2kDay(0));
-    var y1993 = Yearly.next(y1992);
+    var y1992 = EY_.interval(new Epoch2kDay(0));
+    var y1993 = EY_.next(y1992);
     assertEquals(toEpochDayInEC(1993, 1, 1), y1993.firstDay());
     assertEquals(toEpochDayInEC(1993, 13, 5), y1993.lastDay());
   }
 
   @Test
   void nextAndPreviousAreInverses() {
-    var month = Monthly.interval(toEpochDayInEC(1995, 13, 3));
-    assertEquals(month, Monthly.previous(Monthly.next(month)));
-    assertEquals(month, Monthly.next(Monthly.previous(month)));
+    var month = EM_.interval(toEpochDayInEC(1995, 13, 3));
+    assertEquals(month, EM_.previous(EM_.next(month)));
+    assertEquals(month, EM_.next(EM_.previous(month)));
 
-    var year = Yearly.interval(toEpochDayInEC(1995, 6, 15));
-    assertEquals(year, Yearly.previous(Yearly.next(year)));
-    assertEquals(year, Yearly.next(Yearly.previous(year)));
+    var year = EY_.interval(toEpochDayInEC(1995, 6, 15));
+    assertEquals(year, EY_.previous(EY_.next(year)));
+    assertEquals(year, EY_.next(EY_.previous(year)));
   }
 
   @Test
   void dailyPartitionOfEthiopianMonthYields30Days() {
-    var tahsas = Monthly.interval(new Epoch2kDay(0));
-    assertEquals(30, Daily.partition(tahsas).size());
+    var tahsas = EM_.interval(new Epoch2kDay(0));
+    assertEquals(30, ED_.partition(tahsas).size());
   }
 
   @Test
   void dailyPartitionOfLeapPagumeYields6Days() {
-    var pagume = Monthly.interval(toEpochDayInEC(1995, 13, 1));
-    var days = Daily.partition(pagume);
+    var pagume = EM_.interval(toEpochDayInEC(1995, 13, 1));
+    var days = ED_.partition(pagume);
     assertEquals(6, days.size());
     assertEquals(toEpochDayInEC(1995, 13, 1), days.get(0).firstDay());
     assertEquals(toEpochDayInEC(1995, 13, 6), days.get(5).lastDay());
@@ -85,8 +85,8 @@ class TestEthiopianSequences {
 
   @Test
   void monthlyPartitionOfEthiopianYearYields13Months() {
-    var year = Yearly.interval(toEpochDayInEC(1995, 6, 15));
-    var months = Monthly.partition(year);
+    var year = EY_.interval(toEpochDayInEC(1995, 6, 15));
+    var months = EM_.partition(year);
     assertEquals(13, months.size());
     assertEquals(toEpochDayInEC(1995, 1, 1), months.get(0).firstDay());
     assertEquals(toEpochDayInEC(1995, 13, 6), months.get(12).lastDay());
@@ -94,36 +94,36 @@ class TestEthiopianSequences {
 
   @Test
   void dailyAggregatesToEthiopianMonthAndYearOnly() {
-    assertEquals(Set.of(Month, Year), Daily.contributesTo());
-    assertFalse(Daily.contributesTo(GregorianSequences.Month));
-    assertFalse(Daily.contributesTo(GregorianSequences.Year));
+    assertEquals(Set.of(EM, EY), ED_.contributesTo());
+    assertFalse(ED_.contributesTo(GregorianSequences.GM));
+    assertFalse(ED_.contributesTo(GregorianSequences.GY));
   }
 
   @Test
   void monthlyAggregatesToEthiopianYearOnly() {
-    assertEquals(Set.of(Year), Monthly.contributesTo());
+    assertEquals(Set.of(EY), EM_.contributesTo());
   }
 
   @Test
   void yearlyAggregatesToNothing() {
-    assertTrue(Yearly.contributesTo().isEmpty());
+    assertTrue(EY_.contributesTo().isEmpty());
   }
 
   @Test
   void ethiopianAndGregorianYearlyDoNotInteract() {
-    var ethYear = Yearly.interval(toEpochDayInEC(1995, 6, 15));
-    var gregYear = GregorianSequences.Yearly.interval(Epoch2kDay.ofYMD(2002, 1, 1));
+    var ethYear = EY_.interval(toEpochDayInEC(1995, 6, 15));
+    var gregYear = GregorianSequences.GY_.interval(Epoch2kDay.ofYMD(2002, 1, 1));
     assertTrue(ethYear.overlaps(gregYear));
     // But the Ethiopian sequence does not claim to aggregate to Gregorian years.
-    assertFalse(Yearly.contributesTo(GregorianSequences.Year));
-    assertFalse(GregorianSequences.Yearly.contributesTo(Year));
+    assertFalse(EY_.contributesTo(GregorianSequences.GY));
+    assertFalse(GregorianSequences.GY_.contributesTo(EY));
   }
 
   @Test
   void partitionAcrossCalendarBoundaryThrows() {
     // A Gregorian calendar year is not aligned to Ethiopian month boundaries.
     var gregYear = Epoch2kInterval.ofYear(2000);
-    assertThrows(IllegalArgumentException.class, () -> Monthly.partition(gregYear));
+    assertThrows(IllegalArgumentException.class, () -> EM_.partition(gregYear));
   }
 
   @Test
@@ -131,7 +131,7 @@ class TestEthiopianSequences {
     // The Ethiopian month containing the most days of Gregorian 2000
     // is included; boundary months are filtered by majority.
     var gregYear = Epoch2kInterval.ofYear(2000);
-    var members = Monthly.contributorsTo(gregYear);
+    var members = EM_.contributorsTo(gregYear);
     for (var m : members) {
       int inside = Math.min(m.lastDay().daysSince2k(), gregYear.lastDay().daysSince2k())
                  - Math.max(m.firstDay().daysSince2k(), gregYear.firstDay().daysSince2k()) + 1;

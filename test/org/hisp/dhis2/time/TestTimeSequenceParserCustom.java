@@ -264,8 +264,8 @@ class TestTimeSequenceParserCustom {
   void customSequenceAndCalendarCoexistInRegistry() {
     var combined = new TimeSequenceParser(List.of(
         SCHOOL_TERMS,
-        GregorianSequences.Quarterly,
-        GregorianSequences.Yearly));
+        GregorianSequences.GQ_,
+        GregorianSequences.GY_));
 
     assertEquals(SPRING_2024, combined.parse("ST/2024:1").interval());
     assertEquals(AUTUMN_2024, combined.parse("ST/2024:2").interval());

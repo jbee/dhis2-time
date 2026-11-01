@@ -12,22 +12,22 @@ class QuarterlyGregorianSequenceTest {
 
   @Test
   void calendarQuarterQ1() {
-    assertInterval(Quarterly.interval(ofYMD(2024, 2, 15)), 2024, 1, 1, 2024, 3, 31);
+    assertInterval(GQ_.interval(ofYMD(2024, 2, 15)), 2024, 1, 1, 2024, 3, 31);
   }
 
   @Test
   void calendarQuarterQ2() {
-    assertInterval(Quarterly.interval(ofYMD(2024, 5, 15)), 2024, 4, 1, 2024, 6, 30);
+    assertInterval(GQ_.interval(ofYMD(2024, 5, 15)), 2024, 4, 1, 2024, 6, 30);
   }
 
   @Test
   void calendarQuarterQ3() {
-    assertInterval(Quarterly.interval(ofYMD(2024, 8, 15)), 2024, 7, 1, 2024, 9, 30);
+    assertInterval(GQ_.interval(ofYMD(2024, 8, 15)), 2024, 7, 1, 2024, 9, 30);
   }
 
   @Test
   void calendarQuarterQ4() {
-    assertInterval(Quarterly.interval(ofYMD(2024, 11, 15)), 2024, 10, 1, 2024, 12, 31);
+    assertInterval(GQ_.interval(ofYMD(2024, 11, 15)), 2024, 10, 1, 2024, 12, 31);
   }
 
   @Test
@@ -52,20 +52,20 @@ class QuarterlyGregorianSequenceTest {
   @Test
   void nextFromQ4CrossesToQ1OfFollowingYear() {
     assertInterval(
-        Quarterly.next(Quarterly.interval(ofYMD(2024, 11, 15))), 2025, 1, 1, 2025, 3, 31);
+        GQ_.next(GQ_.interval(ofYMD(2024, 11, 15))), 2025, 1, 1, 2025, 3, 31);
   }
 
   @Test
   void nextAndPreviousAreInverses() {
-    var i = Quarterly.interval(ofYMD(2024, 5, 15));
-    assertEquals(i, Quarterly.previous(Quarterly.next(i)));
-    assertEquals(i, Quarterly.next(Quarterly.previous(i)));
+    var i = GQ_.interval(ofYMD(2024, 5, 15));
+    assertEquals(i, GQ_.previous(GQ_.next(i)));
+    assertEquals(i, GQ_.next(GQ_.previous(i)));
   }
 
   @Test
   void partitionYearIntoFourQuarters() {
     var y = Epoch2kInterval.ofYear(2024);
-    var parts = Quarterly.partition(y);
+    var parts = GQ_.partition(y);
     assertEquals(4, parts.size());
     assertInterval(parts.get(0), 2024, 1, 1, 2024, 3, 31);
     assertInterval(parts.get(3), 2024, 10, 1, 2024, 12, 31);
@@ -90,7 +90,7 @@ class QuarterlyGregorianSequenceTest {
 
   @Test
   void aggregatesToContainsYear() {
-    assertEquals(Set.of(Year, SixMonth), Quarterly.contributesTo());
+    assertEquals(Set.of(GY, GS), GQ_.contributesTo());
   }
 
   @Test
@@ -99,10 +99,10 @@ class QuarterlyGregorianSequenceTest {
         IllegalArgumentException.class,
         () ->
             new GregorianSequences.QuarterlyGregorianSequence(
-                TimeSequenceKey.quarterly('G', Epoch2kDay.MonthOfYear.July),
+                GregorianSequences.GQ.offsetBy(Epoch2kDay.MonthOfYear.July),
                 Epoch2kDay.MonthOfYear.April,
-                Set.of(Year),
-                Set.of(Year)));
+                Set.of(GY),
+                Set.of(GY)));
   }
 
   @Test
@@ -110,28 +110,28 @@ class QuarterlyGregorianSequenceTest {
     // SixMonth is not in Quarterly.partitions() because Quarterly(April) cannot
     // tile SixMonthly(February) — the family key doesn't encode offset, so the
     // declaration must hold for every (quarterly offset, sixMonthly offset) pair.
-    assertFalse(Quarterly.partitions(SixMonth));
+    assertFalse(GQ_.partitions(GS));
   }
 
   @Test
   void quarterlyPartitionIsStructuralNotFamilyGated() {
     // partition() does not consult partitions(). A specific pair whose boundaries
     // align tiles successfully regardless of the declared family set.
-    var janJun = SixMonthly.interval(ofYMD(2024, 3, 15));    // Jan 1 .. Jun 30
-    var parts = Quarterly.partition(janJun);
+    var janJun = GS_.interval(ofYMD(2024, 3, 15));    // Jan 1 .. Jun 30
+    var parts = GQ_.partition(janJun);
     assertEquals(2, parts.size());
     assertEquals(ofYMD(2024, 1, 1), parts.get(0).firstDay());
     assertEquals(ofYMD(2024, 4, 1), parts.get(1).firstDay());
 
     // A six-month whose start is not a quarter boundary fails structurally.
     var febJul = sixMonthly(Epoch2kDay.MonthOfYear.February).interval(ofYMD(2024, 5, 15));
-    assertThrows(IllegalArgumentException.class, () -> Quarterly.partition(febJul));
+    assertThrows(IllegalArgumentException.class, () -> GQ_.partition(febJul));
   }
 
   @Test
   void quarterlyStillContributesToSixMonthly() {
-    var s1 = SixMonthly.interval(ofYMD(2024, 3, 15));   // Jan-Jun 2024
-    var quarters = Quarterly.contributorsTo(s1);
+    var s1 = GS_.interval(ofYMD(2024, 3, 15));   // Jan-Jun 2024
+    var quarters = GQ_.contributorsTo(s1);
     assertEquals(2, quarters.size());
     assertEquals(ofYMD(2024, 1, 1), quarters.get(0).firstDay());
     assertEquals(ofYMD(2024, 4, 1), quarters.get(1).firstDay());

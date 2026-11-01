@@ -9,18 +9,18 @@ import org.junit.jupiter.api.Test;
 class TestTimeSequenceParser {
 
   private static final TimeSequenceParser PARSER = new TimeSequenceParser(List.of(
-      GregorianSequences.Daily,
-      GregorianSequences.Quarterly,
-      GregorianSequences.Monthly,
-      GregorianSequences.Yearly,
-      GregorianSequences.Weekly));
+      GregorianSequences.GD_,
+      GregorianSequences.GQ_,
+      GregorianSequences.GM_,
+      GregorianSequences.GY_,
+      GregorianSequences.GW_));
 
   // ── Explicit-length form ──────────────────────────────────────────
 
   @Test
   void parsesFullDateWithExplicitLength() {
     var p = PARSER.parse("GQ/2022-04-01+91");
-    assertEquals(GregorianSequences.Quarterly.key(), p.key());
+    assertEquals(GregorianSequences.GQ_.key(), p.key());
     assertEquals(new Epoch2kInterval(ofYMD(2022, 4, 1), ofYMD(2022, 6, 30)), p.interval());
   }
 
@@ -130,8 +130,8 @@ class TestTimeSequenceParser {
   @Test
   void duplicateKeysRejectedAtConstruction() {
     assertThrows(IllegalArgumentException.class, () -> new TimeSequenceParser(List.of(
-        GregorianSequences.Quarterly,
-        GregorianSequences.Quarterly)));
+        GregorianSequences.GQ_,
+        GregorianSequences.GQ_)));
   }
 
   // ── Error cases ──────────────────────────────────────────────────
@@ -176,7 +176,7 @@ class TestTimeSequenceParser {
 
   @Test
   void customSequenceCollidingWithCalendarKeyRejectedAtRegistryConstruction() {
-    var gregorianYear = GregorianSequences.Yearly;   // key "GY/"
+    var gregorianYear = GregorianSequences.GY_;   // key "GY/"
     var fakeCustom = CustomSequences.of(
         new TimeSequenceKey('G', 'Y'),               // also "GY/"
         List.of(new Epoch2kInterval(ofYMD(2024, 1, 8), ofYMD(2024, 5, 24))));

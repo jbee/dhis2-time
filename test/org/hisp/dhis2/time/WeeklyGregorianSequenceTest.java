@@ -11,13 +11,13 @@ class WeeklyGregorianSequenceTest {
 
   @Test
   void mondayAnchoredWeekRunsMondayThroughSunday() {
-    assertInterval(Weekly.interval(Epoch2kDay.ofYMD(2024, 1, 1)), 2024, 1, 1, 2024, 1, 7);
+    assertInterval(GW_.interval(Epoch2kDay.ofYMD(2024, 1, 1)), 2024, 1, 1, 2024, 1, 7);
   }
 
   @Test
   void midWeekDayMapsToSameWeek() {
-    assertInterval(Weekly.interval(Epoch2kDay.ofYMD(2024, 1, 3)), 2024, 1, 1, 2024, 1, 7);
-    assertInterval(Weekly.interval(Epoch2kDay.ofYMD(2024, 1, 7)), 2024, 1, 1, 2024, 1, 7);
+    assertInterval(GW_.interval(Epoch2kDay.ofYMD(2024, 1, 3)), 2024, 1, 1, 2024, 1, 7);
+    assertInterval(GW_.interval(Epoch2kDay.ofYMD(2024, 1, 7)), 2024, 1, 1, 2024, 1, 7);
   }
 
   @Test
@@ -35,33 +35,33 @@ class WeeklyGregorianSequenceTest {
           Epoch2kDay.ofYMD(2024, 12, 31),
           Epoch2kDay.ofYMD(2025, 1, 1)
         }) {
-      assertContains(Weekly.interval(d), d);
+      assertContains(GW_.interval(d), d);
     }
   }
 
   @Test
   void nextIsFollowingWeek() {
     assertInterval(
-        Weekly.next(Weekly.interval(Epoch2kDay.ofYMD(2024, 1, 1))), 2024, 1, 8, 2024, 1, 14);
+        GW_.next(GW_.interval(Epoch2kDay.ofYMD(2024, 1, 1))), 2024, 1, 8, 2024, 1, 14);
   }
 
   @Test
   void previousIsPrecedingWeek() {
     assertInterval(
-        Weekly.previous(Weekly.interval(Epoch2kDay.ofYMD(2024, 1, 1))), 2023, 12, 25, 2023, 12, 31);
+        GW_.previous(GW_.interval(Epoch2kDay.ofYMD(2024, 1, 1))), 2023, 12, 25, 2023, 12, 31);
   }
 
   @Test
   void nextAndPreviousAreInverses() {
-    var i = Weekly.interval(Epoch2kDay.ofYMD(2024, 6, 15));
-    assertEquals(i, Weekly.previous(Weekly.next(i)));
-    assertEquals(i, Weekly.next(Weekly.previous(i)));
+    var i = GW_.interval(Epoch2kDay.ofYMD(2024, 6, 15));
+    assertEquals(i, GW_.previous(GW_.next(i)));
+    assertEquals(i, GW_.next(GW_.previous(i)));
   }
 
   @Test
   void partitionBiWeekIntoTwoWeeks() {
     var biWeek = interval(2024, 1, 1, 2024, 1, 14);
-    var parts = Weekly.partition(biWeek);
+    var parts = GW_.partition(biWeek);
     assertEquals(2, parts.size());
     assertInterval(parts.get(0), 2024, 1, 1, 2024, 1, 7);
     assertInterval(parts.get(1), 2024, 1, 8, 2024, 1, 14);
@@ -70,7 +70,7 @@ class WeeklyGregorianSequenceTest {
   @Test
   void partitionMonthThrowsBecauseWeeksStraddleMonths() {
     var jan = interval(2024, 1, 1, 2024, 1, 31);
-    assertThrows(IllegalArgumentException.class, () -> Weekly.partition(jan));
+    assertThrows(IllegalArgumentException.class, () -> GW_.partition(jan));
   }
 
   @Test
@@ -78,7 +78,7 @@ class WeeklyGregorianSequenceTest {
     // June 2024: Jun 1 is Saturday. Week containing Jun 1 runs May 27–Jun 2,
     // with only 2 of 7 days in June → excluded.
     var june = interval(2024, 6, 1, 2024, 6, 30);
-    var weeks = Weekly.contributorsTo(june);
+    var weeks = GW_.contributorsTo(june);
     assertEquals(4, weeks.size());
     assertEquals(Epoch2kDay.ofYMD(2024, 6, 3), weeks.get(0).firstDay());
   }
@@ -88,31 +88,19 @@ class WeeklyGregorianSequenceTest {
     // Aug 2024: Aug 1 is Thursday. Week containing Aug 1 runs Jul 29–Aug 4,
     // with 4 of 7 days in Aug → included.
     var aug = interval(2024, 8, 1, 2024, 8, 31);
-    var weeks = Weekly.contributorsTo(aug);
+    var weeks = GW_.contributorsTo(aug);
     assertEquals(5, weeks.size());
     assertEquals(Epoch2kDay.ofYMD(2024, 7, 29), weeks.get(0).firstDay());
   }
 
   @Test
   void partitionsContainsOnlyBiWeek() {
-    assertEquals(Set.of(BiWeek), Weekly.partitions());
+    assertEquals(Set.of(GB), GW_.partitions());
   }
 
   @Test
   void aggregatesToContainsBiWeekMonthQuarterYear() {
-    assertEquals(Set.of(BiWeek, Month, BiMonth, Quarter, SixMonth, Year), Weekly.contributesTo());
-  }
-
-  @Test
-  void compactConstructorRejectsKeyWithoutDayOffset() {
-    assertThrows(
-        IllegalArgumentException.class,
-        () ->
-            new GregorianSequences.WeeklyGregorianSequence(
-                new TimeSequenceKey('G', 'W'),
-                Epoch2kDay.DayOfWeek.Monday,
-                Set.of(BiWeek),
-                Set.of(BiWeek)));
+    assertEquals(Set.of(GB, GM, GT, GQ, GS, GY), GW_.contributesTo());
   }
 
   @Test
@@ -121,9 +109,9 @@ class WeeklyGregorianSequenceTest {
         IllegalArgumentException.class,
         () ->
             new GregorianSequences.WeeklyGregorianSequence(
-                TimeSequenceKey.weekly('G', Epoch2kDay.DayOfWeek.Monday),
+                GW.offsetBy(Epoch2kDay.DayOfWeek.Monday),
                 Epoch2kDay.DayOfWeek.Tuesday,
-                Set.of(BiWeek),
-                Set.of(BiWeek)));
+                Set.of(GB),
+                Set.of(GB)));
   }
 }

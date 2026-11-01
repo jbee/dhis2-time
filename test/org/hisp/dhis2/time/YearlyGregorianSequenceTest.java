@@ -10,17 +10,17 @@ class YearlyGregorianSequenceTest {
 
   @Test
   void calendarYearIsFullYear() {
-    assertInterval(Yearly.interval(Epoch2kDay.ofYMD(2024, 6, 15)), 2024, 1, 1, 2024, 12, 31);
+    assertInterval(GY_.interval(Epoch2kDay.ofYMD(2024, 6, 15)), 2024, 1, 1, 2024, 12, 31);
   }
 
   @Test
   void leapYearHas366Days() {
-    assertEquals(366, Yearly.interval(Epoch2kDay.ofYMD(2024, 1, 1)).lengthInDays());
+    assertEquals(366, GY_.interval(Epoch2kDay.ofYMD(2024, 1, 1)).lengthInDays());
   }
 
   @Test
   void nonLeapYearHas365Days() {
-    assertEquals(365, Yearly.interval(Epoch2kDay.ofYMD(2023, 1, 1)).lengthInDays());
+    assertEquals(365, GY_.interval(Epoch2kDay.ofYMD(2023, 1, 1)).lengthInDays());
   }
 
   @Test
@@ -38,20 +38,20 @@ class YearlyGregorianSequenceTest {
   @Test
   void nextIsFollowingYear() {
     assertInterval(
-        Yearly.next(Yearly.interval(Epoch2kDay.ofYMD(2024, 6, 15))), 2025, 1, 1, 2025, 12, 31);
+        GY_.next(GY_.interval(Epoch2kDay.ofYMD(2024, 6, 15))), 2025, 1, 1, 2025, 12, 31);
   }
 
   @Test
   void nextAndPreviousAreInverses() {
-    var i = Yearly.interval(Epoch2kDay.ofYMD(2024, 6, 15));
-    assertEquals(i, Yearly.previous(Yearly.next(i)));
-    assertEquals(i, Yearly.next(Yearly.previous(i)));
+    var i = GY_.interval(Epoch2kDay.ofYMD(2024, 6, 15));
+    assertEquals(i, GY_.previous(GY_.next(i)));
+    assertEquals(i, GY_.next(GY_.previous(i)));
   }
 
   @Test
   void partitionReflexive() {
-    var year = Yearly.interval(Epoch2kDay.ofYMD(2024, 6, 15));
-    var parts = Yearly.partition(year);
+    var year = GY_.interval(Epoch2kDay.ofYMD(2024, 6, 15));
+    var parts = GY_.partition(year);
     assertEquals(1, parts.size());
     assertEquals(year, parts.get(0));
   }
@@ -59,7 +59,7 @@ class YearlyGregorianSequenceTest {
   @Test
   void partitionTwoYearRangeIntoTwo() {
     var twoYears = Epoch2kInterval.ofYearRange(2024, 2025);
-    var parts = Yearly.partition(twoYears);
+    var parts = GY_.partition(twoYears);
     assertEquals(2, parts.size());
     assertEquals(Epoch2kDay.ofYMD(2024, 1, 1), parts.get(0).firstDay());
     assertEquals(Epoch2kDay.ofYMD(2025, 12, 31), parts.get(1).lastDay());
@@ -68,13 +68,13 @@ class YearlyGregorianSequenceTest {
   @Test
   void partitionMonthIntervalThrowsBecauseMisaligned() {
     var month = interval(2024, 6, 1, 2024, 6, 30);
-    assertThrows(IllegalArgumentException.class, () -> Yearly.partition(month));
+    assertThrows(IllegalArgumentException.class, () -> GY_.partition(month));
   }
 
   @Test
   void partitionsAndAggregatesToAreEmpty() {
-    assertTrue(Yearly.partitions().isEmpty());
-    assertTrue(Yearly.contributesTo().isEmpty());
+    assertTrue(GY_.partitions().isEmpty());
+    assertTrue(GY_.contributesTo().isEmpty());
   }
 
   @Test

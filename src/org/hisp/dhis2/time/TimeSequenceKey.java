@@ -4,38 +4,6 @@ public record TimeSequenceKey(char system, char interval, char offset) {
 
   public static final char NO_OFFSET = '-';
 
-  // ── Typed factories (the only public way to set an offset) ─────────
-
-  public static TimeSequenceKey weekly(char system, Epoch2kDay.DayOfWeek day1) {
-    return new TimeSequenceKey(system, 'W', dayChar(day1));
-  }
-
-  public static TimeSequenceKey biWeekly(char system, Epoch2kDay.DayOfWeek day1) {
-    return new TimeSequenceKey(system, 'B', dayChar(day1));
-  }
-
-  public static TimeSequenceKey monthly(char system, Epoch2kDay.MonthOfYear fiscalStart) {
-    return new TimeSequenceKey(system, 'M', monthChar(fiscalStart));
-  }
-
-  public static TimeSequenceKey quarterly(char system, Epoch2kDay.MonthOfYear month1) {
-    return new TimeSequenceKey(system, 'Q', monthChar(month1));
-  }
-
-  public static TimeSequenceKey yearly(char system, Epoch2kDay.MonthOfYear month1) {
-    return new TimeSequenceKey(system, 'Y', monthChar(month1));
-  }
-
-  public static TimeSequenceKey sixMonthly(char system, Epoch2kDay.MonthOfYear month1) {
-    return new TimeSequenceKey(system, 'S', monthChar(month1));
-  }
-
-  public static TimeSequenceKey biMonthly(char system, Epoch2kDay.MonthOfYear month1) {
-    return new TimeSequenceKey(system, 'T', monthChar(month1));
-  }
-
-  // ── Constructors ─────────────────────────────────────────────────────
-
   public TimeSequenceKey(char system, char interval) {
     this(system, interval, NO_OFFSET);
   }
@@ -74,39 +42,55 @@ public record TimeSequenceKey(char system, char interval, char offset) {
 
   // ── Typed accessors ────────────────────────────────────────────────
 
-  public Epoch2kDay.DayOfWeek day1() {
-    if (interval != 'W' && interval != 'B')
-      throw new IllegalStateException(interval + " has no day offset");
-    return dayFromChar(offset);
+  public boolean isOffset() {
+    return offset != NO_OFFSET;
   }
 
-  public Epoch2kDay.MonthOfYear month1() {
-    if (interval != 'M' && interval != 'Q' && interval != 'Y'
-        && interval != 'S' && interval != 'T')
-      throw new IllegalStateException(interval + " has no month offset");
-    return monthFromChar(offset);
+  public int offsetAsInt() {
+    char c = offset;
+    if (c >= '0' && c <= '9') return c - '0';
+    if (c >= 'a' && c <= 'c') return c - 'a';
+    // should be unreachable as we do not accept chars outside above ranges
+    throw new IllegalArgumentException("Bad offset: " + c);
   }
 
-  // ── Encoding (private) ─────────────────────────────────────────────
-
-  private static char dayChar(Epoch2kDay.DayOfWeek d) {
-    return (char) ('1' + d.ordinal());
-  }
-
-  private static char monthChar(Epoch2kDay.MonthOfYear m) {
-    int n = m.ordinal();
-    return n < 9 ? (char) ('1' + n) : (char) ('a' + (n - 9));
-  }
-
-  private static Epoch2kDay.DayOfWeek dayFromChar(char c) {
+  public Epoch2kDay.DayOfWeek offsetAsDay() {
+    char c = offset;
+    if (c == NO_OFFSET) return Epoch2kDay.DayOfWeek.Monday;
     if (c < '1' || c > '7') throw new IllegalArgumentException("Bad day offset: " + c);
     return Epoch2kDay.DayOfWeek.values()[c - '1'];
   }
 
-  private static Epoch2kDay.MonthOfYear monthFromChar(char c) {
+  public Epoch2kDay.MonthOfYear offsetAsMonth() {
+    char c = offset;
+    if (c == NO_OFFSET) return Epoch2kDay.MonthOfYear.January;
     if (c >= '1' && c <= '9') return Epoch2kDay.MonthOfYear.values()[c - '1'];
     if (c >= 'a' && c <= 'c') return Epoch2kDay.MonthOfYear.values()[9 + (c - 'a')];
     throw new IllegalArgumentException("Bad month offset: " + c);
+  }
+
+  // ── Encoding (private) ─────────────────────────────────────────────
+
+  static char offsetChar(int offset) {
+    if (offset < 0)
+      throw new IllegalArgumentException(
+          "offset must be 0-9, a-z, or '-', got: (underflow) (" + offset + ")");
+    if (offset < 10) return (char) ('0'+offset);
+    if (offset < 36) return (char) ('a'+(offset-10));
+    throw new IllegalArgumentException(
+        "offset must be 0-9, a-z, or '-', got: (overflow) (" + offset + ")");
+  }
+
+  static char offsetChar(Epoch2kDay.DayOfWeek d) {
+    int n = d.ordinal();
+    if (n == 0) return NO_OFFSET;
+    return (char) ('1' + n);
+  }
+
+  static char offsetChar(Epoch2kDay.MonthOfYear m) {
+    int n = m.ordinal();
+    if (n == 0) return NO_OFFSET;
+    return n < 9 ? (char) ('1' + n) : (char) ('a' + (n - 9));
   }
 
   /**

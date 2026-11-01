@@ -22,7 +22,7 @@ class TestCustomSequences {
           new TimeSequenceKey('S', 'Y'),
           List.of(SPRING, AUTUMN),
           Set.of(),
-          Set.of(GregorianSequences.Year));
+          Set.of(GregorianSequences.GY));
 
   // ── interval ───────────────────────────────────────────────────────
 
@@ -196,9 +196,9 @@ class TestCustomSequences {
 
   @Test
   void customSequenceCollidingWithCalendarKeyRejectedAtRegistryConstruction() {
-    var gregorianYear = GregorianSequences.Yearly;   // key "GY/"
+    var gregorianYear = GregorianSequences.GY_;   // key "GY/"
     var fakeCustom = CustomSequences.of(
-        new TimeSequenceKey('G', 'Y'),               // also "GY/"
+        GregorianSequences.GY.noOffset(),         // also "GY/"
         List.of(new Epoch2kInterval(ofYMD(2024, 1, 8), ofYMD(2024, 5, 24))));
 
     assertThrows(IllegalArgumentException.class,

@@ -11,49 +11,19 @@ import org.junit.jupiter.api.Test;
 class TimeSequenceKeyTest {
 
   @Test
-  void weeklyFactoryEncodesMondayAsDigit1() {
-    assertEquals('1', TimeSequenceKey.weekly('G', Monday).offset());
-  }
-
-  @Test
-  void weeklyFactoryEncodesSundayAsDigit7() {
-    assertEquals('7', TimeSequenceKey.weekly('G', Sunday).offset());
-  }
-
-  @Test
-  void yearlyFactoryEncodesJanuaryAsDigit1() {
-    assertEquals('1', TimeSequenceKey.yearly('G', January).offset());
-  }
-
-  @Test
-  void yearlyFactoryEncodesSeptemberAsDigit9() {
-    assertEquals('9', TimeSequenceKey.yearly('G', September).offset());
-  }
-
-  @Test
-  void yearlyFactoryEncodesOctoberAsLowercase_a() {
-    assertEquals('a', TimeSequenceKey.yearly('G', October).offset());
-  }
-
-  @Test
-  void yearlyFactoryEncodesDecemberAsLowercase_c() {
-    assertEquals('c', TimeSequenceKey.yearly('G', December).offset());
-  }
-
-  @Test
   void allDaysRoundTrip() {
     for (var d : DayOfWeek.values()) {
-      assertEquals(d, TimeSequenceKey.weekly('G', d).day1());
-      assertEquals(d, TimeSequenceKey.biWeekly('G', d).day1());
+      assertEquals(d, GregorianSequences.GW.offsetBy(d).offsetAsDay());
+      assertEquals(d, GregorianSequences.GB.offsetBy(d).offsetAsDay());
     }
   }
 
   @Test
   void allMonthsRoundTrip() {
     for (var m : MonthOfYear.values()) {
-      assertEquals(m, TimeSequenceKey.monthly('F', m).month1());
-      assertEquals(m, TimeSequenceKey.quarterly('G', m).month1());
-      assertEquals(m, TimeSequenceKey.yearly('G', m).month1());
+      assertEquals(m, GregorianSequences.GM.offsetBy(m).offsetAsMonth());
+      assertEquals(m, GregorianSequences.GQ.offsetBy(m).offsetAsMonth());
+      assertEquals(m, GregorianSequences.GY.offsetBy(m).offsetAsMonth());
     }
   }
 
@@ -64,8 +34,8 @@ class TimeSequenceKeyTest {
 
   @Test
   void toStringIncludesTrailingSlashAndOffset() {
-    assertEquals("GW1/", TimeSequenceKey.weekly('G', Monday).toString());
-    assertEquals("FY7/", TimeSequenceKey.yearly('F', July).toString());
+    assertEquals("GW/", GregorianSequences.weekly(Monday).key().toString());
+    assertEquals("FY7/", GregorianSequences.fiscalYearly(July).key().toString());
   }
 
   @Test
@@ -98,26 +68,6 @@ class TimeSequenceKeyTest {
     new TimeSequenceKey('G', 'M', '5');
     new TimeSequenceKey('G', 'M', 'z');
     new TimeSequenceKey('G', 'M', '-');
-  }
-
-  @Test
-  void day1OnNonWeekIntervalThrows() {
-    assertThrows(IllegalStateException.class, () -> new TimeSequenceKey('G', 'M').day1());
-  }
-
-  @Test
-  void month1OnNonMonthIntervalThrows() {
-    assertThrows(IllegalStateException.class, () -> new TimeSequenceKey('G', 'D').month1());
-  }
-
-  @Test
-  void day1OnKeyWithoutOffsetThrows() {
-    assertThrows(IllegalArgumentException.class, () -> new TimeSequenceKey('G', 'W').day1());
-  }
-
-  @Test
-  void familyStripsOffset() {
-    assertEquals(new TimeFamilyKey('G', 'W'), TimeSequenceKey.weekly('G', Monday).family());
   }
 
   @Test

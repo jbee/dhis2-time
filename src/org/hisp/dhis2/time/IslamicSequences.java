@@ -6,33 +6,24 @@ public final class IslamicSequences {
 
   private IslamicSequences() {}
 
-  public static final TimeFamilyKey Day = new TimeFamilyKey('I', 'D');
-  public static final TimeFamilyKey Month = new TimeFamilyKey('I', 'M');
-  public static final TimeFamilyKey Year = new TimeFamilyKey('I', 'Y');
+  public static final TimeFamilyKey ID = new TimeFamilyKey('I', 'D');
+  public static final TimeFamilyKey IM = new TimeFamilyKey('I', 'M');
+  public static final TimeFamilyKey IY = new TimeFamilyKey('I', 'Y');
 
-  public static final TimeSequence Daily = daily();
-  public static final TimeSequence Monthly = monthly();
-  public static final TimeSequence Yearly = yearly();
+  public static final TimeSequence ID_ = daily();
+  public static final TimeSequence IM_ = monthly();
+  public static final TimeSequence IY_ = yearly();
 
   public static TimeSequence daily() {
-    return new DailyIslamicSequence(
-        new TimeSequenceKey('I', 'D'),
-        Set.of(Month, Year),
-        Set.of(Month, Year));
+    return new DailyIslamicSequence(ID.noOffset(), Set.of(IM, IY), Set.of(IM, IY));
   }
 
   public static TimeSequence monthly() {
-    return new MonthlyIslamicSequence(
-        new TimeSequenceKey('I', 'M'),
-        Set.of(Year),
-        Set.of(Year));
+    return new MonthlyIslamicSequence(IM.noOffset(), Set.of(IY), Set.of(IY));
   }
 
   public static TimeSequence yearly() {
-    return new YearlyIslamicSequence(
-        new TimeSequenceKey('I', 'Y'),
-        Set.of(),
-        Set.of());
+    return new YearlyIslamicSequence(IY.noOffset(), Set.of(), Set.of());
   }
 
   public record DailyIslamicSequence(
