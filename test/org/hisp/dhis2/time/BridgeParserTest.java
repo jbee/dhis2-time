@@ -27,9 +27,6 @@ import org.junit.jupiter.api.Test;
 
 class BridgeParserTest {
 
-  // Assumes LegacyMappings exposes calendarMapping() and fiscalMapping().
-  // If the actual API differs, adjust these two helpers.
-
   private static BridgeParser calendar() {
     return new BridgeParser(BridgeFormat.calendarMapping());
   }
