@@ -24,17 +24,17 @@ import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
 
-class LegacyPeriodParserTest {
+class BridgeParserTest {
 
   // Assumes LegacyMappings exposes calendarMapping() and fiscalMapping().
   // If the actual API differs, adjust these two helpers.
 
-  private static LegacyPeriodParser calendar() {
-    return new LegacyPeriodParser(LegacyMappings.calendarMapping());
+  private static BridgeParser calendar() {
+    return new BridgeParser(BridgeMappings.calendarMapping());
   }
 
-  private static LegacyPeriodParser fiscal() {
-    return new LegacyPeriodParser(LegacyMappings.fiscalMapping());
+  private static BridgeParser fiscal() {
+    return new BridgeParser(BridgeMappings.fiscalMapping());
   }
 
   // ── Yearly ────────────────────────────────────────────────────
@@ -277,18 +277,18 @@ class LegacyPeriodParserTest {
   void rejectsEmptyMapping() {
     assertThrows(
         IllegalArgumentException.class,
-        () -> new LegacyPeriodParser(Map.of()));
+        () -> new BridgeParser(Map.of()));
   }
 
   @Test
   void rejectsPartiallyCompleteMapping() {
     var partial =
         Map.of(
-            LegacyKind.DAILY, GD.noOffset(),
-            LegacyKind.WEEKLY, GW.noOffset());
+            BridgeFormat.DAILY, GD.noOffset(),
+            BridgeFormat.WEEKLY, GW.noOffset());
     assertThrows(
         IllegalArgumentException.class,
-        () -> new LegacyPeriodParser(partial));
+        () -> new BridgeParser(partial));
   }
 
   // ── Malformed inputs ──────────────────────────────────────────

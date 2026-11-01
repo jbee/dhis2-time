@@ -6,12 +6,12 @@ package org.hisp.dhis2.time;
  * offset (month or day) the actual period carries. Offsets are resolved at
  * parse time from the string content.
  *
- * <p>Used as the key type for {@link LegacyPeriodParser}'s mapping from
+ * <p>Used as the key type for {@link BridgeParser}'s mapping from
  * kind to {@link TimeSequenceKey}. The mapping tells the parser which concrete
  * sequence family a legacy string of that kind belongs to; the parser fills in
  * the offset from the parsed components.
  */
-public enum LegacyKind {
+public enum BridgeFormat {
   YEARLY,
   YEARLY_FISCAL,
   MONTHLY,

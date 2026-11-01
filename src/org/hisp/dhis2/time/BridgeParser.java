@@ -44,22 +44,22 @@ import java.util.Map;
  * keeps the parser free of duplicated period arithmetic while remaining
  * independent of any sequence instance.
  */
-public final class LegacyPeriodParser {
+public final class BridgeParser {
 
-  private final Map<LegacyKind, TimeSequenceKey> mapping;
+  private final Map<BridgeFormat, TimeSequenceKey> mapping;
 
-  public static LegacyPeriodParser calendar() {
-    return new LegacyPeriodParser(LegacyMappings.calendarMapping());
+  public static BridgeParser calendar() {
+    return new BridgeParser(BridgeMappings.calendarMapping());
   }
 
   /**
    * @param mapping which sequence family each legacy form belongs to; keys are
    *     the no-offset variants of the target families (offsets are applied by
    *     the parser from the parsed content)
-   * @throws IllegalArgumentException if the mapping is missing any {@link LegacyKind}
+   * @throws IllegalArgumentException if the mapping is missing any {@link BridgeFormat}
    */
-  public LegacyPeriodParser(Map<LegacyKind, TimeSequenceKey> mapping) {
-    for (var kind : LegacyKind.values()) {
+  public BridgeParser(Map<BridgeFormat, TimeSequenceKey> mapping) {
+    for (var kind : BridgeFormat.values()) {
       if (!mapping.containsKey(kind))
         throw new IllegalArgumentException("mapping missing LegacyKind." + kind);
     }
@@ -139,68 +139,68 @@ public final class LegacyPeriodParser {
   // ── Per-kind TimeSlice construction ──────────────────────────────
 
   private TimeSlice yearlySlice(int year) {
-    var key = mapping.get(LegacyKind.YEARLY);
+    var key = mapping.get(BridgeFormat.YEARLY);
     var anchor = ofYMD(year, 1, 1);
     return new TimeSlice(key, anchor.containingYear(key.offsetAsMonth()));
   }
 
   private TimeSlice yearlyFiscalSlice(int year, Epoch2kDay.MonthOfYear month1) {
-    var key = mapping.get(LegacyKind.YEARLY_FISCAL).family().offsetBy(month1);
+    var key = mapping.get(BridgeFormat.YEARLY_FISCAL).family().offsetBy(month1);
     var anchor = ofYMD(year, month1.ordinal() + 1, 1);
     return new TimeSlice(key, anchor.containingYear(month1));
   }
 
   private TimeSlice monthlySlice(int year, int month) {
-    var key = mapping.get(LegacyKind.MONTHLY);
+    var key = mapping.get(BridgeFormat.MONTHLY);
     var anchor = ofYMD(year, month, 1);
     return new TimeSlice(key, anchor.containingMonth());
   }
 
   private TimeSlice quarterlySlice(int year, int quarter) {
-    var key = mapping.get(LegacyKind.QUARTERLY);
+    var key = mapping.get(BridgeFormat.QUARTERLY);
     var anchor = ofYMD(year, (quarter - 1) * 3 + 1, 1);
     return new TimeSlice(key, anchor.containingQuarter(key.offsetAsMonth()));
   }
 
   private TimeSlice quarterlyFiscalSlice(int year, int quarter, Epoch2kDay.MonthOfYear month1) {
-    var key = mapping.get(LegacyKind.QUARTERLY_FISCAL).family().offsetBy(month1);
+    var key = mapping.get(BridgeFormat.QUARTERLY_FISCAL).family().offsetBy(month1);
     var anchor = ofYMD(year, month1.ordinal() + 1, 1).plusMonths((quarter - 1) * 3);
     return new TimeSlice(key, anchor.containingQuarter(month1));
   }
 
   private TimeSlice semesterSlice(int year, int semester) {
-    var key = mapping.get(LegacyKind.SEMESTER);
+    var key = mapping.get(BridgeFormat.SEMESTER);
     var anchor = ofYMD(year, (semester - 1) * 6 + 1, 1);
     return new TimeSlice(key, anchor.containingSemester(key.offsetAsMonth()));
   }
 
   private TimeSlice semesterFiscalSlice(
       int year, int semester, Epoch2kDay.MonthOfYear month1) {
-    var key = mapping.get(LegacyKind.SEMESTER_FISCAL).family().offsetBy(month1);
+    var key = mapping.get(BridgeFormat.SEMESTER_FISCAL).family().offsetBy(month1);
     var anchor = ofYMD(year, month1.ordinal() + 1, 1).plusMonths((semester - 1) * 6);
     return new TimeSlice(key, anchor.containingSemester(month1));
   }
 
   private TimeSlice bimesterSlice(int year, int bimester) {
-    var key = mapping.get(LegacyKind.BIMESTER);
+    var key = mapping.get(BridgeFormat.BIMESTER);
     var anchor = ofYMD(year, (bimester - 1) * 2 + 1, 1);
     return new TimeSlice(key, anchor.containingBimester(key.offsetAsMonth()));
   }
 
   private TimeSlice weeklySlice(int year, int week, Epoch2kDay.DayOfWeek day1) {
-    var key = mapping.get(LegacyKind.WEEKLY).family().offsetBy(day1);
+    var key = mapping.get(BridgeFormat.WEEKLY).family().offsetBy(day1);
     var anchor = Epoch2kDay.ofWeek1InYear(year, day1).plusDays((week - 1) * 7);
     return new TimeSlice(key, new Epoch2kInterval(anchor, anchor.plusDays(6)));
   }
 
   private TimeSlice fortnightlySlice(int year, int fortnight) {
-    var key = mapping.get(LegacyKind.FORTNIGHTLY);
+    var key = mapping.get(BridgeFormat.FORTNIGHTLY);
     var anchor = Epoch2kDay.ofWeek1InYear(year, Monday).plusDays((fortnight - 1) * 14);
     return new TimeSlice(key, new Epoch2kInterval(anchor, anchor.plusDays(13)));
   }
 
   private TimeSlice dailySlice(int year, int month, int day) {
-    var key = mapping.get(LegacyKind.DAILY);
+    var key = mapping.get(BridgeFormat.DAILY);
     return new TimeSlice(key, new Epoch2kInterval(ofYMD(year, month, day)));
   }
 
