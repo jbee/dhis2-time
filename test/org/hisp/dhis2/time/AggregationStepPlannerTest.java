@@ -465,6 +465,44 @@ class AggregationStepPlannerTest {
         plan);
   }
 
+  @Test
+  void partitionDepthWinsOverIntervalLengthInSorting() {
+    var a1 = new TimeSequenceKey('A', 'X');
+    var a2 = new TimeSequenceKey('A', 'Y');
+
+    // Source partitions both. Depth: a2 has depth 0 (nothing partitions it),
+    // a1 has depth 1 (a2 partitions it). Sort order: a2 first, then a1.
+    var source = fakeSequence(new TimeSequenceKey('A', 'Q'), 1, Set.of(a1, a2));
+    // Deliberately inverted: a2 is depth-finer but length-longer.
+    // A length-only sort would process a1 first (5 < 10), then a2 from
+    // source — missing the chain from a2 to a1 that depth sort enables.
+    var a1Seq = fakeSequence(a1, 5, Set.of());
+    var a2Seq = fakeSequence(a2, 10, Set.of(a1));
+
+    var planner = new AggregationStepPlanner(List.of(source, a1Seq, a2Seq));
+    var plan = planner.plan(source.key(), Set.of(a1, a2));
+
+    // Depth sort produces the chain: a2 → a1.
+    // Length-only sort would produce: source → a1, source → a2 (no chain).
+    assertEquals(
+        List.of(
+            new AggregationStep(source.key(), a2, EXACT),
+            new AggregationStep(a2, a1, EXACT)),
+        plan);
+  }
+
+  private static TimeSequence fakeSequence(
+      TimeSequenceKey key, int intervalLength, Set<TimeSequenceKey> partitions) {
+    return new TimeSequence() {
+      @Override public TimeSequenceKey key() { return key; }
+      @Override public Set<TimeSequenceKey> partitions() { return partitions; }
+      @Override public Set<TimeSequenceKey> contributesTo() { return partitions; }
+      @Override public Epoch2kInterval interval(Epoch2kDay day) {
+        return new Epoch2kInterval(day, day.plusDays(intervalLength - 1));
+      }
+    };
+  }
+
   // ── Helpers ──────────────────────────────────────────────────────
 
   private static TimeSequence fakeSequence(

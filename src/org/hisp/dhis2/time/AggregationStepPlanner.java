@@ -148,8 +148,7 @@ public final class AggregationStepPlanner {
 
     var edges = new LinkedHashSet<AggregationStep>();
 
-    var sortedTargets = new ArrayList<>(targets);
-    sortedTargets.sort(Comparator.comparingInt(this::intervalLength));
+    var sortedTargets = sortTargetsFinerFirst(targets);
 
     Map<TimeSequenceKey, Reach> reachable = reachableHint;
 
@@ -181,6 +180,60 @@ public final class AggregationStepPlanner {
       }
     }
     return topoSortEdges(edges);
+  }
+
+  /**
+   * Sorts targets so that each target is processed after any target that can
+   * reach it via {@code partitions()}, transitively. This is the order that
+   * makes chaining possible: when a coarser target is processed, all finer
+   * targets that could feed into it have already been computed.
+   *
+   * <p>Finer-first is the outcome; the primary key is partition depth (a
+   * target's longest path from any other target that partitions it). Length is
+   * a stable tiebreaker among targets at the same depth — it gives a
+   * deterministic order without affecting plan correctness, because same-depth
+   * targets are by definition incomparable via partitions and therefore cannot
+   * chain from each other. Length also expresses a mild preference: among
+   * equally-deep targets, process the longer one first, so that it is available
+   * as a source when deeper targets are processed.
+   *
+   * <p>Interval length alone is not used as the primary key because a
+   * sequence's typical interval length need not reflect its partition depth.
+   * The 53-week fortnight stub is one real case: its interval length equals a
+   * week's, which would tie it with the week in a length-only sort. Custom
+   * sequences could in principle have any length/depth relationship.
+   */
+  private List<TimeSequenceKey> sortTargetsFinerFirst(Set<TimeSequenceKey> targets) {
+    var depth = new HashMap<TimeSequenceKey, Integer>();
+    for (var t : targets) depth.put(t, 0);
+
+    // depth(t) = 1 + max(depth(p) : t ∈ p.partitions(), p ∈ targets)
+    // Fixpoint iteration; bounded by |targets| so cycles (which would be a
+    // configuration error elsewhere) don't loop forever.
+    int maxIterations = targets.size();
+    for (int i = 0; i < maxIterations; i++) {
+      boolean changed = false;
+      for (var t : targets) {
+        for (var p : targets) {
+          if (p.equals(t)) continue;
+          if (byKey.get(p).partitions().contains(t)) {
+            int candidate = depth.get(p) + 1;
+            if (candidate > depth.get(t)) {
+              depth.put(t, candidate);
+              changed = true;
+            }
+          }
+        }
+      }
+      if (!changed) break;
+    }
+
+    var sorted = new ArrayList<>(targets);
+    sorted.sort(
+        Comparator
+            .comparingInt((TimeSequenceKey k) -> depth.get(k))
+            .thenComparingInt(this::intervalLength));
+    return sorted;
   }
 
   /**
