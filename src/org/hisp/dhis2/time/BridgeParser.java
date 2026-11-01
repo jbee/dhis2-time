@@ -49,7 +49,7 @@ public final class BridgeParser {
   private final Map<BridgeFormat, TimeSequenceKey> mapping;
 
   public static BridgeParser calendar() {
-    return new BridgeParser(BridgeMappings.calendarMapping());
+    return new BridgeParser(BridgeFormat.calendarMapping());
   }
 
   /**

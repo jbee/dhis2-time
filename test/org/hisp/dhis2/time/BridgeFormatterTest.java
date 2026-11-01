@@ -150,8 +150,8 @@ class BridgeFormatterTest {
 
   @Test
   void everyBridgeableSliceRoundTripsThroughParser() {
-    var parser = new BridgeParser(BridgeMappings.calendarMapping());
-    var fiscalParser = new BridgeParser(BridgeMappings.fiscalMapping());
+    var parser = new BridgeParser(BridgeFormat.calendarMapping());
+    var fiscalParser = new BridgeParser(BridgeFormat.fiscalMapping());
 
     for (var example : List.of(
         new TimeSlice(GD.noOffset(), new Epoch2kInterval(ofYMD(2024, 3, 15))),

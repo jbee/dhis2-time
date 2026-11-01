@@ -17,7 +17,7 @@ import static org.hisp.dhis2.time.Epoch2kDay.MonthOfYear.November;
  *
  * <p>Round-trip invariant: for any slice {@code s} where
  * {@code format(s) != null}, parsing the returned string with a
- * {@link BridgeParser} constructed over a compatible {@link BridgeMappings}
+ * {@link BridgeParser} constructed over a compatible {@link BridgeFormat}
  * mapping produces {@code s} back. The system setting of the parser
  * determines whether {@code 2024Q1} means a calendar quarter ({@code GQ}) or
  * a fiscal quarter ({@code FQ}); the formatter captures the shape, the parser's

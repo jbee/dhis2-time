@@ -30,11 +30,11 @@ class BridgeParserTest {
   // If the actual API differs, adjust these two helpers.
 
   private static BridgeParser calendar() {
-    return new BridgeParser(BridgeMappings.calendarMapping());
+    return new BridgeParser(BridgeFormat.calendarMapping());
   }
 
   private static BridgeParser fiscal() {
-    return new BridgeParser(BridgeMappings.fiscalMapping());
+    return new BridgeParser(BridgeFormat.fiscalMapping());
   }
 
   // ── Yearly ────────────────────────────────────────────────────
