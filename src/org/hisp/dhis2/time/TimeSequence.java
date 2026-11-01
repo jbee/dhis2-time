@@ -243,14 +243,16 @@ public interface TimeSequence {
    * to partition; use {@link #partition}'s return or exception for the actual
    * outcome on a specific interval.
    */
-  Set<TimeFamilyKey> partitions();
+  Set<TimeSequenceKey> partitions();
 
   /**
    * Convenience test: does {@code family} belong to {@link #partitions()}?
    *
    * @see #partitions()
    */
-  default boolean partitions(TimeFamilyKey family) { return partitions().contains(family); }
+  default boolean partitions(TimeFamilyKey family) { return partitions().stream().anyMatch(k -> k.family().equals(family)); }
+
+  default boolean partitions(TimeSequenceKey key) { return partitions().contains(key); }
 
   /**
    * The families this sequence contributes to by majority-of-days: for each family
@@ -268,14 +270,16 @@ public interface TimeSequence {
    *
    * @see #contributorsTo(Epoch2kInterval)
    */
-  Set<TimeFamilyKey> contributesTo();
+  Set<TimeSequenceKey> contributesTo();
 
   /**
    * Convenience test: does {@code family} belong to {@link #contributesTo()}?
    *
    * @see #contributesTo()
    */
-  default boolean contributesTo(TimeFamilyKey family) { return contributesTo().contains(family); }
+  default boolean contributesTo(TimeFamilyKey family) { return contributesTo().stream().anyMatch(k -> k.family().equals(family)); }
+
+  default boolean contributesTo(TimeSequenceKey key) { return contributesTo().contains(key); }
 
   /**
    * Decomposes {@code parent} into the intervals of this sequence that exactly
@@ -365,6 +369,15 @@ public interface TimeSequence {
    * @throws NullPointerException if either argument is {@code null}
    */
   static void checkFamilies(Set<TimeFamilyKey> partitions, Set<TimeFamilyKey> contributesTo) {
+    requireNonNull(partitions, "partitions");
+    requireNonNull(contributesTo, "contributesTo");
+    if (!contributesTo.containsAll(partitions))
+      throw new IllegalArgumentException(
+          "partitions() must be a subset of contributesTo(); missing: "
+              + partitions.stream().filter(p -> !contributesTo.contains(p)).toList());
+  }
+
+  static void checkKeys(Set<TimeSequenceKey> partitions, Set<TimeSequenceKey> contributesTo) {
     requireNonNull(partitions, "partitions");
     requireNonNull(contributesTo, "contributesTo");
     if (!contributesTo.containsAll(partitions))

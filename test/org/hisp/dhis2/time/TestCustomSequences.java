@@ -22,7 +22,7 @@ class TestCustomSequences {
           new TimeSequenceKey('S', 'Y'),
           List.of(SPRING, AUTUMN),
           Set.of(),
-          Set.of(GregorianSequences.GY));
+          Set.of(GregorianSequences.GY.noOffset()));
 
   // ── interval ───────────────────────────────────────────────────────
 

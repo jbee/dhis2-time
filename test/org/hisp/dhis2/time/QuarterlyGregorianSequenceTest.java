@@ -90,19 +90,7 @@ class QuarterlyGregorianSequenceTest {
 
   @Test
   void aggregatesToContainsYear() {
-    assertEquals(Set.of(GY, GS), GQ_.contributesTo());
-  }
-
-  @Test
-  void compactConstructorRejectsKeyAndRecordMonthMismatch() {
-    assertThrows(
-        IllegalArgumentException.class,
-        () ->
-            new GregorianSequences.QuarterlyGregorianSequence(
-                GregorianSequences.GQ.offsetBy(Epoch2kDay.MonthOfYear.July),
-                Epoch2kDay.MonthOfYear.April,
-                Set.of(GY),
-                Set.of(GY)));
+    assertEquals(Set.of(GY.noOffset(), GS.noOffset()), GQ_.contributesTo());
   }
 
   @Test

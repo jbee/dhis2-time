@@ -95,23 +95,11 @@ class WeeklyGregorianSequenceTest {
 
   @Test
   void partitionsContainsOnlyBiWeek() {
-    assertEquals(Set.of(GB), GW_.partitions());
+    assertEquals(Set.of(GB.noOffset()), GW_.partitions());
   }
 
   @Test
   void aggregatesToContainsBiWeekMonthQuarterYear() {
-    assertEquals(Set.of(GB, GM, GT, GQ, GS, GY), GW_.contributesTo());
-  }
-
-  @Test
-  void compactConstructorRejectsKeyAndRecordDayMismatch() {
-    assertThrows(
-        IllegalArgumentException.class,
-        () ->
-            new GregorianSequences.WeeklyGregorianSequence(
-                GW.offsetBy(Epoch2kDay.DayOfWeek.Monday),
-                Epoch2kDay.DayOfWeek.Tuesday,
-                Set.of(GB),
-                Set.of(GB)));
+    assertEquals(Set.of(GB.noOffset(), GM.noOffset(), GT.noOffset(), GQ.noOffset(), GS.noOffset(), GY.noOffset()), GW_.contributesTo());
   }
 }

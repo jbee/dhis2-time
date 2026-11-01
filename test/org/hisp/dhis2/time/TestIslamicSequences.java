@@ -85,7 +85,7 @@ class TestIslamicSequences {
 
   @Test
   void aggregatesToOnlyIslamicFamilies() {
-    assertEquals(Set.of(IM, IY), ID_.contributesTo());
+    assertEquals(Set.of(IM.noOffset(), IY.noOffset()), ID_.contributesTo());
     assertFalse(ID_.contributesTo(GregorianSequences.GM));
     assertFalse(ID_.contributesTo(EthiopianSequences.EM));
   }

@@ -16,23 +16,30 @@ public final class EthiopianSequences {
   public static final TimeSequence EY_ = yearly();
 
   public static TimeSequence daily() {
-    return new DailyEthiopianSequence(ED.noOffset(), Set.of(EM, EY), Set.of(EM, EY));
+    return new DailyEthiopianSequence(
+        ED.noOffset(),
+        Set.of(EM.noOffset(), EY.noOffset()),
+        Set.of(EM.noOffset(), EY.noOffset()));
   }
 
   public static TimeSequence monthly() {
-    return new MonthlyEthiopianSequence(EM.noOffset(), Set.of(EY), Set.of(EY));
+    return new MonthlyEthiopianSequence(
+        EM.noOffset(),
+        Set.of(EY.noOffset()),
+        Set.of(EY.noOffset()));
   }
 
   public static TimeSequence yearly() {
-    return new YearlyEthiopianSequence(EY.noOffset(), Set.of(), Set.of());
+    return new YearlyEthiopianSequence(
+        EY.noOffset(), Set.of(), Set.of());
   }
 
-  public record DailyEthiopianSequence(
-      TimeSequenceKey key, Set<TimeFamilyKey> partitions, Set<TimeFamilyKey> contributesTo)
+  private record DailyEthiopianSequence(
+      TimeSequenceKey key, Set<TimeSequenceKey> partitions, Set<TimeSequenceKey> contributesTo)
       implements TimeSequence {
 
-    public DailyEthiopianSequence {
-      TimeSequence.checkFamilies(partitions, contributesTo);
+    DailyEthiopianSequence {
+      TimeSequence.checkKeys(partitions, contributesTo);
     }
 
     @Override
@@ -41,12 +48,12 @@ public final class EthiopianSequences {
     }
   }
 
-  public record MonthlyEthiopianSequence(
-      TimeSequenceKey key, Set<TimeFamilyKey> partitions, Set<TimeFamilyKey> contributesTo)
+  private record MonthlyEthiopianSequence(
+      TimeSequenceKey key, Set<TimeSequenceKey> partitions, Set<TimeSequenceKey> contributesTo)
       implements TimeSequence {
 
-    public MonthlyEthiopianSequence {
-      TimeSequence.checkFamilies(partitions, contributesTo);
+    MonthlyEthiopianSequence {
+      TimeSequence.checkKeys(partitions, contributesTo);
     }
 
     @Override
@@ -55,12 +62,12 @@ public final class EthiopianSequences {
     }
   }
 
-  public record YearlyEthiopianSequence(
-      TimeSequenceKey key, Set<TimeFamilyKey> partitions, Set<TimeFamilyKey> contributesTo)
+  private record YearlyEthiopianSequence(
+      TimeSequenceKey key, Set<TimeSequenceKey> partitions, Set<TimeSequenceKey> contributesTo)
       implements TimeSequence {
 
-    public YearlyEthiopianSequence {
-      TimeSequence.checkFamilies(partitions, contributesTo);
+    YearlyEthiopianSequence {
+      TimeSequence.checkKeys(partitions, contributesTo);
     }
 
     @Override

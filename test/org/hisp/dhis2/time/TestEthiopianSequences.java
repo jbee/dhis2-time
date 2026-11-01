@@ -94,14 +94,14 @@ class TestEthiopianSequences {
 
   @Test
   void dailyAggregatesToEthiopianMonthAndYearOnly() {
-    assertEquals(Set.of(EM, EY), ED_.contributesTo());
+    assertEquals(Set.of(EM.noOffset(), EY.noOffset()), ED_.contributesTo());
     assertFalse(ED_.contributesTo(GregorianSequences.GM));
     assertFalse(ED_.contributesTo(GregorianSequences.GY));
   }
 
   @Test
   void monthlyAggregatesToEthiopianYearOnly() {
-    assertEquals(Set.of(EY), EM_.contributesTo());
+    assertEquals(Set.of(EY.noOffset()), EM_.contributesTo());
   }
 
   @Test

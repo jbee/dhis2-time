@@ -90,7 +90,7 @@ class BiWeeklyGregorianSequenceTest {
 
   @Test
   void aggregatesToContainsMonthQuarterYear() {
-    assertEquals(Set.of(GM, GT, GQ, GS, GY), GB_.contributesTo());
+    assertEquals(Set.of(GM.noOffset(), GT.noOffset(), GQ.noOffset(), GS.noOffset(), GY.noOffset()), GB_.contributesTo());
   }
 
   @Test

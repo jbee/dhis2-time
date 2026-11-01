@@ -52,12 +52,18 @@ public final class GregorianSequences {
   // start-month offset (e.g. FQ7, FY7).
   //
   // Weeks are never fiscal — weekly/bi-weekly always use system 'G'.
+  //
+  // Target offsets (partitions()/contributesTo()) are derived from the source
+  // offset when the source and target share an offset domain (day→day,
+  // month→month); otherwise the target uses the family default (noOffset).
 
   public static TimeSequence daily() {
     return new DailyGregorianSequence(
         GD.noOffset(),
-        Set.of(GW, GB, GM, GT, GQ, GS, GY),
-        Set.of(GW, GB, GM, GT, GQ, GS, GY));
+        Set.of(GW.noOffset(), GB.noOffset(), GM.noOffset(),
+            GT.noOffset(), GQ.noOffset(), GS.noOffset(), GY.noOffset()),
+        Set.of(GW.noOffset(), GB.noOffset(), GM.noOffset(),
+            GT.noOffset(), GQ.noOffset(), GS.noOffset(), GY.noOffset()));
   }
 
   /**
@@ -70,8 +76,10 @@ public final class GregorianSequences {
     return new WeeklyGregorianSequence(
         GW.offsetBy(day1),
         day1,
-        Set.of(GB),
-        Set.of(GB, GM, GT, GQ, GS, GY));
+        Set.of(GB.offsetBy(day1)),
+        Set.of(GB.offsetBy(day1),
+            GM.noOffset(), GT.noOffset(), GQ.noOffset(),
+            GS.noOffset(), GY.noOffset()));
   }
 
   /**
@@ -85,55 +93,85 @@ public final class GregorianSequences {
    */
   public static TimeSequence biWeekly(Epoch2kDay.DayOfWeek day1) {
     return new BiWeeklyGregorianSequence(
-        GB.offsetBy(day1), day1, Set.of(), Set.of(GM, GT, GQ, GS, GY));
+        GB.offsetBy(day1),
+        day1,
+        Set.of(),
+        Set.of(GM.noOffset(), GT.noOffset(), GQ.noOffset(),
+            GS.noOffset(), GY.noOffset()));
   }
 
   public static TimeSequence monthly() {
     return new MonthlyGregorianSequence(
-        GM.noOffset(), Set.of(GT, GQ, GS, GY), Set.of(GT, GQ, GS, GY));
+        GM.noOffset(),
+        Set.of(GT.noOffset(), GQ.noOffset(), GS.noOffset(), GY.noOffset()),
+        Set.of(GT.noOffset(), GQ.noOffset(), GS.noOffset(), GY.noOffset()));
   }
 
   public static TimeSequence biMonthly(Epoch2kDay.MonthOfYear month1) {
     return new BiMonthlyGregorianSequence(
-        GT.offsetBy(month1), month1, Set.of(GY), Set.of(GQ, GS, GY));
+        GT.offsetBy(month1),
+        month1,
+        Set.of(GY.offsetBy(month1)),
+        Set.of(GQ.offsetBy(month1), GS.offsetBy(month1), GY.offsetBy(month1)));
   }
 
   public static TimeSequence sixMonthly(Epoch2kDay.MonthOfYear month1) {
-    return new SixMonthlyGregorianSequence(GS.offsetBy(month1), month1, Set.of(GY), Set.of(GY));
+    return new SixMonthlyGregorianSequence(
+        GS.offsetBy(month1),
+        month1,
+        Set.of(GY.offsetBy(month1)),
+        Set.of(GY.offsetBy(month1)));
   }
 
   public static TimeSequence quarterly(Epoch2kDay.MonthOfYear month1) {
-    return new QuarterlyGregorianSequence(GQ.offsetBy(month1), month1, Set.of(GY), Set.of(GS, GY));
+    return new QuarterlyGregorianSequence(
+        GQ.offsetBy(month1),
+        month1,
+        Set.of(GY.offsetBy(month1)),
+        Set.of(GS.offsetBy(month1), GY.offsetBy(month1)));
   }
 
   public static TimeSequence fiscalSixMonthly(Epoch2kDay.MonthOfYear month1) {
-    return new SixMonthlyGregorianSequence(FS.offsetBy(month1), month1, Set.of(FY), Set.of(FY));
+    return new SixMonthlyGregorianSequence(
+        FS.offsetBy(month1),
+        month1,
+        Set.of(FY.offsetBy(month1)),
+        Set.of(FY.offsetBy(month1)));
   }
 
   public static TimeSequence fiscalMonthly(Epoch2kDay.MonthOfYear start) {
-    return new MonthlyGregorianSequence(FM.offsetBy(start), Set.of(FQ, FY), Set.of(FQ, FY));
+    return new MonthlyGregorianSequence(
+        FM.offsetBy(start),
+        Set.of(FQ.offsetBy(start), FY.offsetBy(start)),
+        Set.of(FQ.offsetBy(start), FY.offsetBy(start)));
   }
 
   public static TimeSequence fiscalQuarterly(Epoch2kDay.MonthOfYear month1) {
-    return new QuarterlyGregorianSequence(FQ.offsetBy(month1), month1, Set.of(FY), Set.of(FY));
+    return new QuarterlyGregorianSequence(
+        FQ.offsetBy(month1),
+        month1,
+        Set.of(FY.offsetBy(month1)),
+        Set.of(FY.offsetBy(month1)));
   }
 
   public static TimeSequence yearly(Epoch2kDay.MonthOfYear month1) {
-    return new YearlyGregorianSequence(GY.offsetBy(month1), month1, Set.of(), Set.of());
+    return new YearlyGregorianSequence(
+        GY.offsetBy(month1), month1, Set.of(), Set.of());
   }
 
   public static TimeSequence fiscalYearly(Epoch2kDay.MonthOfYear month1) {
-    return new YearlyGregorianSequence(FY.offsetBy(month1), month1, Set.of(), Set.of());
+    return new YearlyGregorianSequence(
+        FY.offsetBy(month1), month1, Set.of(), Set.of());
   }
 
   // ── Implementation ─────────────────────────────────────────────────────────
 
-  public record DailyGregorianSequence(
-      TimeSequenceKey key, Set<TimeFamilyKey> partitions, Set<TimeFamilyKey> contributesTo)
+  private record DailyGregorianSequence(
+      TimeSequenceKey key, Set<TimeSequenceKey> partitions, Set<TimeSequenceKey> contributesTo)
       implements TimeSequence {
 
-    public DailyGregorianSequence {
-      TimeSequence.checkFamilies(partitions, contributesTo);
+    DailyGregorianSequence {
+      TimeSequence.checkKeys(partitions, contributesTo);
     }
 
     @Override
@@ -142,18 +180,18 @@ public final class GregorianSequences {
     }
   }
 
-  public record WeeklyGregorianSequence(
+  private record WeeklyGregorianSequence(
       TimeSequenceKey key,
       Epoch2kDay.DayOfWeek day1,
-      Set<TimeFamilyKey> partitions,
-      Set<TimeFamilyKey> contributesTo)
+      Set<TimeSequenceKey> partitions,
+      Set<TimeSequenceKey> contributesTo)
       implements TimeSequence {
 
-    public WeeklyGregorianSequence {
+    WeeklyGregorianSequence {
       if (key.offsetAsDay() != day1)
         throw new IllegalArgumentException(
             "key " + key + " implies day1 " + key.offsetAsDay() + " but record has " + day1);
-      TimeSequence.checkFamilies(partitions, contributesTo);
+      TimeSequence.checkKeys(partitions, contributesTo);
     }
 
     @Override
@@ -162,18 +200,18 @@ public final class GregorianSequences {
     }
   }
 
-  public record BiWeeklyGregorianSequence(
+  private record BiWeeklyGregorianSequence(
       TimeSequenceKey key,
       Epoch2kDay.DayOfWeek day1,
-      Set<TimeFamilyKey> partitions,
-      Set<TimeFamilyKey> contributesTo)
+      Set<TimeSequenceKey> partitions,
+      Set<TimeSequenceKey> contributesTo)
       implements TimeSequence {
 
-    public BiWeeklyGregorianSequence {
+    BiWeeklyGregorianSequence {
       if (key.offsetAsDay() != day1)
         throw new IllegalArgumentException(
             "key " + key + " implies day1 " + key.offsetAsDay() + " but record has " + day1);
-      TimeSequence.checkFamilies(partitions, contributesTo);
+      TimeSequence.checkKeys(partitions, contributesTo);
     }
 
     @Override
@@ -212,12 +250,12 @@ public final class GregorianSequences {
     }
   }
 
-  public record MonthlyGregorianSequence(
-      TimeSequenceKey key, Set<TimeFamilyKey> partitions, Set<TimeFamilyKey> contributesTo)
+  private record MonthlyGregorianSequence(
+      TimeSequenceKey key, Set<TimeSequenceKey> partitions, Set<TimeSequenceKey> contributesTo)
       implements TimeSequence {
 
-    public MonthlyGregorianSequence {
-      TimeSequence.checkFamilies(partitions, contributesTo);
+    MonthlyGregorianSequence {
+      TimeSequence.checkKeys(partitions, contributesTo);
     }
 
     @Override
@@ -226,19 +264,18 @@ public final class GregorianSequences {
     }
   }
 
-  public record BiMonthlyGregorianSequence(
+  private record BiMonthlyGregorianSequence(
       TimeSequenceKey key,
       Epoch2kDay.MonthOfYear month1,
-      Set<TimeFamilyKey> partitions,
-      Set<TimeFamilyKey> contributesTo)
+      Set<TimeSequenceKey> partitions,
+      Set<TimeSequenceKey> contributesTo)
       implements TimeSequence {
 
-    public BiMonthlyGregorianSequence {
-      Epoch2kDay.MonthOfYear keyMonth1 = key.offsetAsMonth();
-      if (keyMonth1 != month1)
+    BiMonthlyGregorianSequence {
+      if (key.offsetAsMonth() != month1)
         throw new IllegalArgumentException(
-            "key " + key + " implies month1 " + keyMonth1 + " but record has " + month1);
-      TimeSequence.checkFamilies(partitions, contributesTo);
+            "key " + key + " implies month1 " + key.offsetAsMonth() + " but record has " + month1);
+      TimeSequence.checkKeys(partitions, contributesTo);
     }
 
     @Override
@@ -247,19 +284,18 @@ public final class GregorianSequences {
     }
   }
 
-  public record SixMonthlyGregorianSequence(
+  private record SixMonthlyGregorianSequence(
       TimeSequenceKey key,
       Epoch2kDay.MonthOfYear month1,
-      Set<TimeFamilyKey> partitions,
-      Set<TimeFamilyKey> contributesTo)
+      Set<TimeSequenceKey> partitions,
+      Set<TimeSequenceKey> contributesTo)
       implements TimeSequence {
 
-    public SixMonthlyGregorianSequence {
-      Epoch2kDay.MonthOfYear keyMonth1 = key.offsetAsMonth();
-      if (keyMonth1 != month1)
+    SixMonthlyGregorianSequence {
+      if (key.offsetAsMonth() != month1)
         throw new IllegalArgumentException(
-            "key " + key + " implies month1 " + keyMonth1 + " but record has " + month1);
-      TimeSequence.checkFamilies(partitions, contributesTo);
+            "key " + key + " implies month1 " + key.offsetAsMonth() + " but record has " + month1);
+      TimeSequence.checkKeys(partitions, contributesTo);
     }
 
     @Override
@@ -268,19 +304,18 @@ public final class GregorianSequences {
     }
   }
 
-  public record QuarterlyGregorianSequence(
+  private record QuarterlyGregorianSequence(
       TimeSequenceKey key,
       Epoch2kDay.MonthOfYear month1,
-      Set<TimeFamilyKey> partitions,
-      Set<TimeFamilyKey> contributesTo)
+      Set<TimeSequenceKey> partitions,
+      Set<TimeSequenceKey> contributesTo)
       implements TimeSequence {
 
-    public QuarterlyGregorianSequence {
-      Epoch2kDay.MonthOfYear keyMonth1 = key.offsetAsMonth();
-      if (keyMonth1 != month1)
+    QuarterlyGregorianSequence {
+      if (key.offsetAsMonth() != month1)
         throw new IllegalArgumentException(
-            "key " + key + " implies month1 " + keyMonth1 + " but record has " + month1);
-      TimeSequence.checkFamilies(partitions, contributesTo);
+            "key " + key + " implies month1 " + key.offsetAsMonth() + " but record has " + month1);
+      TimeSequence.checkKeys(partitions, contributesTo);
     }
 
     @Override
@@ -289,19 +324,18 @@ public final class GregorianSequences {
     }
   }
 
-  public record YearlyGregorianSequence(
+  private record YearlyGregorianSequence(
       TimeSequenceKey key,
       Epoch2kDay.MonthOfYear month1,
-      Set<TimeFamilyKey> partitions,
-      Set<TimeFamilyKey> contributesTo)
+      Set<TimeSequenceKey> partitions,
+      Set<TimeSequenceKey> contributesTo)
       implements TimeSequence {
 
-    public YearlyGregorianSequence {
-      Epoch2kDay.MonthOfYear keyMonth1 = key.offsetAsMonth();
-      if (keyMonth1 != month1)
+    YearlyGregorianSequence {
+      if (key.offsetAsMonth() != month1)
         throw new IllegalArgumentException(
-            "key " + key + " implies month1 " + keyMonth1 + " but record has " + month1);
-      TimeSequence.checkFamilies(partitions, contributesTo);
+            "key " + key + " implies month1 " + key.offsetAsMonth() + " but record has " + month1);
+      TimeSequence.checkKeys(partitions, contributesTo);
     }
 
     @Override

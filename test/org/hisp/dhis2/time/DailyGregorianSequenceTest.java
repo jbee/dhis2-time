@@ -60,14 +60,4 @@ class DailyGregorianSequenceTest {
   void partitionsEqualsAggregatesTo() {
     assertEquals(GD_.partitions(), GD_.contributesTo());
   }
-
-  @Test
-  void compactConstructorRejectsPartitionsOutsideAggregatesTo() {
-    var key = new TimeSequenceKey('G', 'D');
-    assertThrows(
-        IllegalArgumentException.class,
-        () ->
-            new GregorianSequences.DailyGregorianSequence(
-                key, Set.of(GregorianSequences.GW), Set.of()));
-  }
 }

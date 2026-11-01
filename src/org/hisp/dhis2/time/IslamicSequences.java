@@ -15,23 +15,30 @@ public final class IslamicSequences {
   public static final TimeSequence IY_ = yearly();
 
   public static TimeSequence daily() {
-    return new DailyIslamicSequence(ID.noOffset(), Set.of(IM, IY), Set.of(IM, IY));
+    return new DailyIslamicSequence(
+        ID.noOffset(),
+        Set.of(IM.noOffset(), IY.noOffset()),
+        Set.of(IM.noOffset(), IY.noOffset()));
   }
 
   public static TimeSequence monthly() {
-    return new MonthlyIslamicSequence(IM.noOffset(), Set.of(IY), Set.of(IY));
+    return new MonthlyIslamicSequence(
+        IM.noOffset(),
+        Set.of(IY.noOffset()),
+        Set.of(IY.noOffset()));
   }
 
   public static TimeSequence yearly() {
-    return new YearlyIslamicSequence(IY.noOffset(), Set.of(), Set.of());
+    return new YearlyIslamicSequence(
+        IY.noOffset(), Set.of(), Set.of());
   }
 
-  public record DailyIslamicSequence(
-      TimeSequenceKey key, Set<TimeFamilyKey> partitions, Set<TimeFamilyKey> contributesTo)
+  private record DailyIslamicSequence(
+      TimeSequenceKey key, Set<TimeSequenceKey> partitions, Set<TimeSequenceKey> contributesTo)
       implements TimeSequence {
 
-    public DailyIslamicSequence {
-      TimeSequence.checkFamilies(partitions, contributesTo);
+    DailyIslamicSequence {
+      TimeSequence.checkKeys(partitions, contributesTo);
     }
 
     @Override
@@ -40,12 +47,12 @@ public final class IslamicSequences {
     }
   }
 
-  public record MonthlyIslamicSequence(
-      TimeSequenceKey key, Set<TimeFamilyKey> partitions, Set<TimeFamilyKey> contributesTo)
+  private record MonthlyIslamicSequence(
+      TimeSequenceKey key, Set<TimeSequenceKey> partitions, Set<TimeSequenceKey> contributesTo)
       implements TimeSequence {
 
-    public MonthlyIslamicSequence {
-      TimeSequence.checkFamilies(partitions, contributesTo);
+    MonthlyIslamicSequence {
+      TimeSequence.checkKeys(partitions, contributesTo);
     }
 
     @Override
@@ -54,12 +61,12 @@ public final class IslamicSequences {
     }
   }
 
-  public record YearlyIslamicSequence(
-      TimeSequenceKey key, Set<TimeFamilyKey> partitions, Set<TimeFamilyKey> contributesTo)
+  private record YearlyIslamicSequence(
+      TimeSequenceKey key, Set<TimeSequenceKey> partitions, Set<TimeSequenceKey> contributesTo)
       implements TimeSequence {
 
-    public YearlyIslamicSequence {
-      TimeSequence.checkFamilies(partitions, contributesTo);
+    YearlyIslamicSequence {
+      TimeSequence.checkKeys(partitions, contributesTo);
     }
 
     @Override

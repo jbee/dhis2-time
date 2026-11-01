@@ -35,8 +35,8 @@ public final class CustomSequences {
   public static TimeSequence of(
       TimeSequenceKey key,
       List<Epoch2kInterval> intervals,
-      Set<TimeFamilyKey> partitions,
-      Set<TimeFamilyKey> contributesTo) {
+      Set<TimeSequenceKey> partitions,
+      Set<TimeSequenceKey> contributesTo) {
     return new CustomSequence(key, intervals, partitions, contributesTo);
   }
 
@@ -48,8 +48,8 @@ public final class CustomSequences {
   public record CustomSequence(
       TimeSequenceKey key,
       List<Epoch2kInterval> intervals,
-      Set<TimeFamilyKey> partitions,
-      Set<TimeFamilyKey> contributesTo) implements TimeSequence {
+      Set<TimeSequenceKey> partitions,
+      Set<TimeSequenceKey> contributesTo) implements TimeSequence {
 
     public CustomSequence {
       if (intervals.isEmpty())
@@ -66,7 +66,7 @@ public final class CustomSequences {
               "custom sequence " + key + ": interval " + curr
                   + " overlaps or is not before " + next);
       }
-      TimeSequence.checkFamilies(partitions, contributesTo);
+      TimeSequence.checkKeys(partitions, contributesTo);
     }
 
     @Override
