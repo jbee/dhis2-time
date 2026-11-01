@@ -313,11 +313,11 @@ public record Epoch2kDay(@ZeroBased int daysSince2k) implements Comparable<Epoch
     return containingNMonthPeriod(month1, 3);
   }
 
-  public Epoch2kInterval containingSixMonth(MonthOfYear month1) {
+  public Epoch2kInterval containingSemester(MonthOfYear month1) {
     return containingNMonthPeriod(month1, 6);
   }
 
-  public Epoch2kInterval containingBiMonth(MonthOfYear month1) {
+  public Epoch2kInterval containingBimester(MonthOfYear month1) {
     return containingNMonthPeriod(month1, 2);
   }
 

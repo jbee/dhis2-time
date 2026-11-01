@@ -420,22 +420,22 @@ class TestEpoch2kDay {
 
   @Test
   void containingBiMonthJanuaryStart() {
-    var janFeb = ofYMD(2024, 1, 15).containingBiMonth(January);
+    var janFeb = ofYMD(2024, 1, 15).containingBimester(January);
     assertEquals(ofYMD(2024, 1, 1), janFeb.firstDay());
     assertEquals(ofYMD(2024, 2, 29), janFeb.lastDay());
 
-    var marApr = ofYMD(2024, 3, 15).containingBiMonth(January);
+    var marApr = ofYMD(2024, 3, 15).containingBimester(January);
     assertEquals(ofYMD(2024, 3, 1), marApr.firstDay());
     assertEquals(ofYMD(2024, 4, 30), marApr.lastDay());
   }
 
   @Test
   void containingSixMonthJanuaryStart() {
-    var s1 = ofYMD(2024, 3, 15).containingSixMonth(January);
+    var s1 = ofYMD(2024, 3, 15).containingSemester(January);
     assertEquals(ofYMD(2024, 1, 1), s1.firstDay());
     assertEquals(ofYMD(2024, 6, 30), s1.lastDay());
 
-    var s2 = ofYMD(2024, 9, 15).containingSixMonth(January);
+    var s2 = ofYMD(2024, 9, 15).containingSemester(January);
     assertEquals(ofYMD(2024, 7, 1), s2.firstDay());
     assertEquals(ofYMD(2024, 12, 31), s2.lastDay());
   }
@@ -443,12 +443,12 @@ class TestEpoch2kDay {
   @Test
   void containingSixMonthAprilStart() {
     // S1 of April-start cycle: Apr-Sep
-    var s1 = ofYMD(2024, 5, 15).containingSixMonth(April);
+    var s1 = ofYMD(2024, 5, 15).containingSemester(April);
     assertEquals(ofYMD(2024, 4, 1), s1.firstDay());
     assertEquals(ofYMD(2024, 9, 30), s1.lastDay());
 
     // S2 of April-start cycle: Oct-Mar, spans year boundary
-    var s2 = ofYMD(2024, 11, 15).containingSixMonth(April);
+    var s2 = ofYMD(2024, 11, 15).containingSemester(April);
     assertEquals(ofYMD(2024, 10, 1), s2.firstDay());
     assertEquals(ofYMD(2025, 3, 31), s2.lastDay());
   }
@@ -456,7 +456,7 @@ class TestEpoch2kDay {
   @Test
   void containingBiMonthAprilStart() {
     // April-start bi-months: Apr-May, Jun-Jul, Aug-Sep, Oct-Nov, Dec-Jan, Feb-Mar
-    var aprMay = ofYMD(2024, 5, 15).containingBiMonth(April);
+    var aprMay = ofYMD(2024, 5, 15).containingBimester(April);
     assertEquals(ofYMD(2024, 4, 1), aprMay.firstDay());
     assertEquals(ofYMD(2024, 5, 31), aprMay.lastDay());
   }

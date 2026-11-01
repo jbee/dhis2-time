@@ -330,7 +330,7 @@ public final class GregorianSequences {
 
     @Override
     public Epoch2kInterval interval(Epoch2kDay day) {
-      return day.containingBiMonth(month1);
+      return day.containingBimester(month1);
     }
 
     @Override
@@ -355,7 +355,7 @@ public final class GregorianSequences {
 
     @Override
     public Epoch2kInterval interval(Epoch2kDay day) {
-      return day.containingSixMonth(month1);
+      return day.containingSemester(month1);
     }
 
     @Override
