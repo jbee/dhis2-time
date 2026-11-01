@@ -63,13 +63,13 @@ import java.util.function.LongSupplier;
  * sequences with equal keys are indistinguishable to the string parser and to
  * lookup registries. The key encodes (calendar system, interval type, optional
  * offset) and is what appears as the prefix of a period's string form
- * ({@code GQ/2022-01-01+90}). {@link TimeSequenceParser} resolves a parsed key
+ * ({@code GQ/2022-01-01+90}). {@link TimeSliceParser} resolves a parsed key
  * to a concrete sequence, then uses {@code interval} / {@code next} to materialise
  * the interval.
  *
  * <p>The key is <b>coarser than equality</b>: two {@code TimeSequence} instances
  * may share a key yet differ in {@code contributesTo()} or {@code partitions()}
- * (a configuration error that {@link TimeSequenceParser} rejects at construction
+ * (a configuration error that {@link TimeSliceParser} rejects at construction
  * time).
  *
  * <h2>Contract</h2>
@@ -108,7 +108,7 @@ import java.util.function.LongSupplier;
  * @see TimeSequenceKey
  * @see Epoch2kDay
  * @see Epoch2kInterval
- * @see TimeSequenceParser
+ * @see TimeSliceParser
  * @see GregorianSequences
  * @see EthiopianSequences
  * @see IslamicSequences
@@ -122,7 +122,7 @@ public interface TimeSequence {
    *
    * <p>The key is what appears as the prefix of a period's string form
    * ({@code GQ/2022-01-01+90} — the key is {@code GQ/}) and what
-   * {@link TimeSequenceParser} uses to resolve string input to a concrete
+   * {@link TimeSliceParser} uses to resolve string input to a concrete
    * sequence. Two sequences with equal keys cannot coexist in one parser's
    * registry.
    *
@@ -406,7 +406,7 @@ public interface TimeSequence {
    * <p>Never throws. If {@code interval} is not a member of this sequence, the
    * override should fall back to {@code TimeSequence.super.format(interval)}.
    *
-   * <p>The returned string is parseable by {@link TimeSequenceParser} when this
+   * <p>The returned string is parseable by {@link TimeSliceParser} when this
    * sequence is registered with it, and re-parses to the same interval.
    */
   default String format(Epoch2kInterval interval) {

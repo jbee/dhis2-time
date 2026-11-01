@@ -36,11 +36,11 @@ import java.util.Map;
  * substrings are allocated on the success path. The whole input is passed
  * through to error messages, so failures include the original string.
  */
-public final class TimeSequenceParser {
+public final class TimeSliceParser {
 
   private final Map<TimeSequenceKey, TimeSequence> registry;
 
-  public TimeSequenceParser(Collection<? extends TimeSequence> sequences) {
+  public TimeSliceParser(Collection<? extends TimeSequence> sequences) {
     Map<TimeSequenceKey, TimeSequence> map = new HashMap<>();
     for (TimeSequence s : sequences) {
       TimeSequence existing = map.putIfAbsent(s.key(), s);

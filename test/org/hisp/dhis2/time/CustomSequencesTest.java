@@ -202,6 +202,6 @@ class CustomSequencesTest {
         List.of(new Epoch2kInterval(ofYMD(2024, 1, 8), ofYMD(2024, 5, 24))));
 
     assertThrows(IllegalArgumentException.class,
-        () -> new TimeSequenceParser(List.of(gregorianYear, fakeCustom)));
+        () -> new TimeSliceParser(List.of(gregorianYear, fakeCustom)));
   }
 }

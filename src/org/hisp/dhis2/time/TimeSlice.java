@@ -1,9 +1,12 @@
 package org.hisp.dhis2.time;
 
 /**
- * The result of parsing a period string: the sequence key and the interval that
- * the key's sequence should contain. {@link #toString()} produces the canonical
- * {@code <key>/<first>+<length>} form.
+ * A concrete ID or name for an interval in a specific {@link TimeSequence} in its object data model.
+ * <p>
+ * {@link #toString()} produces the canonical {@code <key>/<first>+<length>} form.
+ *
+ * @see TimeSliceParser
+ * @see BridgeParser
  */
 public record TimeSlice(TimeSequenceKey key, Epoch2kInterval interval) {
   /**
@@ -11,6 +14,10 @@ public record TimeSlice(TimeSequenceKey key, Epoch2kInterval interval) {
    */
   @Override
   public String toString() {
+    return formatCanonical();
+  }
+
+  private String formatCanonical() {
     return key + interval.toString();
   }
 

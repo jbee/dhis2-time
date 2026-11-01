@@ -9,6 +9,9 @@ public record Epoch2kDay(@ZeroBased int daysSince2k) implements Comparable<Epoch
   private static final long MILLIS_UTC_0_UNTIL_2K_MIDNIGHT = 946_684_800_000L;
   private static final long MILLIS_IN_A_DAY = 86_400_000L;
 
+  /**
+   * @return today based on {@link System#currentTimeMillis()} offset for "now"
+   */
   public static Epoch2kDay today() {
     return today(System::currentTimeMillis);
   }
@@ -283,9 +286,12 @@ public record Epoch2kDay(@ZeroBased int daysSince2k) implements Comparable<Epoch
   }
 
   /**
-   * The fortnightly interval starting on {@code day1} that contains this day.
-   * Fortnights are grouped two ISO weeks at a time within the week-year; in a
-   * 53-week year the 27th fortnight is a single week (the stub).
+   * The fortnightly interval starting on {@code day1} that contains this day. Fortnights are
+   * grouped two ISO weeks at a time within the week-year; in a 53-week year the 27th fortnight is a
+   * single week.
+   *
+   * @return the interval of the fortnight (bi-week) containing this day (assuming weeks start on
+   *     the given {@link DayOfWeek})
    */
   public Epoch2kInterval containingFortnight(DayOfWeek day1) {
     var weekStart = previousOrSame(day1);
@@ -309,13 +315,13 @@ public record Epoch2kDay(@ZeroBased int daysSince2k) implements Comparable<Epoch
   }
 
   /**
-   * @return the interval of the year containing this day
+   * @return the interval of the year containing this day (years starting in January)
    */
   public Epoch2kInterval containingYear() {
     return containingYear(MonthOfYear.January);
   }
 
-  /** start of the year-cycle (starting in {@code month1}) that contains this day */
+  /** @return start of the year-cycle (starting in {@code month1}) that contains this day */
   public Epoch2kDay yearCycleStart(MonthOfYear month1) {
     Epoch2kDay day1 = day1InMonth(month1);
     return day1.after(this) ? day1.minusMonths(12) : day1;
@@ -354,8 +360,6 @@ public record Epoch2kDay(@ZeroBased int daysSince2k) implements Comparable<Epoch
     return new Epoch2kInterval(
         periodDay1, periodDay1.plusMonths(periodLengthInMonths).minusDays(1));
   }
-
-
 
   /**
    * @param n number of months; negative moves backwards, day-of-month clamped to target month length
@@ -405,10 +409,13 @@ public record Epoch2kDay(@ZeroBased int daysSince2k) implements Comparable<Epoch
   }
 
   /**
-   * The ISO-style week-year containing this day, using the majority-of-days rule:
-   * the week belongs to the year containing more than half its days. For a
-   * Monday-start week this is the year containing the week's Thursday (equivalently,
-   * the year such that Jan 4 falls in week 1). Generalises to any {@code day1}.
+   * The ISO-style week-year containing this day, using the majority-of-days rule: the week belongs
+   * to the year containing more than half its days. For a Monday-start week this is the year
+   * containing the week's Thursday (equivalently, the year such that Jan 4 falls in week 1).
+   * Generalises to any {@code day1}.
+   *
+   * @return the year containing the majority of day of the week containing this day assuming weeks
+   *     start on the given {@link DayOfWeek}
    */
   public int yearOfWeekMajority(DayOfWeek day1) {
     var weekStart = previousOrSame(day1);
@@ -420,7 +427,7 @@ public record Epoch2kDay(@ZeroBased int daysSince2k) implements Comparable<Epoch
     return year;
   }
 
-  /** The week number (1..53) within the week-year. */
+  /** The week number (1..53) within the Gregorian week-year. */
   @OneBased
   public int weekOfYearNumber(DayOfWeek day1) {
     int wy = yearOfWeekMajority(day1);

@@ -20,30 +20,24 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Parses legacy DHIS2 period identifiers — the compact string forms such as
- * {@code 2024}, {@code 202403}, {@code 2024Q1}, {@code 2024W11},
- * {@code 2024NovQ1}, {@code 202401B}, {@code 2024BiW1}, {@code 20240315} — into
- * a {@link TimeSlice}.
+ * A {@link TimeSlice} parser that parses legacy DHIS2 period identifiers — the compact string forms
+ * such as {@code 2024}, {@code 202403}, {@code 2024Q1}, {@code 2024W11}, {@code 2024NovQ1}, {@code
+ * 202401B}, {@code 2024BiW1}, {@code 20240315} — into a {@link TimeSlice}.
  *
- * <p>The parser is decoupled from {@link TimeSequence}: it only needs a
- * {@code Map<LegacyKind, TimeSequenceKey>} that says which concrete sequence
- * family each legacy form belongs to. Offsets (week start day, fiscal start
- * month) are resolved from the parsed content, so the map values are base keys
- * with the no-offset variant; the parser applies the offset before producing
- * the {@code TimeSlice}.
+ * <p>The parser is decoupled from {@link TimeSequence}: it only needs a {@code Map<BridgeFormat,
+ * TimeFamilyKey>} that says which concrete sequence family each legacy form belongs to. Offsets
+ * (week start day, fiscal start month) are resolved from the parsed content; the parser applies the
+ * offset before producing the {@code TimeSlice}.
  *
- * <p>The mapping is expected to already encode the caller's system setting:
- * for calendar-mode parsing, pass {@code GY.noOffset()} for {@code YEARLY};
- * for fiscal-mode, pass {@code FY.noOffset()}. Formats that name a fiscal
- * start explicitly ({@code 2024NovQ1}, {@code 2024AprilS1}, {@code 2024July})
- * override the base key's offset from the parsed content and are always fiscal
- * in intent — the caller's mapping is what makes that true, by mapping those
- * kinds to fiscal family keys.
+ * <p>The mapping is expected to already encode the caller's system setting: for calendar-mode
+ * parsing, pass {@code GY} for {@code YEARLY}; for fiscal-mode, pass {@code FY.noOffset()}. Formats
+ * that name a fiscal start explicitly ({@code 2024NovQ1}, {@code 2024AprilS1}, {@code 2024July})
+ * override the base key's offset from the parsed content and are always fiscal in intent — the
+ * caller's mapping is what makes that true, by mapping those kinds to fiscal family keys.
  *
- * <p>Intervals are computed using {@link Epoch2kDay}'s containing-* methods,
- * the same primitives the {@link TimeSequence} implementations use. This
- * keeps the parser free of duplicated period arithmetic while remaining
- * independent of any sequence instance.
+ * <p>Intervals are computed using {@link Epoch2kDay}'s containing-* methods, the same primitives
+ * the {@link TimeSequence} implementations use. This keeps the parser free of duplicated period
+ * arithmetic while remaining independent of any sequence instance.
  */
 public final class BridgeParser {
 
@@ -62,7 +56,7 @@ public final class BridgeParser {
   public BridgeParser(Map<BridgeFormat, TimeFamilyKey> mapping) {
     for (var kind : BridgeFormat.values()) {
       if (!mapping.containsKey(kind))
-        throw new IllegalArgumentException("mapping missing LegacyKind." + kind);
+        throw new IllegalArgumentException("mapping missing BridgeFormat." + kind);
     }
     this.mapping = Map.copyOf(mapping);
   }

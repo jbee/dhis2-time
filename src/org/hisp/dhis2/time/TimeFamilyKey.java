@@ -29,6 +29,7 @@ public record TimeFamilyKey(char system, char interval) {
 
   @Override
   public String toString() {
+    // yields the canonical name
     return "" + system + interval;
   }
 }

@@ -99,6 +99,7 @@ public record TimeSequenceKey(char system, char interval, char offset) {
    */
   @Override
   public String toString() {
+    // yields the canonical name
     return offset == NO_OFFSET
         ? "" + system + interval + '/'
         : "" + system + interval + offset + '/';

@@ -346,7 +346,7 @@ class BridgeParserTest {
   void legacyParsedSliceFormatsAndReparsesToSameInterval() {
     var slice = calendar().parse("2024Q2");
     var sequence = GregorianSequences.GQ_;
-    var formatter = new TimeSequenceParser(List.of(sequence));
+    var formatter = new TimeSliceParser(List.of(sequence));
 
     var formatted = sequence.format(slice.interval());
     var reparsed = formatter.parse(formatted);

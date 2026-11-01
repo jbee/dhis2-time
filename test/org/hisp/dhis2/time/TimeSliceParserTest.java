@@ -6,9 +6,9 @@ import static org.junit.jupiter.api.Assertions.*;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 
-class TimeSequenceParserTest {
+class TimeSliceParserTest {
 
-  private static final TimeSequenceParser PARSER = new TimeSequenceParser(List.of(
+  private static final TimeSliceParser PARSER = new TimeSliceParser(List.of(
       GregorianSequences.GD_,
       GregorianSequences.GQ_,
       GregorianSequences.GM_,
@@ -119,7 +119,7 @@ class TimeSequenceParserTest {
     var terms = CustomSequences.of(
         key,
         List.of(new Epoch2kInterval(ofYMD(2024, 1, 8), ofYMD(2024, 5, 24))));
-    var parser = new TimeSequenceParser(List.of(terms));
+    var parser = new TimeSliceParser(List.of(terms));
 
     // July is in a gap; walking from it fails.
     assertThrows(IllegalArgumentException.class, () -> parser.parse("SY/2024-07-01:1"));
@@ -129,7 +129,7 @@ class TimeSequenceParserTest {
 
   @Test
   void duplicateKeysRejectedAtConstruction() {
-    assertThrows(IllegalArgumentException.class, () -> new TimeSequenceParser(List.of(
+    assertThrows(IllegalArgumentException.class, () -> new TimeSliceParser(List.of(
         GregorianSequences.GQ_,
         GregorianSequences.GQ_)));
   }
@@ -182,7 +182,7 @@ class TimeSequenceParserTest {
         List.of(new Epoch2kInterval(ofYMD(2024, 1, 8), ofYMD(2024, 5, 24))));
 
     assertThrows(IllegalArgumentException.class,
-        () -> new TimeSequenceParser(List.of(gregorianYear, fakeCustom)));
+        () -> new TimeSliceParser(List.of(gregorianYear, fakeCustom)));
   }
 
   @Test

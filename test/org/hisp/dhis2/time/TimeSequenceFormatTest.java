@@ -154,7 +154,7 @@ class TimeSequenceFormatTest {
     assertEquals(7, stub.lengthInDays());
     assertEquals("GF/2020-12-28", GF_.format(stub));
 
-    var parser = new TimeSequenceParser(List.of(GF_));
+    var parser = new TimeSliceParser(List.of(GF_));
     assertEquals(stub, parser.parse(GF_.format(stub)).interval());
   }
 
@@ -313,7 +313,7 @@ class TimeSequenceFormatTest {
 
   @Test
   void formattedStringParsesBackToSameInterval() {
-    var parser = new TimeSequenceParser(ALL_GREGORIAN);
+    var parser = new TimeSliceParser(ALL_GREGORIAN);
 
     for (var seq : ALL_GREGORIAN) {
       var interval = seq.interval(ofYMD(2024, 3, 15));
@@ -327,7 +327,7 @@ class TimeSequenceFormatTest {
 
   @Test
   void formattedStringRoundTripsAcrossBoundaries() {
-    var parser = new TimeSequenceParser(ALL_GREGORIAN);
+    var parser = new TimeSliceParser(ALL_GREGORIAN);
     var days =
         List.of(
             ofYMD(2024, 1, 1), ofYMD(2024, 2, 29), ofYMD(2024, 12, 31), ofYMD(2023, 6, 15));
@@ -348,7 +348,7 @@ class TimeSequenceFormatTest {
   void formattedOffsetSequencesRoundTripThroughParser() {
     var gq4 = quarterly(April);
     var gt4 = GregorianSequences.bimester(April);
-    var parser = new TimeSequenceParser(List.of(gq4, gt4, FH4, FHb, FM7, FQ7, FY7));
+    var parser = new TimeSliceParser(List.of(gq4, gt4, FH4, FHb, FM7, FQ7, FY7));
 
     assertEquals(
         gq4.interval(ofYMD(2024, 5, 15)),
@@ -397,7 +397,7 @@ class TimeSequenceFormatTest {
     var stub = GF_.interval(ofYMD(2020, 12, 30));
     var formatted = GF_.format(stub);
 
-    var parser = new TimeSequenceParser(List.of(GF_));
+    var parser = new TimeSliceParser(List.of(GF_));
     assertEquals(stub, parser.parse(formatted).interval());
   }
 
@@ -434,7 +434,7 @@ class TimeSequenceFormatTest {
 
   @Test
   void fiscalHalfYearRoundTripsThroughParser() {
-    var parser = new TimeSequenceParser(List.of(FH4, FHb));
+    var parser = new TimeSliceParser(List.of(FH4, FHb));
 
     for (var seq : List.of(FH4, FHb)) {
       for (var d : List.of(

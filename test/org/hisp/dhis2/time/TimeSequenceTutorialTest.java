@@ -23,7 +23,7 @@ class TimeSequenceTutorialTest {
 
   @Test
   void aSingleDay() {
-    var parser = new TimeSequenceParser(List.of(GregorianSequences.GD_));
+    var parser = new TimeSliceParser(List.of(GregorianSequences.GD_));
 
     // "GD/" is the daily sequence. A date with no suffix resolves to the
     // single day denoted by that date.
@@ -36,7 +36,7 @@ class TimeSequenceTutorialTest {
 
   @Test
   void theSuffixIsOptionalForASingleInterval() {
-    var parser = new TimeSequenceParser(List.of(GregorianSequences.GQ_));
+    var parser = new TimeSliceParser(List.of(GregorianSequences.GQ_));
 
     // "GQ/" is the quarterly sequence. The no-suffix form means "the first
     // quarterly interval containing (or following) the given day".
@@ -50,7 +50,7 @@ class TimeSequenceTutorialTest {
 
   @Test
   void yearOnlyDate() {
-    var parser = new TimeSequenceParser(List.of(GregorianSequences.GQ_));
+    var parser = new TimeSliceParser(List.of(GregorianSequences.GQ_));
 
     // A year-only date means "the whole year". The no-suffix form then picks
     // the first quarterly interval that overlaps it.
@@ -62,7 +62,7 @@ class TimeSequenceTutorialTest {
 
   @Test
   void monthOnlyDate() {
-    var parser = new TimeSequenceParser(List.of(GregorianSequences.GQ_));
+    var parser = new TimeSliceParser(List.of(GregorianSequences.GQ_));
 
     // "2024-04" means April 2024 — a month is enough to disambiguate a quarter.
     var q2 = parser.parse("GQ/2024-04").interval();
@@ -75,7 +75,7 @@ class TimeSequenceTutorialTest {
 
   @Test
   void explicitLength() {
-    var parser = new TimeSequenceParser(List.of(GregorianSequences.GQ_));
+    var parser = new TimeSliceParser(List.of(GregorianSequences.GQ_));
 
     // "+91" says: a 91-day interval starting on the given day. The parser
     // does not check that this matches a quarter — it just builds the interval.
@@ -87,7 +87,7 @@ class TimeSequenceTutorialTest {
 
   @Test
   void explicitLengthCanBeAnyLength() {
-    var parser = new TimeSequenceParser(List.of(GregorianSequences.GQ_));
+    var parser = new TimeSliceParser(List.of(GregorianSequences.GQ_));
 
     // The +N form is free-form: any positive length works.
     assertEquals(1, parser.parse("GQ/2024-01-01+1").interval().lengthInDays());
@@ -98,7 +98,7 @@ class TimeSequenceTutorialTest {
 
   @Test
   void positionWithinYear() {
-    var parser = new TimeSequenceParser(List.of(GregorianSequences.GQ_));
+    var parser = new TimeSliceParser(List.of(GregorianSequences.GQ_));
 
     // "2024:1" means: the 1st GQ interval overlapping 2024 — that's Q1.
     // "2024:4" is Q4. The position is bounded by the anchor's period.
@@ -111,7 +111,7 @@ class TimeSequenceTutorialTest {
 
   @Test
   void positionClippedToAnchorPeriod() {
-    var parser = new TimeSequenceParser(List.of(GregorianSequences.GQ_));
+    var parser = new TimeSliceParser(List.of(GregorianSequences.GQ_));
 
     // A year contains exactly 4 quarters. :5 has no candidate — the walk does
     // not continue into the next year.
@@ -121,7 +121,7 @@ class TimeSequenceTutorialTest {
 
   @Test
   void positionWithinMonth() {
-    var parser = new TimeSequenceParser(List.of(GregorianSequences.GM_));
+    var parser = new TimeSliceParser(List.of(GregorianSequences.GM_));
 
     // Anchored at a month, a monthly sequence has exactly one overlapping
     // interval. :1 works; :2 has no candidate.
@@ -135,7 +135,7 @@ class TimeSequenceTutorialTest {
 
   @Test
   void compactDateForms() {
-    var parser = new TimeSequenceParser(List.of(GregorianSequences.GQ_));
+    var parser = new TimeSliceParser(List.of(GregorianSequences.GQ_));
 
     // YYYYMMDD works identically to YYYY-MM-DD; YYYYMM to YYYY-MM.
     assertEquals(
@@ -151,7 +151,7 @@ class TimeSequenceTutorialTest {
 
   @Test
   void multipleKeysResolvedByPrefix() {
-    var parser = new TimeSequenceParser(List.of(
+    var parser = new TimeSliceParser(List.of(
         GregorianSequences.GY_,
         GregorianSequences.GQ_,
         GregorianSequences.GM_,
@@ -173,7 +173,7 @@ class TimeSequenceTutorialTest {
 
   @Test
   void sameIntervalViaDifferentPaths() {
-    var parser = new TimeSequenceParser(List.of(GregorianSequences.GQ_));
+    var parser = new TimeSliceParser(List.of(GregorianSequences.GQ_));
 
     // Q1 2024 can be written five different ways. They all resolve identically.
     var viaNoSuffix     = parser.parse("GQ/2024-01-01").interval();
@@ -192,7 +192,7 @@ class TimeSequenceTutorialTest {
 
   @Test
   void canonicalFormIsAlwaysExplicitLength() {
-    var parser = new TimeSequenceParser(List.of(GregorianSequences.GQ_));
+    var parser = new TimeSliceParser(List.of(GregorianSequences.GQ_));
 
     // Whatever the input form, toString returns the canonical +N form.
     assertEquals("GQ/2024-01-01+91", parser.parse("GQ/2024-01-01+91").toString());
@@ -203,7 +203,7 @@ class TimeSequenceTutorialTest {
 
   @Test
   void canonicalRoundTrip() {
-    var parser = new TimeSequenceParser(List.of(GregorianSequences.GQ_));
+    var parser = new TimeSliceParser(List.of(GregorianSequences.GQ_));
 
     // parse → toString → parse yields the same interval, for any input form.
     for (String s : List.of(
@@ -224,7 +224,7 @@ class TimeSequenceTutorialTest {
     var autumn = new Epoch2kInterval(ofYMD(2024, 9, 2), ofYMD(2024, 12, 20));
     var school = CustomSequences.of(
         new TimeSequenceKey('S', 'T'), List.of(spring, autumn));
-    var parser = new TimeSequenceParser(List.of(school));
+    var parser = new TimeSliceParser(List.of(school));
 
     // Same :N syntax as calendars; the position refers to the n-th term
     // overlapping the anchor period.
@@ -242,7 +242,7 @@ class TimeSequenceTutorialTest {
     var autumn = new Epoch2kInterval(ofYMD(2024, 9, 2), ofYMD(2024, 12, 20));
     var school = CustomSequences.of(
         new TimeSequenceKey('S', 'T'), List.of(spring, autumn));
-    var parser = new TimeSequenceParser(List.of(school));
+    var parser = new TimeSliceParser(List.of(school));
 
     // July 2024 is in the gap; no term overlaps it.
     assertThrows(IllegalArgumentException.class, () -> parser.parse("ST/2024-07:1"));
@@ -253,7 +253,7 @@ class TimeSequenceTutorialTest {
 
   @Test
   void unknownKeyRejected() {
-    var parser = new TimeSequenceParser(List.of(GregorianSequences.GQ_));
+    var parser = new TimeSliceParser(List.of(GregorianSequences.GQ_));
 
     // GY is a valid key globally, but not registered with this parser.
     assertThrows(IllegalArgumentException.class, () -> parser.parse("GY/2024:1"));
@@ -261,7 +261,7 @@ class TimeSequenceTutorialTest {
 
   @Test
   void structuralErrorsRejected() {
-    var parser = new TimeSequenceParser(List.of(GregorianSequences.GQ_));
+    var parser = new TimeSliceParser(List.of(GregorianSequences.GQ_));
 
     // Missing "/" between key and date.
     assertThrows(IllegalArgumentException.class, () -> parser.parse("GQ2024"));
@@ -273,7 +273,7 @@ class TimeSequenceTutorialTest {
 
   @Test
   void contentErrorsRejected() {
-    var parser = new TimeSequenceParser(List.of(GregorianSequences.GQ_));
+    var parser = new TimeSliceParser(List.of(GregorianSequences.GQ_));
 
     // February 29 in a non-leap year.
     assertThrows(IllegalArgumentException.class, () -> parser.parse("GQ/2023-02-29"));

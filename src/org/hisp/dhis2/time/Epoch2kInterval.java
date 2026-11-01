@@ -13,9 +13,7 @@ public record Epoch2kInterval(Epoch2kDay firstDay, Epoch2kDay lastDay) {
    * Gregorian year, regardless of any sequence's fiscal start.
    */
   public static Epoch2kInterval ofYear(int year) {
-    return new Epoch2kInterval(
-        Epoch2kDay.ofJanuary1stInYear(year),
-        Epoch2kDay.ofJanuary1stInYear(year + 1).minusDays(1));
+    return ofYearRange(year, year);
   }
 
   /**
@@ -49,6 +47,7 @@ public record Epoch2kInterval(Epoch2kDay firstDay, Epoch2kDay lastDay) {
 
   @Override
   public String toString() {
+    // yields the canonical format
     return firstDay.toString() + "+" + lengthInDays();
   }
 

@@ -12,7 +12,7 @@ import org.junit.jupiter.api.Test;
  * that only custom sequences exhibit: gap anchors, boundary anchors, and the
  * interval-relative semantics of the {@code :n} walk.
  */
-class TimeSequenceParserCustomTest {
+class TimeSliceParserCustomTest {
 
   // ── School-term table ──────────────────────────────────────────────
 
@@ -32,8 +32,8 @@ class TimeSequenceParserCustomTest {
       new TimeSequenceKey('S', 'T'),
       List.of(SPRING_2024, AUTUMN_2024, SPRING_2025, AUTUMN_2025));
 
-  private static final TimeSequenceParser PARSER =
-      new TimeSequenceParser(List.of(SCHOOL_TERMS));
+  private static final TimeSliceParser PARSER =
+      new TimeSliceParser(List.of(SCHOOL_TERMS));
 
   private static Epoch2kInterval parseInterval(String s) {
     return PARSER.parse(s).interval();
@@ -262,7 +262,7 @@ class TimeSequenceParserCustomTest {
 
   @Test
   void customSequenceAndCalendarCoexistInRegistry() {
-    var combined = new TimeSequenceParser(List.of(
+    var combined = new TimeSliceParser(List.of(
         SCHOOL_TERMS,
         GregorianSequences.GQ_,
         GregorianSequences.GY_));
