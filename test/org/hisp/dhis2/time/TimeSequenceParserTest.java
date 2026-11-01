@@ -6,7 +6,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 
-class TestTimeSequenceParser {
+class TimeSequenceParserTest {
 
   private static final TimeSequenceParser PARSER = new TimeSequenceParser(List.of(
       GregorianSequences.GD_,

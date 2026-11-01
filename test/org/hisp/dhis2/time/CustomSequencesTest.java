@@ -9,7 +9,7 @@ import java.util.NoSuchElementException;
 import java.util.Set;
 import org.junit.jupiter.api.Test;
 
-class TestCustomSequences {
+class CustomSequencesTest {
 
   // School terms 2024: Spring (Jan 8 – May 24), Autumn (Sep 2 – Dec 20).
   private static final Epoch2kInterval SPRING =

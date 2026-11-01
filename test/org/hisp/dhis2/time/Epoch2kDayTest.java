@@ -10,7 +10,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import org.junit.jupiter.api.Test;
 
-class TestEpoch2kDay {
+class Epoch2kDayTest {
 
   @Test
   void testYear() {

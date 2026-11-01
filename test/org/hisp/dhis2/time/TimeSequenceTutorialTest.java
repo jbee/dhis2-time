@@ -17,7 +17,7 @@ import org.junit.jupiter.api.Test;
  * always Gregorian; the suffix is either an explicit length ({@code +N}) or a
  * position ({@code :N}), or absent (meaning position 1).
  */
-class TestTimeSequenceTutorial {
+class TimeSequenceTutorialTest {
 
   // ── 1. The simplest period: a single day ──────────────────────────
 

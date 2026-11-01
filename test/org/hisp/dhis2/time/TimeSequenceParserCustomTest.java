@@ -12,7 +12,7 @@ import org.junit.jupiter.api.Test;
  * that only custom sequences exhibit: gap anchors, boundary anchors, and the
  * interval-relative semantics of the {@code :n} walk.
  */
-class TestTimeSequenceParserCustom {
+class TimeSequenceParserCustomTest {
 
   // ── School-term table ──────────────────────────────────────────────
 

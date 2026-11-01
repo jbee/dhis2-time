@@ -24,7 +24,7 @@ import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
 
-class TestLegacyPeriodParser {
+class LegacyPeriodParserTest {
 
   // Assumes LegacyMappings exposes calendarMapping() and fiscalMapping().
   // If the actual API differs, adjust these two helpers.

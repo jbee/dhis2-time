@@ -5,7 +5,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import org.junit.jupiter.api.Test;
 
-class TestEthiopianCalendar {
+class EthiopianCalendarTest {
 
   @Test
   void anchor2000_01_01IsTahsas22_1992() {

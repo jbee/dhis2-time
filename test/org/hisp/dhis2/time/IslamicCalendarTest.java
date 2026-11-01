@@ -5,7 +5,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import org.junit.jupiter.api.Test;
 
-class TestIslamicCalendar {
+class IslamicCalendarTest {
 
   @Test
   void goldAnchorRamadan1445Is2024_03_11() {
