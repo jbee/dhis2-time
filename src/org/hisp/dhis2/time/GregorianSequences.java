@@ -1,5 +1,8 @@
 package org.hisp.dhis2.time;
 
+import org.hisp.dhis2.time.Epoch2kDay.DayOfWeek;
+import org.hisp.dhis2.time.Epoch2kDay.MonthOfYear;
+
 import java.util.Set;
 
 public final class GregorianSequences {
@@ -25,22 +28,22 @@ public final class GregorianSequences {
 
   public static final TimeSequence GD_ = daily();
 
-  public static final TimeSequence GW_ = weekly(Epoch2kDay.DayOfWeek.Monday);
-  public static final TimeSequence GB_ = biWeekly(Epoch2kDay.DayOfWeek.Monday);
+  public static final TimeSequence GW_ = weekly(DayOfWeek.Monday);
+  public static final TimeSequence GB_ = biWeekly(DayOfWeek.Monday);
 
   public static final TimeSequence GM_ = monthly();
-  public static final TimeSequence GT_ = biMonthly(Epoch2kDay.MonthOfYear.January);
-  public static final TimeSequence GS_ = sixMonthly(Epoch2kDay.MonthOfYear.January);
-  public static final TimeSequence GQ_ = quarterly(Epoch2kDay.MonthOfYear.January);
-  public static final TimeSequence GY_ = yearly(Epoch2kDay.MonthOfYear.January);
+  public static final TimeSequence GT_ = biMonthly(MonthOfYear.January);
+  public static final TimeSequence GS_ = sixMonthly(MonthOfYear.January);
+  public static final TimeSequence GQ_ = quarterly(MonthOfYear.January);
+  public static final TimeSequence GY_ = yearly(MonthOfYear.January);
 
   // ── Common fiscal constants (July-start) ────────────────────────────
 
-  public static final TimeSequence FM7 = fiscalMonthly(Epoch2kDay.MonthOfYear.July);
-  public static final TimeSequence FS4 = fiscalSixMonthly(Epoch2kDay.MonthOfYear.April);
-  public static final TimeSequence FSa = fiscalSixMonthly(Epoch2kDay.MonthOfYear.November);
-  public static final TimeSequence FQ7 = fiscalQuarterly(Epoch2kDay.MonthOfYear.July);
-  public static final TimeSequence FY7 = fiscalYearly(Epoch2kDay.MonthOfYear.July);
+  public static final TimeSequence FM7 = fiscalMonthly(MonthOfYear.July);
+  public static final TimeSequence FS4 = fiscalSixMonthly(MonthOfYear.April);
+  public static final TimeSequence FSb = fiscalSixMonthly(MonthOfYear.November);
+  public static final TimeSequence FQ7 = fiscalQuarterly(MonthOfYear.July);
+  public static final TimeSequence FY7 = fiscalYearly(MonthOfYear.July);
 
   // ── Factories ───────────────────────────────────────────────────────
   //
@@ -60,26 +63,41 @@ public final class GregorianSequences {
   public static TimeSequence daily() {
     return new DailyGregorianSequence(
         GD.noOffset(),
-        Set.of(GW.noOffset(), GB.noOffset(), GM.noOffset(),
-            GT.noOffset(), GQ.noOffset(), GS.noOffset(), GY.noOffset()),
-        Set.of(GW.noOffset(), GB.noOffset(), GM.noOffset(),
-            GT.noOffset(), GQ.noOffset(), GS.noOffset(), GY.noOffset()));
+        Set.of(
+            GW.noOffset(),
+            GB.noOffset(),
+            GM.noOffset(),
+            GT.noOffset(),
+            GQ.noOffset(),
+            GS.noOffset(),
+            GY.noOffset()),
+        Set.of(
+            GW.noOffset(),
+            GB.noOffset(),
+            GM.noOffset(),
+            GT.noOffset(),
+            GQ.noOffset(),
+            GS.noOffset(),
+            GY.noOffset()));
   }
 
   /**
    * Weekly intervals starting on {@code day1}.
    *
-   * @param day1 the first day of each week; {@link Epoch2kDay.DayOfWeek#Monday}
-   *     gives ISO 8601 weeks
+   * @param day1 the first day of each week; {@link DayOfWeek#Monday} gives ISO 8601 weeks
    */
-  public static TimeSequence weekly(Epoch2kDay.DayOfWeek day1) {
+  public static TimeSequence weekly(DayOfWeek day1) {
     return new WeeklyGregorianSequence(
         GW.offsetBy(day1),
         day1,
         Set.of(GB.offsetBy(day1)),
-        Set.of(GB.offsetBy(day1),
-            GM.noOffset(), GT.noOffset(), GQ.noOffset(),
-            GS.noOffset(), GY.noOffset()));
+        Set.of(
+            GB.offsetBy(day1),
+            GM.noOffset(),
+            GT.noOffset(),
+            GQ.noOffset(),
+            GS.noOffset(),
+            GY.noOffset()));
   }
 
   /**
@@ -91,13 +109,12 @@ public final class GregorianSequences {
    *
    * @param day1 the first day of each week
    */
-  public static TimeSequence biWeekly(Epoch2kDay.DayOfWeek day1) {
+  public static TimeSequence biWeekly(DayOfWeek day1) {
     return new BiWeeklyGregorianSequence(
         GB.offsetBy(day1),
         day1,
         Set.of(),
-        Set.of(GM.noOffset(), GT.noOffset(), GQ.noOffset(),
-            GS.noOffset(), GY.noOffset()));
+        Set.of(GM.noOffset(), GT.noOffset(), GQ.noOffset(), GS.noOffset(), GY.noOffset()));
   }
 
   public static TimeSequence monthly() {
@@ -107,7 +124,7 @@ public final class GregorianSequences {
         Set.of(GT.noOffset(), GQ.noOffset(), GS.noOffset(), GY.noOffset()));
   }
 
-  public static TimeSequence biMonthly(Epoch2kDay.MonthOfYear month1) {
+  public static TimeSequence biMonthly(MonthOfYear month1) {
     return new BiMonthlyGregorianSequence(
         GT.offsetBy(month1),
         month1,
@@ -115,15 +132,12 @@ public final class GregorianSequences {
         Set.of(GQ.offsetBy(month1), GS.offsetBy(month1), GY.offsetBy(month1)));
   }
 
-  public static TimeSequence sixMonthly(Epoch2kDay.MonthOfYear month1) {
+  public static TimeSequence sixMonthly(MonthOfYear month1) {
     return new SixMonthlyGregorianSequence(
-        GS.offsetBy(month1),
-        month1,
-        Set.of(GY.offsetBy(month1)),
-        Set.of(GY.offsetBy(month1)));
+        GS.offsetBy(month1), month1, Set.of(GY.offsetBy(month1)), Set.of(GY.offsetBy(month1)));
   }
 
-  public static TimeSequence quarterly(Epoch2kDay.MonthOfYear month1) {
+  public static TimeSequence quarterly(MonthOfYear month1) {
     return new QuarterlyGregorianSequence(
         GQ.offsetBy(month1),
         month1,
@@ -131,37 +145,29 @@ public final class GregorianSequences {
         Set.of(GS.offsetBy(month1), GY.offsetBy(month1)));
   }
 
-  public static TimeSequence fiscalSixMonthly(Epoch2kDay.MonthOfYear month1) {
+  public static TimeSequence fiscalSixMonthly(MonthOfYear month1) {
     return new SixMonthlyGregorianSequence(
-        FS.offsetBy(month1),
-        month1,
-        Set.of(FY.offsetBy(month1)),
-        Set.of(FY.offsetBy(month1)));
+        FS.offsetBy(month1), month1, Set.of(FY.offsetBy(month1)), Set.of(FY.offsetBy(month1)));
   }
 
-  public static TimeSequence fiscalMonthly(Epoch2kDay.MonthOfYear start) {
+  public static TimeSequence fiscalMonthly(MonthOfYear start) {
     return new MonthlyGregorianSequence(
         FM.offsetBy(start),
         Set.of(FQ.offsetBy(start), FY.offsetBy(start)),
         Set.of(FQ.offsetBy(start), FY.offsetBy(start)));
   }
 
-  public static TimeSequence fiscalQuarterly(Epoch2kDay.MonthOfYear month1) {
+  public static TimeSequence fiscalQuarterly(MonthOfYear month1) {
     return new QuarterlyGregorianSequence(
-        FQ.offsetBy(month1),
-        month1,
-        Set.of(FY.offsetBy(month1)),
-        Set.of(FY.offsetBy(month1)));
+        FQ.offsetBy(month1), month1, Set.of(FY.offsetBy(month1)), Set.of(FY.offsetBy(month1)));
   }
 
-  public static TimeSequence yearly(Epoch2kDay.MonthOfYear month1) {
-    return new YearlyGregorianSequence(
-        GY.offsetBy(month1), month1, Set.of(), Set.of());
+  public static TimeSequence yearly(MonthOfYear month1) {
+    return new YearlyGregorianSequence(GY.offsetBy(month1), month1, Set.of(), Set.of());
   }
 
-  public static TimeSequence fiscalYearly(Epoch2kDay.MonthOfYear month1) {
-    return new YearlyGregorianSequence(
-        FY.offsetBy(month1), month1, Set.of(), Set.of());
+  public static TimeSequence fiscalYearly(MonthOfYear month1) {
+    return new YearlyGregorianSequence(FY.offsetBy(month1), month1, Set.of(), Set.of());
   }
 
   // ── Implementation ─────────────────────────────────────────────────────────
@@ -182,7 +188,7 @@ public final class GregorianSequences {
 
   private record WeeklyGregorianSequence(
       TimeSequenceKey key,
-      Epoch2kDay.DayOfWeek day1,
+      DayOfWeek day1,
       Set<TimeSequenceKey> partitions,
       Set<TimeSequenceKey> contributesTo)
       implements TimeSequence {
@@ -202,7 +208,7 @@ public final class GregorianSequences {
 
   private record BiWeeklyGregorianSequence(
       TimeSequenceKey key,
-      Epoch2kDay.DayOfWeek day1,
+      DayOfWeek day1,
       Set<TimeSequenceKey> partitions,
       Set<TimeSequenceKey> contributesTo)
       implements TimeSequence {
@@ -266,7 +272,7 @@ public final class GregorianSequences {
 
   private record BiMonthlyGregorianSequence(
       TimeSequenceKey key,
-      Epoch2kDay.MonthOfYear month1,
+      MonthOfYear month1,
       Set<TimeSequenceKey> partitions,
       Set<TimeSequenceKey> contributesTo)
       implements TimeSequence {
@@ -286,7 +292,7 @@ public final class GregorianSequences {
 
   private record SixMonthlyGregorianSequence(
       TimeSequenceKey key,
-      Epoch2kDay.MonthOfYear month1,
+      MonthOfYear month1,
       Set<TimeSequenceKey> partitions,
       Set<TimeSequenceKey> contributesTo)
       implements TimeSequence {
@@ -306,7 +312,7 @@ public final class GregorianSequences {
 
   private record QuarterlyGregorianSequence(
       TimeSequenceKey key,
-      Epoch2kDay.MonthOfYear month1,
+      MonthOfYear month1,
       Set<TimeSequenceKey> partitions,
       Set<TimeSequenceKey> contributesTo)
       implements TimeSequence {
@@ -326,7 +332,7 @@ public final class GregorianSequences {
 
   private record YearlyGregorianSequence(
       TimeSequenceKey key,
-      Epoch2kDay.MonthOfYear month1,
+      MonthOfYear month1,
       Set<TimeSequenceKey> partitions,
       Set<TimeSequenceKey> contributesTo)
       implements TimeSequence {
