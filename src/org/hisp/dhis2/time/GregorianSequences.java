@@ -33,15 +33,15 @@ public final class GregorianSequences {
 
   public static final TimeSequence GM_ = monthly();
   public static final TimeSequence GB_ = bimester(MonthOfYear.January);
-  public static final TimeSequence GS_ = sixMonthly(MonthOfYear.January);
+  public static final TimeSequence GS_ = semester(MonthOfYear.January);
   public static final TimeSequence GQ_ = quarterly(MonthOfYear.January);
   public static final TimeSequence GY_ = yearly(MonthOfYear.January);
 
   // ── Common fiscal constants (July-start) ────────────────────────────
 
   public static final TimeSequence FM7 = fiscalMonthly(MonthOfYear.July);
-  public static final TimeSequence FS4 = fiscalSixMonthly(MonthOfYear.April);
-  public static final TimeSequence FSb = fiscalSixMonthly(MonthOfYear.November);
+  public static final TimeSequence FS4 = fiscalSemester(MonthOfYear.April);
+  public static final TimeSequence FSb = fiscalSemester(MonthOfYear.November);
   public static final TimeSequence FQ7 = fiscalQuarterly(MonthOfYear.July);
   public static final TimeSequence FY7 = fiscalYearly(MonthOfYear.July);
 
@@ -132,8 +132,8 @@ public final class GregorianSequences {
         Set.of(GQ.offsetBy(month1), GS.offsetBy(month1), GY.offsetBy(month1)));
   }
 
-  public static TimeSequence sixMonthly(MonthOfYear month1) {
-    return new SixMonthlyGregorianSequence(
+  public static TimeSequence semester(MonthOfYear month1) {
+    return new SemesterGregorianSequence(
         GS.offsetBy(month1), month1, Set.of(GY.offsetBy(month1)), Set.of(GY.offsetBy(month1)));
   }
 
@@ -145,8 +145,8 @@ public final class GregorianSequences {
         Set.of(GS.offsetBy(month1), GY.offsetBy(month1)));
   }
 
-  public static TimeSequence fiscalSixMonthly(MonthOfYear month1) {
-    return new SixMonthlyGregorianSequence(
+  public static TimeSequence fiscalSemester(MonthOfYear month1) {
+    return new SemesterGregorianSequence(
         FS.offsetBy(month1), month1, Set.of(FY.offsetBy(month1)), Set.of(FY.offsetBy(month1)));
   }
 
@@ -315,14 +315,14 @@ public final class GregorianSequences {
     }
   }
 
-  private record SixMonthlyGregorianSequence(
+  private record SemesterGregorianSequence(
       TimeSequenceKey key,
       MonthOfYear month1,
       Set<TimeSequenceKey> partitions,
       Set<TimeSequenceKey> contributesTo)
       implements TimeSequence {
 
-    SixMonthlyGregorianSequence {
+    SemesterGregorianSequence {
       if (key.offsetAsMonth() != month1)
         throw new IllegalArgumentException(
             "key " + key + " implies month1 " + key.offsetAsMonth() + " but record has " + month1);

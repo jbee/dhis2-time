@@ -235,7 +235,7 @@ public interface TimeSequence {
    * for a well-formed parent of that family. A family not in this set is a
    * guarantee of the opposite: some instance of that family will not tile,
    * typically because the two sequences' offsets do not align (e.g.
-   * {@code Quarterly(April)} cannot tile {@code SixMonthly(February)}).
+   * {@code Quarterly(April)} cannot tile {@code Semester(February)}).
    *
    * <p><b>Not enforced at runtime.</b> {@link #partition} operates on the
    * specific interval passed to it, not on the family it came from, so it may

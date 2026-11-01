@@ -11,10 +11,10 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-class SixMonthlyGregorianSequenceTest {
+class SemesterGregorianSequenceTest {
 
   @Test
-  void sixMonthlyTilesYear() {
+  void semesterTilesYear() {
     var year = Epoch2kInterval.ofYear(2024);
     var parts = GS_.partition(year);
     assertEquals(2, parts.size());
@@ -23,21 +23,21 @@ class SixMonthlyGregorianSequenceTest {
   }
 
   @Test
-  void fiscalSixMonthlyAggregatesToFiscalYear() {
+  void fiscalSemesterAggregatesToFiscalYear() {
     assertTrue(FS4.contributesTo(FY));
     assertTrue(FS4.partitions(FY));
     assertFalse(FS4.contributesTo(GY));
   }
 
   @Test
-  void sixMonthlyAprilStartsApril() {
+  void semesterAprilStartsApril() {
     var s1 = FS4.interval(ofYMD(2024, 5, 15));
     assertEquals(ofYMD(2024, 4, 1), s1.firstDay());
     assertEquals(ofYMD(2024, 9, 30), s1.lastDay());
   }
 
   @Test
-  void nextAndPreviousInverseForSixMonthly() {
+  void nextAndPreviousInverseForSemester() {
     var i = GS_.interval(ofYMD(2024, 8, 15));
     assertEquals(i, GS_.next(GS_.previous(i)));
     assertEquals(i, GS_.previous(GS_.next(i)));

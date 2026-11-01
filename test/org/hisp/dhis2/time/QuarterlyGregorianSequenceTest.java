@@ -96,8 +96,8 @@ class QuarterlyGregorianSequenceTest {
   @Test
   void quarterlyDeclaresNoSixMonthPartition() {
     // SixMonth is not in Quarterly.partitions() because Quarterly(April) cannot
-    // tile SixMonthly(February) — the family key doesn't encode offset, so the
-    // declaration must hold for every (quarterly offset, sixMonthly offset) pair.
+    // tile Semester(February) — the family key doesn't encode offset, so the
+    // declaration must hold for every (quarterly offset, semester offset) pair.
     assertFalse(GQ_.partitions(GS));
   }
 
@@ -112,12 +112,12 @@ class QuarterlyGregorianSequenceTest {
     assertEquals(ofYMD(2024, 4, 1), parts.get(1).firstDay());
 
     // A six-month whose start is not a quarter boundary fails structurally.
-    var febJul = sixMonthly(Epoch2kDay.MonthOfYear.February).interval(ofYMD(2024, 5, 15));
+    var febJul = semester(Epoch2kDay.MonthOfYear.February).interval(ofYMD(2024, 5, 15));
     assertThrows(IllegalArgumentException.class, () -> GQ_.partition(febJul));
   }
 
   @Test
-  void quarterlyStillContributesToSixMonthly() {
+  void quarterlyStillContributesToSemester() {
     var s1 = GS_.interval(ofYMD(2024, 3, 15));   // Jan-Jun 2024
     var quarters = GQ_.contributorsTo(s1);
     assertEquals(2, quarters.size());

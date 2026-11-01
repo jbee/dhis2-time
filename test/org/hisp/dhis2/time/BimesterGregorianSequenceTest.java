@@ -7,7 +7,7 @@ import static org.hisp.dhis2.time.GregorianSequences.GB_;
 import static org.hisp.dhis2.time.GregorianSequences.GQ_;
 import static org.hisp.dhis2.time.GregorianSequences.GS;
 import static org.hisp.dhis2.time.GregorianSequences.GS_;
-import static org.hisp.dhis2.time.GregorianSequences.sixMonthly;
+import static org.hisp.dhis2.time.GregorianSequences.semester;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -16,7 +16,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class BimesterGregorianSequenceTest {
 
   @Test
-  void bimesterTilesSixMonthlyAndYear() {
+  void bimesterTilesSemesterAndYear() {
     var year = Epoch2kInterval.ofYear(2024);
     assertEquals(6, GB_.partition(year).size());
 
@@ -61,12 +61,12 @@ class BimesterGregorianSequenceTest {
     var parts = GB_.partition(janJun);
     assertEquals(3, parts.size());
 
-    var febJul = sixMonthly(Epoch2kDay.MonthOfYear.February).interval(ofYMD(2024, 5, 15));
+    var febJul = semester(Epoch2kDay.MonthOfYear.February).interval(ofYMD(2024, 5, 15));
     assertThrows(IllegalArgumentException.class, () -> GB_.partition(febJul));
   }
 
   @Test
-  void bimesterContributesToSixMonthly() {
+  void bimesterContributesToSemester() {
     var s1 = GS_.interval(ofYMD(2024, 3, 15));   // Jan-Jun 2024
     var biMonths = GB_.contributorsTo(s1);
     assertEquals(3, biMonths.size());

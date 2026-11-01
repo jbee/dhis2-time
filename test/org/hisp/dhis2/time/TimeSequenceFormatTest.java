@@ -187,7 +187,7 @@ class TimeSequenceFormatTest {
   }
 
   @Test
-  void sixMonthlyJanuaryFormatsAsPosition() {
+  void semesterJanuaryFormatsAsPosition() {
     assertEquals("GS/2024:1", GS_.format(GS_.interval(ofYMD(2024, 3, 15))));
     assertEquals("GS/2024:2", GS_.format(GS_.interval(ofYMD(2024, 9, 15))));
   }
@@ -214,13 +214,13 @@ class TimeSequenceFormatTest {
   }
 
   @Test
-  void fiscalSixMonthlyAprilFormatsAsFirstDay() {
+  void fiscalSemesterAprilFormatsAsFirstDay() {
     assertEquals("FS4/2024-04-01", FS4.format(FS4.interval(ofYMD(2024, 5, 15))));
     assertEquals("FS4/2024-10-01", FS4.format(FS4.interval(ofYMD(2024, 11, 15))));
   }
 
   @Test
-  void fiscalSixMonthlyNovemberFormatsAsFirstDay() {
+  void fiscalSemesterNovemberFormatsAsFirstDay() {
     assertEquals("FSb/2024-11-01", FSb.format(FSb.interval(ofYMD(2024, 12, 15))));
   }
 
