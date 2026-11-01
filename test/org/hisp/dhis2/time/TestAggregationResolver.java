@@ -2,7 +2,7 @@ package org.hisp.dhis2.time;
 
 import static org.hisp.dhis2.time.AggregationResolver.AggregationType.APPROXIMATION;
 import static org.hisp.dhis2.time.AggregationResolver.AggregationType.EXACT;
-import static org.hisp.dhis2.time.GregorianSequences.GT_;
+import static org.hisp.dhis2.time.GregorianSequences.GF_;
 import static org.hisp.dhis2.time.GregorianSequences.GD_;
 import static org.hisp.dhis2.time.GregorianSequences.GM;
 import static org.hisp.dhis2.time.GregorianSequences.GM_;
@@ -31,7 +31,7 @@ class TestAggregationResolver {
 
   /** All eight Gregorian sequences, keyed by their default-offset variants. */
   private static final List<TimeSequence> GREGORIAN =
-      List.of(GD_, GW_, GT_, GM_, GB_, GS_, GQ_, GY_);
+      List.of(GD_, GW_, GF_, GM_, GB_, GS_, GQ_, GY_);
 
   // ── Basic resolution ─────────────────────────────────────────────
 
@@ -88,8 +88,8 @@ class TestAggregationResolver {
   @Test
   void fortnightlyReachesYearViaApproximation() {
     var resolver = new AggregationResolver(GREGORIAN);
-    var plan = resolver.resolveAuto(GT_.key(), Set.of(GY));
-    assertEquals(List.of(new Aggregation(GT_.key(), GY_.key(), APPROXIMATION)), plan);
+    var plan = resolver.resolveAuto(GF_.key(), Set.of(GY));
+    assertEquals(List.of(new Aggregation(GF_.key(), GY_.key(), APPROXIMATION)), plan);
   }
 
   @Test
@@ -145,12 +145,12 @@ class TestAggregationResolver {
   void chainThroughExactIntermediateThenApproximate() {
     // GB is a target; GY is reached via GB (approximation) rather than GW directly.
     var resolver = new AggregationResolver(GREGORIAN);
-    var plan = resolver.resolveAuto(GW_.key(), Set.of(GregorianSequences.GT, GY));
+    var plan = resolver.resolveAuto(GW_.key(), Set.of(GregorianSequences.GF, GY));
 
     assertEquals(
         List.of(
-            new Aggregation(GW_.key(), GT_.key(), EXACT),
-            new Aggregation(GT_.key(), GY_.key(), APPROXIMATION)),
+            new Aggregation(GW_.key(), GF_.key(), EXACT),
+            new Aggregation(GF_.key(), GY_.key(), APPROXIMATION)),
         plan);
   }
 

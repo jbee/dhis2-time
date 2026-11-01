@@ -3,7 +3,7 @@ package org.hisp.dhis2.time;
 import org.junit.jupiter.api.Test;
 
 import static org.hisp.dhis2.time.Epoch2kDay.ofYMD;
-import static org.hisp.dhis2.time.GregorianSequences.FS4;
+import static org.hisp.dhis2.time.GregorianSequences.FH4;
 import static org.hisp.dhis2.time.GregorianSequences.FY;
 import static org.hisp.dhis2.time.GregorianSequences.GS_;
 import static org.hisp.dhis2.time.GregorianSequences.GY;
@@ -24,14 +24,14 @@ class SemesterGregorianSequenceTest {
 
   @Test
   void fiscalSemesterAggregatesToFiscalYear() {
-    assertTrue(FS4.contributesTo(FY));
-    assertTrue(FS4.partitions(FY));
-    assertFalse(FS4.contributesTo(GY));
+    assertTrue(FH4.contributesTo(FY));
+    assertTrue(FH4.partitions(FY));
+    assertFalse(FH4.contributesTo(GY));
   }
 
   @Test
   void semesterAprilStartsApril() {
-    var s1 = FS4.interval(ofYMD(2024, 5, 15));
+    var s1 = FH4.interval(ofYMD(2024, 5, 15));
     assertEquals(ofYMD(2024, 4, 1), s1.firstDay());
     assertEquals(ofYMD(2024, 9, 30), s1.lastDay());
   }

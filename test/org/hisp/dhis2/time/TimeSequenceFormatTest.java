@@ -4,10 +4,10 @@ import static org.hisp.dhis2.time.Epoch2kDay.MonthOfYear.April;
 import static org.hisp.dhis2.time.Epoch2kDay.ofYMD;
 import static org.hisp.dhis2.time.GregorianSequences.FM7;
 import static org.hisp.dhis2.time.GregorianSequences.FQ7;
-import static org.hisp.dhis2.time.GregorianSequences.FS4;
-import static org.hisp.dhis2.time.GregorianSequences.FSb;
+import static org.hisp.dhis2.time.GregorianSequences.FH4;
+import static org.hisp.dhis2.time.GregorianSequences.FHb;
 import static org.hisp.dhis2.time.GregorianSequences.FY7;
-import static org.hisp.dhis2.time.GregorianSequences.GT_;
+import static org.hisp.dhis2.time.GregorianSequences.GF_;
 import static org.hisp.dhis2.time.GregorianSequences.GD_;
 import static org.hisp.dhis2.time.GregorianSequences.GM_;
 import static org.hisp.dhis2.time.GregorianSequences.GQ_;
@@ -26,7 +26,7 @@ import org.junit.jupiter.api.Test;
 class TimeSequenceFormatTest {
 
   private static final List<TimeSequence> ALL_GREGORIAN =
-      List.of(GD_, GW_, GT_, GM_, GB_, GS_, GQ_, GY_);
+      List.of(GD_, GW_, GF_, GM_, GB_, GS_, GQ_, GY_);
 
   // ── isMemberOf: member cases ────────────────────────────────
 
@@ -150,19 +150,19 @@ class TimeSequenceFormatTest {
   @Test
   void fortnightlyFormatsAsFirstDay() {
     // 2024-03-15 falls in the bi-week starting Monday 2024-03-11.
-    var bw = GT_.interval(ofYMD(2024, 3, 15));
-    assertEquals("GT/2024-03-11", GT_.format(bw));
+    var bw = GF_.interval(ofYMD(2024, 3, 15));
+    assertEquals("GF/2024-03-11", GF_.format(bw));
   }
 
   @Test
   void fortnightlyStubFormatsAndRoundTrips() {
     // 2020 has 53 ISO weeks; BW27 is the 1-week stub.
-    var stub = GT_.interval(ofYMD(2020, 12, 28));
+    var stub = GF_.interval(ofYMD(2020, 12, 28));
     assertEquals(7, stub.lengthInDays());
-    assertEquals("GT/2020-12-28", GT_.format(stub));
+    assertEquals("GF/2020-12-28", GF_.format(stub));
 
-    var parser = new TimeSequenceParser(List.of(GT_));
-    assertEquals(stub, parser.parse(GT_.format(stub)).interval());
+    var parser = new TimeSequenceParser(List.of(GF_));
+    assertEquals(stub, parser.parse(GF_.format(stub)).interval());
   }
 
   @Test
@@ -215,13 +215,13 @@ class TimeSequenceFormatTest {
 
   @Test
   void fiscalSemesterAprilFormatsAsFirstDay() {
-    assertEquals("FS4/2024-04-01", FS4.format(FS4.interval(ofYMD(2024, 5, 15))));
-    assertEquals("FS4/2024-10-01", FS4.format(FS4.interval(ofYMD(2024, 11, 15))));
+    assertEquals("FH4/2024-04-01", FH4.format(FH4.interval(ofYMD(2024, 5, 15))));
+    assertEquals("FH4/2024-10-01", FH4.format(FH4.interval(ofYMD(2024, 11, 15))));
   }
 
   @Test
   void fiscalSemesterNovemberFormatsAsFirstDay() {
-    assertEquals("FSb/2024-11-01", FSb.format(FSb.interval(ofYMD(2024, 12, 15))));
+    assertEquals("FHb/2024-11-01", FHb.format(FHb.interval(ofYMD(2024, 12, 15))));
   }
 
   @Test
@@ -281,7 +281,7 @@ class TimeSequenceFormatTest {
 
     assertEquals("GD/2024-03-05+10", GD_.format(tenDays));
     assertEquals("GW/2024-03-05+10", GW_.format(tenDays));
-    assertEquals("GT/2024-03-05+10", GT_.format(tenDays));
+    assertEquals("GF/2024-03-05+10", GF_.format(tenDays));
     assertEquals("GM/2024-03-05+10", GM_.format(tenDays));
     assertEquals("GB/2024-03-05+10", GB_.format(tenDays));
     assertEquals("GS/2024-03-05+10", GS_.format(tenDays));
@@ -355,7 +355,7 @@ class TimeSequenceFormatTest {
   void formattedOffsetSequencesRoundTripThroughParser() {
     var gq4 = quarterly(April);
     var gt4 = GregorianSequences.bimester(April);
-    var parser = new TimeSequenceParser(List.of(gq4, gt4, FS4, FSb, FM7, FQ7, FY7));
+    var parser = new TimeSequenceParser(List.of(gq4, gt4, FH4, FHb, FM7, FQ7, FY7));
 
     assertEquals(
         gq4.interval(ofYMD(2024, 5, 15)),
@@ -367,8 +367,8 @@ class TimeSequenceFormatTest {
         FY7.interval(ofYMD(2024, 8, 15)),
         parser.parse(FY7.format(FY7.interval(ofYMD(2024, 8, 15)))).interval());
     assertEquals(
-        FS4.interval(ofYMD(2024, 11, 15)),
-        parser.parse(FS4.format(FS4.interval(ofYMD(2024, 11, 15)))).interval());
+        FH4.interval(ofYMD(2024, 11, 15)),
+        parser.parse(FH4.format(FH4.interval(ofYMD(2024, 11, 15)))).interval());
   }
 
   // ── Default format ──────────────────────────────────────────

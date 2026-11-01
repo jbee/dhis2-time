@@ -14,7 +14,7 @@ class TimeSequenceKeyTest {
   void allDaysRoundTrip() {
     for (var d : DayOfWeek.values()) {
       assertEquals(d, GregorianSequences.GW.offsetBy(d).offsetAsDay());
-      assertEquals(d, GregorianSequences.GT.offsetBy(d).offsetAsDay());
+      assertEquals(d, GregorianSequences.GF.offsetBy(d).offsetAsDay());
     }
   }
 

@@ -95,11 +95,11 @@ class WeeklyGregorianSequenceTest {
 
   @Test
   void partitionsContainsOnlyBiWeek() {
-    assertEquals(Set.of(GT.noOffset()), GW_.partitions());
+    assertEquals(Set.of(GF.noOffset()), GW_.partitions());
   }
 
   @Test
   void aggregatesToContainsBiWeekMonthQuarterYear() {
-    assertEquals(Set.of(GT.noOffset(), GM.noOffset(), GB.noOffset(), GQ.noOffset(), GS.noOffset(), GY.noOffset()), GW_.contributesTo());
+    assertEquals(Set.of(GF.noOffset(), GM.noOffset(), GB.noOffset(), GQ.noOffset(), GS.noOffset(), GY.noOffset()), GW_.contributesTo());
   }
 }

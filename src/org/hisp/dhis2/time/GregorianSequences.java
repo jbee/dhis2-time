@@ -5,23 +5,47 @@ import org.hisp.dhis2.time.Epoch2kDay.MonthOfYear;
 
 import java.util.Set;
 
+/**
+ * For Gregorian calendar:
+ * <pre>
+ *   D = Daily
+ *   W = Weekly
+ *   F = Fortnightly (a.k.a. bi-weekly)
+ *   M = Monthly
+ *   B = Bimester (a.k.a. bi-monthly)
+ *   S = Semester (a.k.a. six-monthly)
+ *   Q = Quarterly
+ *   Y = Yearly
+ * </pre>
+ * For Fiscal Gregorian calendar:
+ * <pre>
+ *   H = Half-Year (a.k.a. six-monthly)
+ * </pre>
+ */
 public final class GregorianSequences {
+
+  // Interval codes are the first letter of the interval's name in that family's
+  // vocabulary: M=Month, Q=Quarter, Y=Year in both families (same word), but
+  // S=Semester (calendar) vs H=HalfYear (fiscal) because the names differ.
+  // This reflects that interval code is a naming choice, not a property of the
+  // interval's shape — the same six-month cycle appears under two names because
+  // two domains call it different things.
 
   private GregorianSequences() {}
 
   // Calendar Gregorian
   public static final TimeFamilyKey GD = new TimeFamilyKey('G', 'D');
   public static final TimeFamilyKey GW = new TimeFamilyKey('G', 'W');
-  public static final TimeFamilyKey GT = new TimeFamilyKey('G', 'T');
+  public static final TimeFamilyKey GF = new TimeFamilyKey('G', 'F');
   public static final TimeFamilyKey GM = new TimeFamilyKey('G', 'M');
   public static final TimeFamilyKey GB = new TimeFamilyKey('G', 'B');
-  public static final TimeFamilyKey GS = new TimeFamilyKey('G', 'S');
   public static final TimeFamilyKey GQ = new TimeFamilyKey('G', 'Q');
+  public static final TimeFamilyKey GS = new TimeFamilyKey('G', 'S');
   public static final TimeFamilyKey GY = new TimeFamilyKey('G', 'Y');
   // Fiscal Gregorian
   public static final TimeFamilyKey FM = new TimeFamilyKey('F', 'M');
-  public static final TimeFamilyKey FS = new TimeFamilyKey('F', 'S');
   public static final TimeFamilyKey FQ = new TimeFamilyKey('F', 'Q');
+  public static final TimeFamilyKey FH = new TimeFamilyKey('F', 'H');
   public static final TimeFamilyKey FY = new TimeFamilyKey('F', 'Y');
 
   // ── Common constants ────────────────────────────────────────────────
@@ -29,7 +53,7 @@ public final class GregorianSequences {
   public static final TimeSequence GD_ = daily();
 
   public static final TimeSequence GW_ = weekly(DayOfWeek.Monday);
-  public static final TimeSequence GT_ = fortnightly(DayOfWeek.Monday);
+  public static final TimeSequence GF_ = fortnightly(DayOfWeek.Monday);
 
   public static final TimeSequence GM_ = monthly();
   public static final TimeSequence GB_ = bimester(MonthOfYear.January);
@@ -40,8 +64,8 @@ public final class GregorianSequences {
   // ── Common fiscal constants (July-start) ────────────────────────────
 
   public static final TimeSequence FM7 = fiscalMonthly(MonthOfYear.July);
-  public static final TimeSequence FS4 = fiscalSemester(MonthOfYear.April);
-  public static final TimeSequence FSb = fiscalSemester(MonthOfYear.November);
+  public static final TimeSequence FH4 = fiscalHalfYear(MonthOfYear.April);
+  public static final TimeSequence FHb = fiscalHalfYear(MonthOfYear.November);
   public static final TimeSequence FQ7 = fiscalQuarterly(MonthOfYear.July);
   public static final TimeSequence FY7 = fiscalYearly(MonthOfYear.July);
 
@@ -65,7 +89,7 @@ public final class GregorianSequences {
         GD.noOffset(),
         Set.of(
             GW.noOffset(),
-            GT.noOffset(),
+            GF.noOffset(),
             GM.noOffset(),
             GB.noOffset(),
             GQ.noOffset(),
@@ -73,7 +97,7 @@ public final class GregorianSequences {
             GY.noOffset()),
         Set.of(
             GW.noOffset(),
-            GT.noOffset(),
+            GF.noOffset(),
             GM.noOffset(),
             GB.noOffset(),
             GQ.noOffset(),
@@ -90,9 +114,9 @@ public final class GregorianSequences {
     return new WeeklyGregorianSequence(
         GW.offsetBy(day1),
         day1,
-        Set.of(GT.offsetBy(day1)),
+        Set.of(GF.offsetBy(day1)),
         Set.of(
-            GT.offsetBy(day1),
+            GF.offsetBy(day1),
             GM.noOffset(),
             GB.noOffset(),
             GQ.noOffset(),
@@ -111,7 +135,7 @@ public final class GregorianSequences {
    */
   public static TimeSequence fortnightly(DayOfWeek day1) {
     return new FortnightlyGregorianSequence(
-        GT.offsetBy(day1),
+        GF.offsetBy(day1),
         day1,
         Set.of(),
         Set.of(GM.noOffset(), GB.noOffset(), GQ.noOffset(), GS.noOffset(), GY.noOffset()));
@@ -145,9 +169,9 @@ public final class GregorianSequences {
         Set.of(GS.offsetBy(month1), GY.offsetBy(month1)));
   }
 
-  public static TimeSequence fiscalSemester(MonthOfYear month1) {
+  public static TimeSequence fiscalHalfYear(MonthOfYear month1) {
     return new SemesterGregorianSequence(
-        FS.offsetBy(month1), month1, Set.of(FY.offsetBy(month1)), Set.of(FY.offsetBy(month1)));
+        FH.offsetBy(month1), month1, Set.of(FY.offsetBy(month1)), Set.of(FY.offsetBy(month1)));
   }
 
   public static TimeSequence fiscalMonthly(MonthOfYear start) {
