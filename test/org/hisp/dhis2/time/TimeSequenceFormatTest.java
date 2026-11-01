@@ -1,8 +1,6 @@
 package org.hisp.dhis2.time;
 
 import static org.hisp.dhis2.time.Epoch2kDay.MonthOfYear.April;
-import static org.hisp.dhis2.time.Epoch2kDay.MonthOfYear.July;
-import static org.hisp.dhis2.time.Epoch2kDay.MonthOfYear.November;
 import static org.hisp.dhis2.time.Epoch2kDay.ofYMD;
 import static org.hisp.dhis2.time.GregorianSequences.FM7;
 import static org.hisp.dhis2.time.GregorianSequences.FQ7;
@@ -154,6 +152,17 @@ class TimeSequenceFormatTest {
     // 2024-03-15 falls in the bi-week starting Monday 2024-03-11.
     var bw = GB_.interval(ofYMD(2024, 3, 15));
     assertEquals("GB/2024-03-11", GB_.format(bw));
+  }
+
+  @Test
+  void biWeeklyStubFormatsAndRoundTrips() {
+    // 2020 has 53 ISO weeks; BW27 is the 1-week stub.
+    var stub = GB_.interval(ofYMD(2020, 12, 28));
+    assertEquals(7, stub.lengthInDays());
+    assertEquals("GB/2020-12-28", GB_.format(stub));
+
+    var parser = new TimeSequenceParser(List.of(GB_));
+    assertEquals(stub, parser.parse(GB_.format(stub)).interval());
   }
 
   @Test
