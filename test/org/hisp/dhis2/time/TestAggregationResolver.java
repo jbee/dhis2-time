@@ -360,6 +360,20 @@ class TestAggregationResolver {
     assertEquals(new Aggregation(st, gm, EXACT), plan.get(0));
   }
 
+  @Test
+  void sharedIntermediatePrecedesAllConsumers() {
+    var resolver = new AggregationResolver(GREGORIAN);
+    var plan = resolver.resolveAuto(GD_.key(), Set.of(GM, GQ, GS));
+
+    var gmIndex = plan.indexOf(new Aggregation(GD_.key(), GM_.key(), EXACT));
+    var gqIndex = plan.indexOf(new Aggregation(GM_.key(), GQ_.key(), EXACT));
+    var gsIndex = plan.indexOf(new Aggregation(GM_.key(), GS_.key(), EXACT));
+
+    assertTrue(gmIndex >= 0);
+    assertTrue(gqIndex > gmIndex, () -> "GQ must be computed after GM; plan: " + plan);
+    assertTrue(gsIndex > gmIndex, () -> "GS must be computed after GM; plan: " + plan);
+  }
+
   // ── Invariants ───────────────────────────────────────────────────
 
   @Test
