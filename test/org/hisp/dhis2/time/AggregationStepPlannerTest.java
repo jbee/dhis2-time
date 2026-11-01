@@ -2,6 +2,13 @@ package org.hisp.dhis2.time;
 
 import static org.hisp.dhis2.time.AggregationExactness.APPROXIMATE;
 import static org.hisp.dhis2.time.AggregationExactness.EXACT;
+import static org.hisp.dhis2.time.GregorianSequences.FH;
+import static org.hisp.dhis2.time.GregorianSequences.FH4;
+import static org.hisp.dhis2.time.GregorianSequences.FHb;
+import static org.hisp.dhis2.time.GregorianSequences.FM7;
+import static org.hisp.dhis2.time.GregorianSequences.FQ;
+import static org.hisp.dhis2.time.GregorianSequences.FQ7;
+import static org.hisp.dhis2.time.GregorianSequences.FY7;
 import static org.hisp.dhis2.time.GregorianSequences.GF_;
 import static org.hisp.dhis2.time.GregorianSequences.GD_;
 import static org.hisp.dhis2.time.GregorianSequences.GM;
@@ -35,6 +42,14 @@ class AggregationStepPlannerTest {
   /** All eight Gregorian sequences, keyed by their default-offset variants. */
   private static final List<TimeSequence> GREGORIAN =
       List.of(GD_, GW_, GF_, GM_, GB_, GS_, GQ_, GY_);
+
+  private static final TimeSequence FH7 =
+      GregorianSequences.fiscalHalfYear(Epoch2kDay.MonthOfYear.July);
+
+  /** All common Gregorian fiscal sequences, keyed by their default-offset variants. */
+  private static final List<TimeSequence> GREGORIAN_FISCAL =
+      List.of(FM7, FH4, FHb, FQ7, FY7, FH7);
+
 
   // ── Basic resolution ─────────────────────────────────────────────
 
@@ -434,6 +449,19 @@ class AggregationStepPlannerTest {
         List.of(
             new AggregationStep(GD_.key(), GB_.key(), EXACT),
             new AggregationStep(GB_.key(), GS_.key(), EXACT)),
+        plan);
+  }
+
+  @Test
+  void fiscalQuarterlyChainsToFiscalHalfYear() {
+    var resolver = new AggregationStepPlanner(GREGORIAN_FISCAL);
+    var plan = resolver.planFindOffsets(FM7.key(), Set.of(FQ, FH));
+
+    // FM7 → FQ7 → FH7. Each is the July-start fiscal variant.
+    assertEquals(
+        List.of(
+            new AggregationStep(FM7.key(), FQ7.key(), EXACT),
+            new AggregationStep(FQ7.key(), FH7.key(), EXACT)),
         plan);
   }
 
