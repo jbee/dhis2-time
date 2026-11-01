@@ -45,19 +45,19 @@ public enum BridgeFormat {
    * formats ({@code 2024July}, {@code 2024NovQ1}, {@code 2024AprilS1}) always
    * resolve to fiscal families regardless of this mapping.
    */
-  public static Map<BridgeFormat, TimeSequenceKey> calendarMapping() {
+  public static Map<BridgeFormat, TimeFamilyKey> calendarMapping() {
     return Map.ofEntries(
-        Map.entry(YEARLY,             GY.noOffset()),
-        Map.entry(YEARLY_FISCAL,      FY.noOffset()),
-        Map.entry(MONTHLY,            GM.noOffset()),
-        Map.entry(QUARTERLY,          GQ.noOffset()),
-        Map.entry(QUARTERLY_FISCAL,   FQ.noOffset()),
-        Map.entry(SEMESTER,           GS.noOffset()),
-        Map.entry(SEMESTER_FISCAL,    FH.noOffset()),
-        Map.entry(BIMESTER,           GB.noOffset()),
-        Map.entry(WEEKLY,             GW.noOffset()),
-        Map.entry(FORTNIGHTLY,        GF.noOffset()),
-        Map.entry(DAILY,              GD.noOffset()));
+        Map.entry(YEARLY,             GY),
+        Map.entry(YEARLY_FISCAL,      FY),
+        Map.entry(MONTHLY,            GM),
+        Map.entry(QUARTERLY,          GQ),
+        Map.entry(QUARTERLY_FISCAL,   FQ),
+        Map.entry(SEMESTER,           GS),
+        Map.entry(SEMESTER_FISCAL,    FH),
+        Map.entry(BIMESTER,           GB),
+        Map.entry(WEEKLY,             GW),
+        Map.entry(FORTNIGHTLY,        GF),
+        Map.entry(DAILY,              GD));
   }
 
   /**
@@ -65,18 +65,18 @@ public enum BridgeFormat {
    * on the four formats with no explicit fiscal marker in the string: those
    * resolve to fiscal families here instead of calendar.
    */
-  public static Map<BridgeFormat, TimeSequenceKey> fiscalMapping() {
+  public static Map<BridgeFormat, TimeFamilyKey> fiscalMapping() {
     return Map.ofEntries(
-        Map.entry(YEARLY,             FY.noOffset()),
-        Map.entry(YEARLY_FISCAL,      FY.noOffset()),
-        Map.entry(MONTHLY,            FM.noOffset()),
-        Map.entry(QUARTERLY,          FQ.noOffset()),
-        Map.entry(QUARTERLY_FISCAL,   FQ.noOffset()),
-        Map.entry(SEMESTER,           FH.noOffset()),
-        Map.entry(SEMESTER_FISCAL,    FH.noOffset()),
-        Map.entry(BIMESTER,           GB.noOffset()),
-        Map.entry(WEEKLY,             GW.noOffset()),
-        Map.entry(FORTNIGHTLY,        GF.noOffset()),
-        Map.entry(DAILY,              GD.noOffset()));
+        Map.entry(YEARLY,             FY),
+        Map.entry(YEARLY_FISCAL,      FY),
+        Map.entry(MONTHLY,            FM),
+        Map.entry(QUARTERLY,          FQ),
+        Map.entry(QUARTERLY_FISCAL,   FQ),
+        Map.entry(SEMESTER,           FH),
+        Map.entry(SEMESTER_FISCAL,    FH),
+        Map.entry(BIMESTER,           GB),
+        Map.entry(WEEKLY,             GW),
+        Map.entry(FORTNIGHTLY,        GF),
+        Map.entry(DAILY,              GD));
   }
 }

@@ -302,8 +302,8 @@ class BridgeParserTest {
   void rejectsPartiallyCompleteMapping() {
     var partial =
         Map.of(
-            BridgeFormat.DAILY, GD.noOffset(),
-            BridgeFormat.WEEKLY, GW.noOffset());
+            BridgeFormat.DAILY, GD,
+            BridgeFormat.WEEKLY, GW);
     assertThrows(
         IllegalArgumentException.class,
         () -> new BridgeParser(partial));
