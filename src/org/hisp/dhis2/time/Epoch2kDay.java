@@ -283,6 +283,23 @@ public record Epoch2kDay(@ZeroBased int daysSince2k) implements Comparable<Epoch
   }
 
   /**
+   * The fortnightly interval starting on {@code day1} that contains this day.
+   * Fortnights are grouped two ISO weeks at a time within the week-year; in a
+   * 53-week year the 27th fortnight is a single week (the stub).
+   */
+  public Epoch2kInterval containingFortnight(DayOfWeek day1) {
+    var weekStart = previousOrSame(day1);
+    int weekYear = weekStart.yearOfWeekMajority(day1);
+    int fortnightIndex = (weekStart.weekOfYearNumber(day1) - 1) / 2;
+    var week1 = ofWeek1InYear(weekYear, day1);
+    var start = week1.plusDays(fortnightIndex * 14);
+    var end = start.plusDays(13);
+    var nextYearWeek1 = ofWeek1InYear(weekYear + 1, day1);
+    if (end.notBefore(nextYearWeek1)) end = nextYearWeek1.minusDays(1);
+    return new Epoch2kInterval(start, end);
+  }
+
+  /**
    * @return the interval of the month containing this day
    */
   public Epoch2kInterval containingMonth() {
@@ -387,4 +404,28 @@ public record Epoch2kDay(@ZeroBased int daysSince2k) implements Comparable<Epoch
     return minusDays(dayOfWeekOffset(day));
   }
 
+  /**
+   * The ISO-style week-year containing this day, using the majority-of-days rule:
+   * the week belongs to the year containing more than half its days. For a
+   * Monday-start week this is the year containing the week's Thursday (equivalently,
+   * the year such that Jan 4 falls in week 1). Generalises to any {@code day1}.
+   */
+  public int yearOfWeekMajority(DayOfWeek day1) {
+    var weekStart = previousOrSame(day1);
+    int year = weekStart.year();
+    var week1 = ofWeek1InYear(year, day1);
+    if (weekStart.before(week1)) return year - 1;
+    var nextWeek1 = ofWeek1InYear(year + 1, day1);
+    if (weekStart.notBefore(nextWeek1)) return year + 1;
+    return year;
+  }
+
+  /** The week number (1..53) within the week-year. */
+  @OneBased
+  public int weekOfYearNumber(DayOfWeek day1) {
+    int wy = yearOfWeekMajority(day1);
+    var weekStart = previousOrSame(day1);
+    var week1 = ofWeek1InYear(wy, day1);
+    return (weekStart.daysSince2k() - week1.daysSince2k()) / 7 + 1;
+  }
 }

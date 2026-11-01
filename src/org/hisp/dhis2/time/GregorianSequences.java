@@ -67,6 +67,7 @@ public final class GregorianSequences {
   public static final TimeSequence FH4 = fiscalHalfYear(MonthOfYear.April);
   public static final TimeSequence FHb = fiscalHalfYear(MonthOfYear.November);
   public static final TimeSequence FQ7 = fiscalQuarterly(MonthOfYear.July);
+  public static final TimeSequence FQb = fiscalQuarterly(MonthOfYear.November);
   public static final TimeSequence FY7 = fiscalYearly(MonthOfYear.July);
 
   // ── Factories ───────────────────────────────────────────────────────
@@ -256,37 +257,7 @@ public final class GregorianSequences {
 
     @Override
     public Epoch2kInterval interval(Epoch2kDay day) {
-      Epoch2kInterval week = day.containingWeek(day1);
-      Epoch2kDay weekStart = week.firstDay();
-
-      // Week-year by majority of days: a week belongs to the year containing more
-      // than half its days. For Monday-start weeks this reduces to "the week
-      // containing Jan 4". ofWeek1InYear implements the general form.
-      int year = weekStart.year();
-      Epoch2kDay week1 = Epoch2kDay.ofWeek1InYear(year, day1);
-      if (weekStart.before(week1)) {
-        year--;
-        week1 = Epoch2kDay.ofWeek1InYear(year, day1);
-      } else {
-        Epoch2kDay nextWeek1 = Epoch2kDay.ofWeek1InYear(year + 1, day1);
-        if (weekStart.notBefore(nextWeek1)) {
-          year++;
-          week1 = nextWeek1;
-        }
-      }
-
-      int weekNumber = ((weekStart.daysSince2k() - week1.daysSince2k()) / 7) + 1;
-      int biWeekIndex = (weekNumber - 1) / 2;
-
-      Epoch2kDay biWeekStart = week1.plusDays(biWeekIndex * 14);
-      Epoch2kDay biWeekEnd = biWeekStart.plusDays(13);
-
-      // 53-week years: the 27th bi-week is a single week.
-      Epoch2kDay nextYearWeek1 = Epoch2kDay.ofWeek1InYear(year + 1, day1);
-      if (biWeekEnd.notBefore(nextYearWeek1)) {
-        biWeekEnd = nextYearWeek1.minusDays(1);
-      }
-      return new Epoch2kInterval(biWeekStart, biWeekEnd);
+      return day.containingFortnight(day1);
     }
 
     @Override
