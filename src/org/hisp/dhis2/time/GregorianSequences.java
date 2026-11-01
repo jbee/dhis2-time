@@ -32,7 +32,7 @@ public final class GregorianSequences {
   public static final TimeSequence GT_ = biWeekly(DayOfWeek.Monday);
 
   public static final TimeSequence GM_ = monthly();
-  public static final TimeSequence GB_ = biMonthly(MonthOfYear.January);
+  public static final TimeSequence GB_ = bimester(MonthOfYear.January);
   public static final TimeSequence GS_ = sixMonthly(MonthOfYear.January);
   public static final TimeSequence GQ_ = quarterly(MonthOfYear.January);
   public static final TimeSequence GY_ = yearly(MonthOfYear.January);
@@ -124,8 +124,8 @@ public final class GregorianSequences {
         Set.of(GB.noOffset(), GQ.noOffset(), GS.noOffset(), GY.noOffset()));
   }
 
-  public static TimeSequence biMonthly(MonthOfYear month1) {
-    return new BiMonthlyGregorianSequence(
+  public static TimeSequence bimester(MonthOfYear month1) {
+    return new BimesterGregorianSequence(
         GB.offsetBy(month1),
         month1,
         Set.of(GY.offsetBy(month1)),
@@ -290,14 +290,14 @@ public final class GregorianSequences {
     }
   }
 
-  private record BiMonthlyGregorianSequence(
+  private record BimesterGregorianSequence(
       TimeSequenceKey key,
       MonthOfYear month1,
       Set<TimeSequenceKey> partitions,
       Set<TimeSequenceKey> contributesTo)
       implements TimeSequence {
 
-    BiMonthlyGregorianSequence {
+    BimesterGregorianSequence {
       if (key.offsetAsMonth() != month1)
         throw new IllegalArgumentException(
             "key " + key + " implies month1 " + key.offsetAsMonth() + " but record has " + month1);

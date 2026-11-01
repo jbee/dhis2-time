@@ -172,7 +172,7 @@ class TimeSequenceFormatTest {
   }
 
   @Test
-  void biMonthlyJanuaryFormatsAsPosition() {
+  void bimesterJanuaryFormatsAsPosition() {
     assertEquals("GB/2024:1", GB_.format(GB_.interval(ofYMD(2024, 1, 15))));
     assertEquals("GB/2024:2", GB_.format(GB_.interval(ofYMD(2024, 3, 15))));
     assertEquals("GB/2024:6", GB_.format(GB_.interval(ofYMD(2024, 11, 15))));
@@ -207,8 +207,8 @@ class TimeSequenceFormatTest {
   }
 
   @Test
-  void biMonthlyAprilFormatsAsFirstDay() {
-    var gb4 = GregorianSequences.biMonthly(April);
+  void bimesterAprilFormatsAsFirstDay() {
+    var gb4 = GregorianSequences.bimester(April);
     assertEquals("GB4/2024-04-01", gb4.format(gb4.interval(ofYMD(2024, 4, 15))));
     assertEquals("GB4/2024-06-01", gb4.format(gb4.interval(ofYMD(2024, 7, 15))));
   }
@@ -354,7 +354,7 @@ class TimeSequenceFormatTest {
   @Test
   void formattedOffsetSequencesRoundTripThroughParser() {
     var gq4 = quarterly(April);
-    var gt4 = GregorianSequences.biMonthly(April);
+    var gt4 = GregorianSequences.bimester(April);
     var parser = new TimeSequenceParser(List.of(gq4, gt4, FS4, FSb, FM7, FQ7, FY7));
 
     assertEquals(

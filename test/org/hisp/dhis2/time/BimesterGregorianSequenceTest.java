@@ -13,10 +13,10 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-class BiMonthlyGregorianSequenceTest {
+class BimesterGregorianSequenceTest {
 
   @Test
-  void biMonthlyTilesSixMonthlyAndYear() {
+  void bimesterTilesSixMonthlyAndYear() {
     var year = Epoch2kInterval.ofYear(2024);
     assertEquals(6, GB_.partition(year).size());
 
@@ -25,7 +25,7 @@ class BiMonthlyGregorianSequenceTest {
   }
 
   @Test
-  void biMonthlyContributesToQuarterViaTieBreak() {
+  void bimesterContributesToQuarterViaTieBreak() {
     // Mar-Apr bi-month is exactly 50/50 in Q1/Q2; tie-break attributes to Q1.
     var marApr = GB_.interval(ofYMD(2024, 4, 15));
     var q1 = GQ_.interval(ofYMD(2024, 2, 15));
@@ -36,7 +36,7 @@ class BiMonthlyGregorianSequenceTest {
   }
 
   @Test
-  void biMonthlyContainsItsDay() {
+  void bimesterContainsItsDay() {
     for (var d : new Epoch2kDay[] {
         ofYMD(2024, 1, 15), ofYMD(2024, 4, 15), ofYMD(2024, 12, 31)}) {
       assertTrue(GB_.interval(d).contains(d));
@@ -44,19 +44,19 @@ class BiMonthlyGregorianSequenceTest {
   }
 
   @Test
-  void nextAndPreviousInverseForBiMonthly() {
+  void nextAndPreviousInverseForBimester() {
     var i = GB_.interval(ofYMD(2024, 3, 15));
     assertEquals(i, GB_.next(GB_.previous(i)));
     assertEquals(i, GB_.previous(GB_.next(i)));
   }
 
   @Test
-  void biMonthlyDeclaresNoSixMonthPartition() {
+  void bimesterDeclaresNoSixMonthPartition() {
     assertFalse(GB_.partitions(GS));
   }
 
   @Test
-  void biMonthlyPartitionIsStructuralNotFamilyGated() {
+  void bimesterPartitionIsStructuralNotFamilyGated() {
     var janJun = GS_.interval(ofYMD(2024, 3, 15));    // Jan 1 .. Jun 30
     var parts = GB_.partition(janJun);
     assertEquals(3, parts.size());
@@ -66,7 +66,7 @@ class BiMonthlyGregorianSequenceTest {
   }
 
   @Test
-  void biMonthlyContributesToSixMonthly() {
+  void bimesterContributesToSixMonthly() {
     var s1 = GS_.interval(ofYMD(2024, 3, 15));   // Jan-Jun 2024
     var biMonths = GB_.contributorsTo(s1);
     assertEquals(3, biMonths.size());
@@ -75,7 +75,7 @@ class BiMonthlyGregorianSequenceTest {
   }
 
   @Test
-  void biMonthlyPartitionsYear() {
+  void bimesterPartitionsYear() {
     var year = Epoch2kInterval.ofYear(2024);
     assertEquals(6, GB_.partition(year).size());
   }
