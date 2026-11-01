@@ -18,6 +18,7 @@ import static org.hisp.dhis2.time.GregorianSequences.GS;
 import static org.hisp.dhis2.time.GregorianSequences.GW;
 import static org.hisp.dhis2.time.GregorianSequences.GY;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.util.List;
@@ -35,6 +36,26 @@ class BridgeParserTest {
 
   private static BridgeParser fiscal() {
     return new BridgeParser(BridgeFormat.fiscalMapping());
+  }
+
+  @Test
+  void fiscalAndCalendarMappingsDifferOnlyOnUnmarkedFormats() {
+    var cal = BridgeFormat.calendarMapping();
+    var fis = BridgeFormat.fiscalMapping();
+
+    for (var format : BridgeFormat.values()) {
+      boolean unmarked = switch (format) {
+        case YEARLY, MONTHLY, QUARTERLY, SEMESTER -> true;
+        default -> false;
+      };
+      if (unmarked) {
+        assertNotEquals(cal.get(format), fis.get(format),
+            () -> format + " should differ between calendar and fiscal mappings");
+      } else {
+        assertEquals(cal.get(format), fis.get(format),
+            () -> format + " should be identical between calendar and fiscal mappings");
+      }
+    }
   }
 
   // ── Yearly ────────────────────────────────────────────────────

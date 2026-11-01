@@ -39,6 +39,12 @@ public enum BridgeFormat {
   FORTNIGHTLY,
   DAILY;
 
+  /**
+   * Mapping for calendar-mode parsing: bare formats ({@code 2024}, {@code 202403},
+   * {@code 2024Q1}, {@code 2024S1}) resolve to calendar families; fiscal-marked
+   * formats ({@code 2024July}, {@code 2024NovQ1}, {@code 2024AprilS1}) always
+   * resolve to fiscal families regardless of this mapping.
+   */
   public static Map<BridgeFormat, TimeSequenceKey> calendarMapping() {
     return Map.ofEntries(
         Map.entry(YEARLY,             GY.noOffset()),
@@ -54,6 +60,11 @@ public enum BridgeFormat {
         Map.entry(DAILY,              GD.noOffset()));
   }
 
+  /**
+   * Mapping for fiscal-mode parsing. Differs from {@link #calendarMapping()} only
+   * on the four formats with no explicit fiscal marker in the string: those
+   * resolve to fiscal families here instead of calendar.
+   */
   public static Map<BridgeFormat, TimeSequenceKey> fiscalMapping() {
     return Map.ofEntries(
         Map.entry(YEARLY,             FY.noOffset()),
