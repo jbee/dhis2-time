@@ -184,6 +184,11 @@ public final class GregorianSequences {
     public Epoch2kInterval interval(Epoch2kDay day) {
       return new Epoch2kInterval(day);
     }
+
+    @Override
+    public String format(Epoch2kInterval interval) {
+      return formatFirstDayBasedSequence(this, interval);
+    }
   }
 
   private record WeeklyGregorianSequence(
@@ -203,6 +208,11 @@ public final class GregorianSequences {
     @Override
     public Epoch2kInterval interval(Epoch2kDay day) {
       return day.containingWeek(day1);
+    }
+
+    @Override
+    public String format(Epoch2kInterval interval) {
+      return formatFirstDayBasedSequence(this, interval);
     }
   }
 
@@ -254,6 +264,11 @@ public final class GregorianSequences {
       }
       return new Epoch2kInterval(biWeekStart, biWeekEnd);
     }
+
+    @Override
+    public String format(Epoch2kInterval interval) {
+      return formatFirstDayBasedSequence(this, interval);
+    }
   }
 
   private record MonthlyGregorianSequence(
@@ -267,6 +282,11 @@ public final class GregorianSequences {
     @Override
     public Epoch2kInterval interval(Epoch2kDay day) {
       return day.containingMonth();
+    }
+
+    @Override
+    public String format(Epoch2kInterval interval) {
+      return formatMonthBasedSequence(this, interval);
     }
   }
 
@@ -288,6 +308,11 @@ public final class GregorianSequences {
     public Epoch2kInterval interval(Epoch2kDay day) {
       return day.containingBiMonth(month1);
     }
+
+    @Override
+    public String format(Epoch2kInterval interval) {
+      return formatMonthBasedSequence(this, interval, 2);
+    }
   }
 
   private record SixMonthlyGregorianSequence(
@@ -307,6 +332,11 @@ public final class GregorianSequences {
     @Override
     public Epoch2kInterval interval(Epoch2kDay day) {
       return day.containingSixMonth(month1);
+    }
+
+    @Override
+    public String format(Epoch2kInterval interval) {
+      return formatMonthBasedSequence(this, interval, 6);
     }
   }
 
@@ -328,6 +358,11 @@ public final class GregorianSequences {
     public Epoch2kInterval interval(Epoch2kDay day) {
       return day.containingQuarter(month1);
     }
+
+    @Override
+    public String format(Epoch2kInterval interval) {
+      return formatMonthBasedSequence(this, interval, 3);
+    }
   }
 
   private record YearlyGregorianSequence(
@@ -348,5 +383,43 @@ public final class GregorianSequences {
     public Epoch2kInterval interval(Epoch2kDay day) {
       return day.containingYear(month1);
     }
+
+    @Override
+    public String format(Epoch2kInterval interval) {
+      return formatYearBasedSequence(this, interval);
+    }
+  }
+
+  private static String formatYearBasedSequence(TimeSequence ts, Epoch2kInterval interval) {
+    var slice = new TimeSlice(ts.key(), interval);
+    if (!TimeSequence.isMemberOf(ts, interval)) return slice.toString();
+    if (ts.key().offsetAsMonth() == MonthOfYear.January) {
+      return slice.formatYYYY();
+    }
+    return slice.formatYYYY_MM_DD();
+  }
+
+  private static String formatMonthBasedSequence(TimeSequence ts, Epoch2kInterval interval) {
+    TimeSlice slice = new TimeSlice(ts.key(), interval);
+    if (!TimeSequence.isMemberOf(ts, interval)) return slice.toString();
+    return slice.formatYYYY_MM();
+  }
+
+  private static String formatMonthBasedSequence(
+      TimeSequence ts, Epoch2kInterval interval, int monthsPerPosition) {
+    var key = ts.key();
+    var slice = new TimeSlice(key, interval);
+    if (!TimeSequence.isMemberOf(ts, interval)) return slice.toString();
+    if (key.offsetAsMonth() == MonthOfYear.January) {
+      int position = interval.firstDay().monthOffset() / monthsPerPosition + 1;
+      return slice.formatYYYYxN(position);
+    }
+    return slice.formatYYYY_MM_DD();
+  }
+
+  private static String formatFirstDayBasedSequence(TimeSequence ts, Epoch2kInterval interval) {
+    TimeSlice slice = new TimeSlice(ts.key(), interval);
+    if (!TimeSequence.isMemberOf(ts, interval)) return slice.toString();
+    return slice.formatYYYY_MM_DD();
   }
 }

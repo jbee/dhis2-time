@@ -30,7 +30,7 @@ import java.util.Map;
  * {@link TimeSequenceKey#NO_OFFSET}.
  *
  * <p>Canonical form is always the {@code +} form, produced by
- * {@link TimeSequenceInput#toString()}.
+ * {@link TimeSlice#toString()}.
  *
  * <p>Parsing works directly on the input {@link CharSequence}: no intermediate
  * substrings are allocated on the success path. The whole input is passed
@@ -51,7 +51,7 @@ public final class TimeSequenceParser {
     this.registry = Map.copyOf(map);
   }
 
-  public TimeSequenceInput parse(CharSequence s) {
+  public TimeSlice parse(CharSequence s) {
     int slash = findChar(s, '/', 0);
     if (slash != 2 && slash != 3)
       throw new IllegalArgumentException(
@@ -81,7 +81,7 @@ public final class TimeSequenceParser {
    * The shared resolution step for {@code :n} and the no-suffix form. {@code :n}
    * passes its parsed position; the no-suffix form passes {@code 1}.
    */
-  private TimeSequenceInput parseAtPosition(
+  private TimeSlice parseAtPosition(
       TimeSequenceKey key, CharSequence s,
       int dateStart, int dateEnd, int position) {
     TimeSequence sequence = registry.get(key);
@@ -97,17 +97,17 @@ public final class TimeSequenceParser {
               + " interval(s) of " + key + " overlapping " + period
               + " (in: " + s + ")");
 
-    return new TimeSequenceInput(key, overlapping.get(position - 1));
+    return new TimeSlice(key, overlapping.get(position - 1));
   }
 
   // ── +length form ───────────────────────────────────────────────────
 
-  private TimeSequenceInput parseExplicit(
+  private TimeSlice parseExplicit(
       TimeSequenceKey key, CharSequence s,
       int dateStart, int dateEnd, int lengthStart, int lengthEnd) {
     Epoch2kDay first = toEpochDay(parseDateParts(s, dateStart, dateEnd - dateStart), s);
     int length = parsePositive(s, lengthStart, lengthEnd - lengthStart, "length");
-    return new TimeSequenceInput(key, new Epoch2kInterval(first, first.plusDays(length - 1)));
+    return new TimeSlice(key, new Epoch2kInterval(first, first.plusDays(length - 1)));
   }
 
   // ── Date parsing ───────────────────────────────────────────────────

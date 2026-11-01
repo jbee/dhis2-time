@@ -224,6 +224,10 @@ public interface TimeSequence {
     return interval(ref.firstDay().yesterday());
   }
 
+  /*
+  Aggregation Support
+   */
+
   /**
    * The families this sequence strictly tiles, as a declaration.
    *
@@ -384,5 +388,46 @@ public interface TimeSequence {
       throw new IllegalArgumentException(
           "partitions() must be a subset of contributesTo(); missing: "
               + partitions.stream().filter(p -> !contributesTo.contains(p)).toList());
+  }
+
+  /*
+  Formatting in preferred form
+   */
+
+  /**
+   * Format {@code interval} in this sequence's preferred string form.
+   *
+   * <p>The default implementation returns the canonical form
+   * {@code <key>/<first>+<length>}. Sequences override this to produce a more
+   * compact form when the interval is a member of the sequence and that form is
+   * expressible in the current string grammar — e.g. {@code GQ/2024:2} for the
+   * second quarter of 2024, or {@code GM/2024-03} for March 2024.
+   *
+   * <p>Never throws. If {@code interval} is not a member of this sequence, the
+   * override should fall back to {@code TimeSequence.super.format(interval)}.
+   *
+   * <p>The returned string is parseable by {@link TimeSequenceParser} when this
+   * sequence is registered with it, and re-parses to the same interval.
+   */
+  default String format(Epoch2kInterval interval) {
+    return key().toString() + interval.toString();
+  }
+
+  /**
+   * Whether {@code candidate} is exactly one of {@code sequence}'s intervals —
+   * same first day, same last day. Distinct from containment: a sub-interval of
+   * a member interval is contained but is not itself a member.
+   *
+   * <p>{@code static} rather than a default method so that all sequences share
+   * one definition. A sequence's only overridable behaviour is {@link #format};
+   * membership is derived from {@link #interval} and must not diverge between
+   * implementers.
+   */
+  static boolean isMemberOf(TimeSequence sequence, Epoch2kInterval candidate) {
+    try {
+      return sequence.interval(candidate.firstDay()).equals(candidate);
+    } catch (IllegalArgumentException e) {
+      return false;
+    }
   }
 }
