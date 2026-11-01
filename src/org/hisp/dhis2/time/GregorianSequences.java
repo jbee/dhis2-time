@@ -12,9 +12,9 @@ public final class GregorianSequences {
   // Calendar Gregorian
   public static final TimeFamilyKey GD = new TimeFamilyKey('G', 'D');
   public static final TimeFamilyKey GW = new TimeFamilyKey('G', 'W');
-  public static final TimeFamilyKey GB = new TimeFamilyKey('G', 'B');
-  public static final TimeFamilyKey GM = new TimeFamilyKey('G', 'M');
   public static final TimeFamilyKey GT = new TimeFamilyKey('G', 'T');
+  public static final TimeFamilyKey GM = new TimeFamilyKey('G', 'M');
+  public static final TimeFamilyKey GB = new TimeFamilyKey('G', 'B');
   public static final TimeFamilyKey GS = new TimeFamilyKey('G', 'S');
   public static final TimeFamilyKey GQ = new TimeFamilyKey('G', 'Q');
   public static final TimeFamilyKey GY = new TimeFamilyKey('G', 'Y');
@@ -29,10 +29,10 @@ public final class GregorianSequences {
   public static final TimeSequence GD_ = daily();
 
   public static final TimeSequence GW_ = weekly(DayOfWeek.Monday);
-  public static final TimeSequence GB_ = biWeekly(DayOfWeek.Monday);
+  public static final TimeSequence GT_ = biWeekly(DayOfWeek.Monday);
 
   public static final TimeSequence GM_ = monthly();
-  public static final TimeSequence GT_ = biMonthly(MonthOfYear.January);
+  public static final TimeSequence GB_ = biMonthly(MonthOfYear.January);
   public static final TimeSequence GS_ = sixMonthly(MonthOfYear.January);
   public static final TimeSequence GQ_ = quarterly(MonthOfYear.January);
   public static final TimeSequence GY_ = yearly(MonthOfYear.January);
@@ -65,17 +65,17 @@ public final class GregorianSequences {
         GD.noOffset(),
         Set.of(
             GW.noOffset(),
-            GB.noOffset(),
-            GM.noOffset(),
             GT.noOffset(),
+            GM.noOffset(),
+            GB.noOffset(),
             GQ.noOffset(),
             GS.noOffset(),
             GY.noOffset()),
         Set.of(
             GW.noOffset(),
-            GB.noOffset(),
-            GM.noOffset(),
             GT.noOffset(),
+            GM.noOffset(),
+            GB.noOffset(),
             GQ.noOffset(),
             GS.noOffset(),
             GY.noOffset()));
@@ -90,11 +90,11 @@ public final class GregorianSequences {
     return new WeeklyGregorianSequence(
         GW.offsetBy(day1),
         day1,
-        Set.of(GB.offsetBy(day1)),
+        Set.of(GT.offsetBy(day1)),
         Set.of(
-            GB.offsetBy(day1),
+            GT.offsetBy(day1),
             GM.noOffset(),
-            GT.noOffset(),
+            GB.noOffset(),
             GQ.noOffset(),
             GS.noOffset(),
             GY.noOffset()));
@@ -111,22 +111,22 @@ public final class GregorianSequences {
    */
   public static TimeSequence biWeekly(DayOfWeek day1) {
     return new BiWeeklyGregorianSequence(
-        GB.offsetBy(day1),
+        GT.offsetBy(day1),
         day1,
         Set.of(),
-        Set.of(GM.noOffset(), GT.noOffset(), GQ.noOffset(), GS.noOffset(), GY.noOffset()));
+        Set.of(GM.noOffset(), GB.noOffset(), GQ.noOffset(), GS.noOffset(), GY.noOffset()));
   }
 
   public static TimeSequence monthly() {
     return new MonthlyGregorianSequence(
         GM.noOffset(),
-        Set.of(GT.noOffset(), GQ.noOffset(), GS.noOffset(), GY.noOffset()),
-        Set.of(GT.noOffset(), GQ.noOffset(), GS.noOffset(), GY.noOffset()));
+        Set.of(GB.noOffset(), GQ.noOffset(), GS.noOffset(), GY.noOffset()),
+        Set.of(GB.noOffset(), GQ.noOffset(), GS.noOffset(), GY.noOffset()));
   }
 
   public static TimeSequence biMonthly(MonthOfYear month1) {
     return new BiMonthlyGregorianSequence(
-        GT.offsetBy(month1),
+        GB.offsetBy(month1),
         month1,
         Set.of(GY.offsetBy(month1)),
         Set.of(GQ.offsetBy(month1), GS.offsetBy(month1), GY.offsetBy(month1)));

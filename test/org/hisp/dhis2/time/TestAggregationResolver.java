@@ -2,7 +2,7 @@ package org.hisp.dhis2.time;
 
 import static org.hisp.dhis2.time.AggregationResolver.AggregationType.APPROXIMATION;
 import static org.hisp.dhis2.time.AggregationResolver.AggregationType.EXACT;
-import static org.hisp.dhis2.time.GregorianSequences.GB_;
+import static org.hisp.dhis2.time.GregorianSequences.GT_;
 import static org.hisp.dhis2.time.GregorianSequences.GD_;
 import static org.hisp.dhis2.time.GregorianSequences.GM;
 import static org.hisp.dhis2.time.GregorianSequences.GM_;
@@ -10,8 +10,8 @@ import static org.hisp.dhis2.time.GregorianSequences.GQ;
 import static org.hisp.dhis2.time.GregorianSequences.GQ_;
 import static org.hisp.dhis2.time.GregorianSequences.GS;
 import static org.hisp.dhis2.time.GregorianSequences.GS_;
-import static org.hisp.dhis2.time.GregorianSequences.GT;
-import static org.hisp.dhis2.time.GregorianSequences.GT_;
+import static org.hisp.dhis2.time.GregorianSequences.GB;
+import static org.hisp.dhis2.time.GregorianSequences.GB_;
 import static org.hisp.dhis2.time.GregorianSequences.GW_;
 import static org.hisp.dhis2.time.GregorianSequences.GY;
 import static org.hisp.dhis2.time.GregorianSequences.GY_;
@@ -31,7 +31,7 @@ class TestAggregationResolver {
 
   /** All eight Gregorian sequences, keyed by their default-offset variants. */
   private static final List<TimeSequence> GREGORIAN =
-      List.of(GD_, GW_, GB_, GM_, GT_, GS_, GQ_, GY_);
+      List.of(GD_, GW_, GT_, GM_, GB_, GS_, GQ_, GY_);
 
   // ── Basic resolution ─────────────────────────────────────────────
 
@@ -88,8 +88,8 @@ class TestAggregationResolver {
   @Test
   void biWeeklyReachesYearViaApproximation() {
     var resolver = new AggregationResolver(GREGORIAN);
-    var plan = resolver.resolveAuto(GB_.key(), Set.of(GY));
-    assertEquals(List.of(new Aggregation(GB_.key(), GY_.key(), APPROXIMATION)), plan);
+    var plan = resolver.resolveAuto(GT_.key(), Set.of(GY));
+    assertEquals(List.of(new Aggregation(GT_.key(), GY_.key(), APPROXIMATION)), plan);
   }
 
   @Test
@@ -145,12 +145,12 @@ class TestAggregationResolver {
   void chainThroughExactIntermediateThenApproximate() {
     // GB is a target; GY is reached via GB (approximation) rather than GW directly.
     var resolver = new AggregationResolver(GREGORIAN);
-    var plan = resolver.resolveAuto(GW_.key(), Set.of(GregorianSequences.GB, GY));
+    var plan = resolver.resolveAuto(GW_.key(), Set.of(GregorianSequences.GT, GY));
 
     assertEquals(
         List.of(
-            new Aggregation(GW_.key(), GB_.key(), EXACT),
-            new Aggregation(GB_.key(), GY_.key(), APPROXIMATION)),
+            new Aggregation(GW_.key(), GT_.key(), EXACT),
+            new Aggregation(GT_.key(), GY_.key(), APPROXIMATION)),
         plan);
   }
 
@@ -158,7 +158,7 @@ class TestAggregationResolver {
   void multiTargetWithMixedGranularity() {
     // Month, bi-month, year: each step prefers the coarsest already-reached source.
     var resolver = new AggregationResolver(GREGORIAN);
-    var plan = resolver.resolveAuto(GD_.key(), Set.of(GM, GT, GY));
+    var plan = resolver.resolveAuto(GD_.key(), Set.of(GM, GB, GY));
 
     // Sorted by interval length: GM (~30), GT (~61), GY (~365)
     //   GD → GM  (GD is only candidate)
@@ -167,8 +167,8 @@ class TestAggregationResolver {
     assertEquals(
         List.of(
             new Aggregation(GD_.key(), GM_.key(), EXACT),
-            new Aggregation(GM_.key(), GT_.key(), EXACT),
-            new Aggregation(GT_.key(), GY_.key(), EXACT)),
+            new Aggregation(GM_.key(), GB_.key(), EXACT),
+            new Aggregation(GB_.key(), GY_.key(), EXACT)),
         plan);
   }
 

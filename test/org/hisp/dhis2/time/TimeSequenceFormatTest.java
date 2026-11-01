@@ -7,12 +7,12 @@ import static org.hisp.dhis2.time.GregorianSequences.FQ7;
 import static org.hisp.dhis2.time.GregorianSequences.FS4;
 import static org.hisp.dhis2.time.GregorianSequences.FSb;
 import static org.hisp.dhis2.time.GregorianSequences.FY7;
-import static org.hisp.dhis2.time.GregorianSequences.GB_;
+import static org.hisp.dhis2.time.GregorianSequences.GT_;
 import static org.hisp.dhis2.time.GregorianSequences.GD_;
 import static org.hisp.dhis2.time.GregorianSequences.GM_;
 import static org.hisp.dhis2.time.GregorianSequences.GQ_;
 import static org.hisp.dhis2.time.GregorianSequences.GS_;
-import static org.hisp.dhis2.time.GregorianSequences.GT_;
+import static org.hisp.dhis2.time.GregorianSequences.GB_;
 import static org.hisp.dhis2.time.GregorianSequences.GW_;
 import static org.hisp.dhis2.time.GregorianSequences.GY_;
 import static org.hisp.dhis2.time.GregorianSequences.quarterly;
@@ -26,7 +26,7 @@ import org.junit.jupiter.api.Test;
 class TimeSequenceFormatTest {
 
   private static final List<TimeSequence> ALL_GREGORIAN =
-      List.of(GD_, GW_, GB_, GM_, GT_, GS_, GQ_, GY_);
+      List.of(GD_, GW_, GT_, GM_, GB_, GS_, GQ_, GY_);
 
   // ── isMemberOf: member cases ────────────────────────────────
 
@@ -150,19 +150,19 @@ class TimeSequenceFormatTest {
   @Test
   void biWeeklyFormatsAsFirstDay() {
     // 2024-03-15 falls in the bi-week starting Monday 2024-03-11.
-    var bw = GB_.interval(ofYMD(2024, 3, 15));
-    assertEquals("GB/2024-03-11", GB_.format(bw));
+    var bw = GT_.interval(ofYMD(2024, 3, 15));
+    assertEquals("GT/2024-03-11", GT_.format(bw));
   }
 
   @Test
   void biWeeklyStubFormatsAndRoundTrips() {
     // 2020 has 53 ISO weeks; BW27 is the 1-week stub.
-    var stub = GB_.interval(ofYMD(2020, 12, 28));
+    var stub = GT_.interval(ofYMD(2020, 12, 28));
     assertEquals(7, stub.lengthInDays());
-    assertEquals("GB/2020-12-28", GB_.format(stub));
+    assertEquals("GT/2020-12-28", GT_.format(stub));
 
-    var parser = new TimeSequenceParser(List.of(GB_));
-    assertEquals(stub, parser.parse(GB_.format(stub)).interval());
+    var parser = new TimeSequenceParser(List.of(GT_));
+    assertEquals(stub, parser.parse(GT_.format(stub)).interval());
   }
 
   @Test
@@ -173,9 +173,9 @@ class TimeSequenceFormatTest {
 
   @Test
   void biMonthlyJanuaryFormatsAsPosition() {
-    assertEquals("GT/2024:1", GT_.format(GT_.interval(ofYMD(2024, 1, 15))));
-    assertEquals("GT/2024:2", GT_.format(GT_.interval(ofYMD(2024, 3, 15))));
-    assertEquals("GT/2024:6", GT_.format(GT_.interval(ofYMD(2024, 11, 15))));
+    assertEquals("GB/2024:1", GB_.format(GB_.interval(ofYMD(2024, 1, 15))));
+    assertEquals("GB/2024:2", GB_.format(GB_.interval(ofYMD(2024, 3, 15))));
+    assertEquals("GB/2024:6", GB_.format(GB_.interval(ofYMD(2024, 11, 15))));
   }
 
   @Test
@@ -208,9 +208,9 @@ class TimeSequenceFormatTest {
 
   @Test
   void biMonthlyAprilFormatsAsFirstDay() {
-    var gt4 = GregorianSequences.biMonthly(April);
-    assertEquals("GT4/2024-04-01", gt4.format(gt4.interval(ofYMD(2024, 4, 15))));
-    assertEquals("GT4/2024-06-01", gt4.format(gt4.interval(ofYMD(2024, 7, 15))));
+    var gb4 = GregorianSequences.biMonthly(April);
+    assertEquals("GB4/2024-04-01", gb4.format(gb4.interval(ofYMD(2024, 4, 15))));
+    assertEquals("GB4/2024-06-01", gb4.format(gb4.interval(ofYMD(2024, 7, 15))));
   }
 
   @Test
@@ -281,9 +281,9 @@ class TimeSequenceFormatTest {
 
     assertEquals("GD/2024-03-05+10", GD_.format(tenDays));
     assertEquals("GW/2024-03-05+10", GW_.format(tenDays));
-    assertEquals("GB/2024-03-05+10", GB_.format(tenDays));
-    assertEquals("GM/2024-03-05+10", GM_.format(tenDays));
     assertEquals("GT/2024-03-05+10", GT_.format(tenDays));
+    assertEquals("GM/2024-03-05+10", GM_.format(tenDays));
+    assertEquals("GB/2024-03-05+10", GB_.format(tenDays));
     assertEquals("GS/2024-03-05+10", GS_.format(tenDays));
     assertEquals("GQ/2024-03-05+10", GQ_.format(tenDays));
     assertEquals("GY/2024-03-05+10", GY_.format(tenDays));
