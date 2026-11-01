@@ -148,13 +148,6 @@ class TimeSequenceFormatTest {
   }
 
   @Test
-  void fortnightlyFormatsAsFirstDay() {
-    // 2024-03-15 falls in the bi-week starting Monday 2024-03-11.
-    var bw = GF_.interval(ofYMD(2024, 3, 15));
-    assertEquals("GF/2024-03-11", GF_.format(bw));
-  }
-
-  @Test
   void fortnightlyStubFormatsAndRoundTrips() {
     // 2020 has 53 ISO weeks; BW27 is the 1-week stub.
     var stub = GF_.interval(ofYMD(2020, 12, 28));
@@ -369,6 +362,141 @@ class TimeSequenceFormatTest {
     assertEquals(
         FH4.interval(ofYMD(2024, 11, 15)),
         parser.parse(FH4.format(FH4.interval(ofYMD(2024, 11, 15)))).interval());
+  }
+
+  // ── Fortnightly, including the 53-week stub ─────────────────────
+
+  @Test
+  void fortnightlyFormatsAsFirstDay() {
+    // 2024-03-15 (Friday) falls in the fortnight starting Monday 2024-03-11.
+    var f = GF_.interval(ofYMD(2024, 3, 15));
+    assertEquals("GF/2024-03-11", GF_.format(f));
+  }
+
+  @Test
+  void fortnightlyEndOfYearBoundaryIsNormalTwoWeeks() {
+    // 2023 has 52 ISO weeks; fortnight 26 runs 2023-12-18 .. 2023-12-31.
+    var f = GF_.interval(ofYMD(2023, 12, 25));
+    assertEquals(14, f.lengthInDays());
+    assertEquals("GF/2023-12-18", GF_.format(f));
+  }
+
+  @Test
+  void fortnightlyStubIn53WeekYear() {
+    // 2020 has 53 ISO weeks. Week 1 starts 2019-12-30. Week 53 is
+    // 2020-12-28 .. 2021-01-03, and the 27th fortnight is that single week.
+    var stub = GF_.interval(ofYMD(2020, 12, 30));
+    assertEquals(7, stub.lengthInDays());
+    assertEquals(ofYMD(2020, 12, 28), stub.firstDay());
+    assertEquals(ofYMD(2021, 1, 3), stub.lastDay());
+    assertEquals("GF/2020-12-28", GF_.format(stub));
+  }
+
+  @Test
+  void fortnightlyStubRoundTripsThroughParser() {
+    var stub = GF_.interval(ofYMD(2020, 12, 30));
+    var formatted = GF_.format(stub);
+
+    var parser = new TimeSequenceParser(List.of(GF_));
+    assertEquals(stub, parser.parse(formatted).interval());
+  }
+
+  @Test
+  void fortnightlyStubIsPrecededByNormalFortnight() {
+    // Fortnight 26 of 2020 = 2020-12-14 .. 2020-12-27.
+    var bw26 = GF_.interval(ofYMD(2020, 12, 20));
+    assertEquals(14, bw26.lengthInDays());
+
+    var stub = GF_.next(bw26);
+    assertEquals(7, stub.lengthInDays());
+    assertEquals(ofYMD(2020, 12, 28), stub.firstDay());
+
+    var bw1of2021 = GF_.next(stub);
+    assertEquals(14, bw1of2021.lengthInDays());
+    assertEquals(ofYMD(2021, 1, 4), bw1of2021.firstDay());
+  }
+
+// ── Fiscal half-year after the S→H rename ──────────────────────
+
+  @Test
+  void fiscalHalfYearAprilFormatsAsFirstDay() {
+    // FH4/ = fiscal half-year starting April; first period Apr-Sep 2024.
+    assertEquals("FH4/2024-04-01", FH4.format(FH4.interval(ofYMD(2024, 5, 15))));
+    assertEquals("FH4/2024-10-01", FH4.format(FH4.interval(ofYMD(2024, 11, 15))));
+  }
+
+  @Test
+  void fiscalHalfYearNovemberFormatsAsFirstDay() {
+    // FHb/ = fiscal half-year starting November; first period Nov 2024 - Apr 2025.
+    assertEquals("FHb/2024-11-01", FHb.format(FHb.interval(ofYMD(2024, 12, 15))));
+    assertEquals("FHb/2025-05-01", FHb.format(FHb.interval(ofYMD(2025, 6, 15))));
+  }
+
+  @Test
+  void fiscalHalfYearRoundTripsThroughParser() {
+    var parser = new TimeSequenceParser(List.of(FH4, FHb));
+
+    for (var seq : List.of(FH4, FHb)) {
+      for (var d : List.of(
+          ofYMD(2024, 5, 15), ofYMD(2024, 12, 15), ofYMD(2025, 3, 15))) {
+        var interval = seq.interval(d);
+        var formatted = seq.format(interval);
+        assertEquals(
+            interval,
+            parser.parse(formatted).interval(),
+            () -> seq.key() + " day " + d + " formatted as " + formatted);
+      }
+    }
+  }
+
+  @Test
+  void fiscalHalfYearKeyUsesHIntervalChar() {
+    assertEquals('H', FH4.key().interval());
+    assertEquals('H', FHb.key().interval());
+    assertTrue(FH4.key().toString().startsWith("FH4/"));
+    assertTrue(FHb.key().toString().startsWith("FHb/"));
+  }
+
+// ── Custom sequence default formatting ─────────────────────────
+
+  @Test
+  void customSequenceMemberFormatsAsCanonical() {
+    // Custom sequences don't override format, so even a member interval
+    // renders as the canonical <key>/<first>+<length> form.
+    var terms = CustomSequences.of(
+        new TimeSequenceKey('S', 'T'),
+        List.of(new Epoch2kInterval(ofYMD(2024, 1, 8), ofYMD(2024, 5, 24))));
+
+    var spring = terms.interval(ofYMD(2024, 3, 15));
+    assertEquals("ST/2024-01-08+138", terms.format(spring));
+  }
+
+  @Test
+  void customSequenceGapDayFallsBackToCanonicalWithKey() {
+    // A single day in the gap between terms is not a member, so format
+    // must fall through to <key>/<interval.toString()> — including the key
+    // prefix, not just the bare interval body.
+    var terms = CustomSequences.of(
+        new TimeSequenceKey('S', 'T'),
+        List.of(
+            new Epoch2kInterval(ofYMD(2024, 1, 8), ofYMD(2024, 5, 24)),
+            new Epoch2kInterval(ofYMD(2024, 9, 2), ofYMD(2024, 12, 20))));
+
+    var gapDay = new Epoch2kInterval(ofYMD(2024, 7, 15));
+    assertEquals("ST/2024-07-15+1", terms.format(gapDay));
+  }
+
+  @Test
+  void customSequenceOutOfRangeFallsBackToCanonicalWithKey() {
+    var terms = CustomSequences.of(
+        new TimeSequenceKey('S', 'T'),
+        List.of(new Epoch2kInterval(ofYMD(2024, 1, 8), ofYMD(2024, 5, 24))));
+
+    var beforeRange = new Epoch2kInterval(ofYMD(2023, 12, 1));
+    assertEquals("ST/2023-12-01+1", terms.format(beforeRange));
+
+    var afterRange = new Epoch2kInterval(ofYMD(2025, 1, 15));
+    assertEquals("ST/2025-01-15+1", terms.format(afterRange));
   }
 
   // ── Default format ──────────────────────────────────────────
