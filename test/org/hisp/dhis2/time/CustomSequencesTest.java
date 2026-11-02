@@ -19,7 +19,7 @@ class CustomSequencesTest {
 
   private static final TimeSequence TERMS =
       of(
-          new TimeSequenceKey('S', 'Y'),
+          new TimeSequenceTag('S', 'Y'),
           List.of(SPRING, AUTUMN),
           Set.of(),
           Set.of(GregorianSequences.GY.noOffset()));
@@ -128,7 +128,7 @@ class CustomSequencesTest {
   void partitionAdjacentTermsReturnsBoth() {
     var first = new Epoch2kInterval(ofYMD(2024, 1, 1), ofYMD(2024, 3, 31));
     var second = new Epoch2kInterval(ofYMD(2024, 4, 1), ofYMD(2024, 6, 30));
-    var seq = of(new TimeSequenceKey('S', 'T'), List.of(first, second));
+    var seq = of(new TimeSequenceTag('S', 'T'), List.of(first, second));
     assertEquals(List.of(first, second),
         seq.partition(new Epoch2kInterval(first.firstDay(), second.lastDay())));
   }
@@ -143,24 +143,24 @@ class CustomSequencesTest {
 
   @Test
   void emptyIntervalListRejected() {
-    TimeSequenceKey key = new TimeSequenceKey('S', 'Y');
-    assertThrows(IllegalArgumentException.class, () -> of(key, List.of()));
+    TimeSequenceTag tag = new TimeSequenceTag('S', 'Y');
+    assertThrows(IllegalArgumentException.class, () -> of(tag, List.of()));
   }
 
   @Test
   void overlappingIntervalsRejected() {
     var a = new Epoch2kInterval(ofYMD(2024, 1, 1), ofYMD(2024, 3, 31));
     var b = new Epoch2kInterval(ofYMD(2024, 3, 15), ofYMD(2024, 6, 30));
-    TimeSequenceKey key = new TimeSequenceKey('S', 'Y');
+    TimeSequenceTag tag = new TimeSequenceTag('S', 'Y');
     assertThrows(IllegalArgumentException.class,
-        () -> of(key, List.of(a, b)));
+        () -> of(tag, List.of(a, b)));
   }
 
   @Test
   void constructionSortsUnorderedInput() {
     // Pass Autumn first, then Spring — the constructor sorts.
-    TimeSequenceKey key = new TimeSequenceKey('S', 'Y');
-    var seq = of(key, List.of(AUTUMN, SPRING));
+    TimeSequenceTag tag = new TimeSequenceTag('S', 'Y');
+    var seq = of(tag, List.of(AUTUMN, SPRING));
     assertEquals(SPRING, seq.next(new Epoch2kInterval(ofYMD(2023, 1, 1), ofYMD(2023, 12, 31))));
   }
 
@@ -168,8 +168,8 @@ class CustomSequencesTest {
   void adjacentIntervalsAllowed() {
     var a = new Epoch2kInterval(ofYMD(2024, 1, 1), ofYMD(2024, 3, 31));
     var b = new Epoch2kInterval(ofYMD(2024, 4, 1), ofYMD(2024, 6, 30));
-    TimeSequenceKey key = new TimeSequenceKey('S', 'Y');
-    assertDoesNotThrow(() -> of(key, List.of(a, b)));
+    TimeSequenceTag tag = new TimeSequenceTag('S', 'Y');
+    assertDoesNotThrow(() -> of(tag, List.of(a, b)));
   }
 
   // ── Multi-year and integration ────────────────────────────────────
@@ -178,8 +178,8 @@ class CustomSequencesTest {
   void nextCrossesYearBoundaryWhenTableDoes() {
     var autumn2024 = AUTUMN;
     var spring2025 = new Epoch2kInterval(ofYMD(2025, 1, 6), ofYMD(2025, 5, 23));
-    TimeSequenceKey key = new TimeSequenceKey('S', 'Y');
-    var seq = of(key, List.of(SPRING, autumn2024, spring2025));
+    TimeSequenceTag tag = new TimeSequenceTag('S', 'Y');
+    var seq = of(tag, List.of(SPRING, autumn2024, spring2025));
     assertEquals(spring2025, seq.next(autumn2024));
   }
 
@@ -195,8 +195,8 @@ class CustomSequencesTest {
   }
 
   @Test
-  void customSequenceCollidingWithCalendarKeyRejectedAtRegistryConstruction() {
-    var gregorianYear = GregorianSequences.GY_;   // key "GY/"
+  void customSequenceCollidingWithCalendarTagRejectedAtRegistryConstruction() {
+    var gregorianYear = GregorianSequences.GY_;   // tag "GY/"
     var fakeCustom = CustomSequences.of(
         GregorianSequences.GY.noOffset(),         // also "GY/"
         List.of(new Epoch2kInterval(ofYMD(2024, 1, 8), ofYMD(2024, 5, 24))));

@@ -1,14 +1,14 @@
 package org.hisp.dhis2.time;
 
-public record TimeSequenceKey(char system, char interval, char offset) {
+public record TimeSequenceTag(char system, char interval, char offset) {
 
   public static final char NO_OFFSET = '-';
 
-  public TimeSequenceKey(char system, char interval) {
+  public TimeSequenceTag(char system, char interval) {
     this(system, interval, NO_OFFSET);
   }
 
-  public TimeSequenceKey {
+  public TimeSequenceTag {
     if (!isValidLetter(system))
       throw new IllegalArgumentException(
           "system must be A-Z, got: '" + system + "' (" + (int) system + ")");
@@ -94,7 +94,7 @@ public record TimeSequenceKey(char system, char interval, char offset) {
   }
 
   /**
-   * The key in string form, terminated by {@code '/'} so it reads as a prefix of the full period
+   * The tag in string form, terminated by {@code '/'} so it reads as a prefix of the full period
    * string: {@code GW1/2024-01-01+7}.
    */
   @Override
@@ -105,7 +105,7 @@ public record TimeSequenceKey(char system, char interval, char offset) {
         : "" + system + interval + offset + '/';
   }
 
-  public TimeFamilyKey family() {
-    return new TimeFamilyKey(system, interval);
+  public TimeFamilyTag family() {
+    return new TimeFamilyTag(system, interval);
   }
 }

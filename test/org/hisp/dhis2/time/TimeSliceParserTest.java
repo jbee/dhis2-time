@@ -20,7 +20,7 @@ class TimeSliceParserTest {
   @Test
   void parsesFullDateWithExplicitLength() {
     var p = PARSER.parse("GQ/2022-04-01+91");
-    assertEquals(GregorianSequences.GQ_.key(), p.key());
+    assertEquals(GregorianSequences.GQ_.tag(), p.tag());
     assertEquals(new Epoch2kInterval(ofYMD(2022, 4, 1), ofYMD(2022, 6, 30)), p.interval());
   }
 
@@ -45,18 +45,18 @@ class TimeSliceParserTest {
   }
 
   @Test
-  void twoCharKeyFormWorks() {
+  void twoCharTagFormWorks() {
     // "GQ/" (no offset) — slash at position 2
     var p = PARSER.parse("GQ/2022+90");
-    assertEquals('Q', p.key().interval());
-    assertEquals(TimeSequenceKey.NO_OFFSET, p.key().offset());
+    assertEquals('Q', p.tag().interval());
+    assertEquals(TimeSequenceTag.NO_OFFSET, p.tag().offset());
   }
 
   @Test
-  void threeCharKeyFormWorks() {
+  void threeCharTagFormWorks() {
     // "GQ4/" (April start) — slash at position 3
     var p = PARSER.parse("GQ4/2022-04-01+92");
-    assertEquals('4', p.key().offset());
+    assertEquals('4', p.tag().offset());
   }
 
   // ── Walk form (1-based) ──────────────────────────────────────────
@@ -108,16 +108,16 @@ class TimeSliceParserTest {
   }
 
   @Test
-  void walkOnUnregisteredKeyThrows() {
+  void walkOnUnregisteredTagThrows() {
     assertThrows(IllegalArgumentException.class, () -> PARSER.parse("EQ/2022:1"));
   }
 
   @Test
   void walkOnCustomSequenceWithGapAnchorThrows() {
     // Custom sequence: one term Jan 8 - May 24, 2024.
-    TimeSequenceKey key = new TimeSequenceKey('S', 'Y');
+    TimeSequenceTag tag = new TimeSequenceTag('S', 'Y');
     var terms = CustomSequences.of(
-        key,
+        tag,
         List.of(new Epoch2kInterval(ofYMD(2024, 1, 8), ofYMD(2024, 5, 24))));
     var parser = new TimeSliceParser(List.of(terms));
 
@@ -128,7 +128,7 @@ class TimeSliceParserTest {
   // ── Registry construction ────────────────────────────────────────
 
   @Test
-  void duplicateKeysRejectedAtConstruction() {
+  void duplicateTagsRejectedAtConstruction() {
     assertThrows(IllegalArgumentException.class, () -> new TimeSliceParser(List.of(
         GregorianSequences.GQ_,
         GregorianSequences.GQ_)));
@@ -143,7 +143,7 @@ class TimeSliceParserTest {
   }
 
   @Test
-  void invalidKeyPrefixThrows() {
+  void invalidTagPrefixThrows() {
     assertThrows(IllegalArgumentException.class, () -> PARSER.parse("/2022:1"));
     assertThrows(IllegalArgumentException.class, () -> PARSER.parse("GQQQQ/2022:1"));
   }
@@ -175,10 +175,10 @@ class TimeSliceParserTest {
   }
 
   @Test
-  void customSequenceCollidingWithCalendarKeyRejectedAtRegistryConstruction() {
-    var gregorianYear = GregorianSequences.GY_;   // key "GY/"
+  void customSequenceCollidingWithCalendarTagRejectedAtRegistryConstruction() {
+    var gregorianYear = GregorianSequences.GY_;   // tag "GY/"
     var fakeCustom = CustomSequences.of(
-        new TimeSequenceKey('G', 'Y'),               // also "GY/"
+        new TimeSequenceTag('G', 'Y'),               // also "GY/"
         List.of(new Epoch2kInterval(ofYMD(2024, 1, 8), ofYMD(2024, 5, 24))));
 
     assertThrows(IllegalArgumentException.class,

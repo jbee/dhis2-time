@@ -177,7 +177,7 @@ public final class AggregationSqlGenerator {
     selectExprs.add("?");
     selectExprs.add("orgunitid");
     selectExprs.add("?");
-    params.add(periodIds.get(new TimeSlice(job.targetKey(), job.target())));
+    params.add(periodIds.get(new TimeSlice(job.target(), job.targetInterval())));
     params.add(job.exactness().name());
 
     // Stored function columns
@@ -192,7 +192,7 @@ public final class AggregationSqlGenerator {
     // Source period ids, in the same order as job.sourceIntervals()
     var sourcePeriodIds = new ArrayList<Long>();
     for (var si : job.sources()) {
-      sourcePeriodIds.add(periodIds.get(new TimeSlice(job.sourceKey(), si)));
+      sourcePeriodIds.add(periodIds.get(new TimeSlice(job.source(), si)));
     }
     params.addAll(sourcePeriodIds);
 

@@ -5,4 +5,4 @@ package org.hisp.dhis2.time;
  * concrete keys, so the caller can look up the sequences and execute the step.
  */
 public record AggregationStep(
-    TimeSequenceKey source, TimeSequenceKey target, AggregationExactness exactness) {}
+    TimeSequenceTag source, TimeSequenceTag target, AggregationExactness exactness) {}

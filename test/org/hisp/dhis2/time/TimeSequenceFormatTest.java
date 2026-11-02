@@ -34,7 +34,7 @@ class TimeSequenceFormatTest {
   void isMemberOfAcceptsEverySequencesOwnIntervals() {
     for (var seq : ALL_GREGORIAN) {
       var interval = seq.interval(ofYMD(2024, 3, 15));
-      assertTrue(TimeSequence.isMemberOf(seq, interval), seq.key().toString());
+      assertTrue(TimeSequence.isMemberOf(seq, interval), seq.tag().toString());
     }
   }
 
@@ -51,7 +51,7 @@ class TimeSequenceFormatTest {
     var autumn = new Epoch2kInterval(ofYMD(2024, 9, 2), ofYMD(2024, 12, 20));
     var terms =
         CustomSequences.of(
-            new TimeSequenceKey('S', 'T'), List.of(spring, autumn));
+            new TimeSequenceTag('S', 'T'), List.of(spring, autumn));
 
     assertTrue(TimeSequence.isMemberOf(terms, spring));
     assertTrue(TimeSequence.isMemberOf(terms, autumn));
@@ -96,7 +96,7 @@ class TimeSequenceFormatTest {
   void isMemberOfRejectsCustomSequenceGapDay() {
     var terms =
         CustomSequences.of(
-            new TimeSequenceKey('S', 'T'),
+            new TimeSequenceTag('S', 'T'),
             List.of(new Epoch2kInterval(ofYMD(2024, 1, 8), ofYMD(2024, 5, 24))));
 
     var gap = new Epoch2kInterval(ofYMD(2024, 7, 1));
@@ -107,7 +107,7 @@ class TimeSequenceFormatTest {
   void isMemberOfRejectsCustomSequenceOutOfRange() {
     var terms =
         CustomSequences.of(
-            new TimeSequenceKey('S', 'T'),
+            new TimeSequenceTag('S', 'T'),
             List.of(new Epoch2kInterval(ofYMD(2024, 1, 8), ofYMD(2024, 5, 24))));
 
     assertFalse(TimeSequence.isMemberOf(terms, new Epoch2kInterval(ofYMD(2023, 12, 1))));
@@ -118,7 +118,7 @@ class TimeSequenceFormatTest {
   void isMemberOfRejectsCustomSequenceSubInterval() {
     var terms =
         CustomSequences.of(
-            new TimeSequenceKey('S', 'T'),
+            new TimeSequenceTag('S', 'T'),
             List.of(new Epoch2kInterval(ofYMD(2024, 1, 8), ofYMD(2024, 5, 24))));
 
     var partOfSpring = new Epoch2kInterval(ofYMD(2024, 3, 1), ofYMD(2024, 4, 1));
@@ -239,7 +239,7 @@ class TimeSequenceFormatTest {
   void customSequenceFallsBackToCanonicalForm() {
     var terms =
         CustomSequences.of(
-            new TimeSequenceKey('S', 'T'),
+            new TimeSequenceTag('S', 'T'),
             List.of(new Epoch2kInterval(ofYMD(2024, 1, 8), ofYMD(2024, 5, 24))));
 
     var spring = terms.interval(ofYMD(2024, 3, 15));
@@ -269,7 +269,7 @@ class TimeSequenceFormatTest {
   }
 
   @Test
-  void formatFallbackIncludesKeyForEveryGregorianSequence() {
+  void formatFallbackIncludesTagForEveryGregorianSequence() {
     var tenDays = new Epoch2kInterval(ofYMD(2024, 3, 5), ofYMD(2024, 3, 14));
 
     assertEquals("GD/2024-03-05+10", GD_.format(tenDays));
@@ -286,7 +286,7 @@ class TimeSequenceFormatTest {
   void formatFallbackForCustomSequenceGap() {
     var terms =
         CustomSequences.of(
-            new TimeSequenceKey('S', 'T'),
+            new TimeSequenceTag('S', 'T'),
             List.of(new Epoch2kInterval(ofYMD(2024, 1, 8), ofYMD(2024, 5, 24))));
 
     var gapDay = new Epoch2kInterval(ofYMD(2024, 7, 15));
@@ -321,7 +321,7 @@ class TimeSequenceFormatTest {
       assertEquals(
           interval,
           parser.parse(formatted).interval(),
-          () -> seq.key() + " formatted " + interval + " as " + formatted);
+          () -> seq.tag() + " formatted " + interval + " as " + formatted);
     }
   }
 
@@ -339,7 +339,7 @@ class TimeSequenceFormatTest {
         assertEquals(
             interval,
             parser.parse(formatted).interval(),
-            () -> seq.key() + " day " + d + " formatted as " + formatted);
+            () -> seq.tag() + " day " + d + " formatted as " + formatted);
       }
     }
   }
@@ -444,17 +444,17 @@ class TimeSequenceFormatTest {
         assertEquals(
             interval,
             parser.parse(formatted).interval(),
-            () -> seq.key() + " day " + d + " formatted as " + formatted);
+            () -> seq.tag() + " day " + d + " formatted as " + formatted);
       }
     }
   }
 
   @Test
-  void fiscalHalfYearKeyUsesHIntervalChar() {
-    assertEquals('H', FH4.key().interval());
-    assertEquals('H', FHb.key().interval());
-    assertTrue(FH4.key().toString().startsWith("FH4/"));
-    assertTrue(FHb.key().toString().startsWith("FHb/"));
+  void fiscalHalfYearTagUsesHIntervalChar() {
+    assertEquals('H', FH4.tag().interval());
+    assertEquals('H', FHb.tag().interval());
+    assertTrue(FH4.tag().toString().startsWith("FH4/"));
+    assertTrue(FHb.tag().toString().startsWith("FHb/"));
   }
 
 // ── Custom sequence default formatting ─────────────────────────
@@ -462,9 +462,9 @@ class TimeSequenceFormatTest {
   @Test
   void customSequenceMemberFormatsAsCanonical() {
     // Custom sequences don't override format, so even a member interval
-    // renders as the canonical <key>/<first>+<length> form.
+    // renders as the canonical <tag>/<first>+<length> form.
     var terms = CustomSequences.of(
-        new TimeSequenceKey('S', 'T'),
+        new TimeSequenceTag('S', 'T'),
         List.of(new Epoch2kInterval(ofYMD(2024, 1, 8), ofYMD(2024, 5, 24))));
 
     var spring = terms.interval(ofYMD(2024, 3, 15));
@@ -472,12 +472,12 @@ class TimeSequenceFormatTest {
   }
 
   @Test
-  void customSequenceGapDayFallsBackToCanonicalWithKey() {
+  void customSequenceGapDayFallsBackToCanonicalWithTag() {
     // A single day in the gap between terms is not a member, so format
-    // must fall through to <key>/<interval.toString()> — including the key
+    // must fall through to <tag>/<interval.toString()> — including the tag
     // prefix, not just the bare interval body.
     var terms = CustomSequences.of(
-        new TimeSequenceKey('S', 'T'),
+        new TimeSequenceTag('S', 'T'),
         List.of(
             new Epoch2kInterval(ofYMD(2024, 1, 8), ofYMD(2024, 5, 24)),
             new Epoch2kInterval(ofYMD(2024, 9, 2), ofYMD(2024, 12, 20))));
@@ -487,9 +487,9 @@ class TimeSequenceFormatTest {
   }
 
   @Test
-  void customSequenceOutOfRangeFallsBackToCanonicalWithKey() {
+  void customSequenceOutOfRangeFallsBackToCanonicalWithTag() {
     var terms = CustomSequences.of(
-        new TimeSequenceKey('S', 'T'),
+        new TimeSequenceTag('S', 'T'),
         List.of(new Epoch2kInterval(ofYMD(2024, 1, 8), ofYMD(2024, 5, 24))));
 
     var beforeRange = new Epoch2kInterval(ofYMD(2023, 12, 1));
@@ -502,16 +502,16 @@ class TimeSequenceFormatTest {
   // ── Default format ──────────────────────────────────────────
 
   @Test
-  void defaultFormatEqualsKeyPlusIntervalToString() {
+  void defaultFormatEqualsTagPlusIntervalToString() {
     // Yearly-January overrides format to "GY/2024"; the default is
     // reachable by any sequence that doesn't override, and produces
-    // key + interval.toString().
+    // tag + interval.toString().
     var terms =
         CustomSequences.of(
-            new TimeSequenceKey('S', 'T'),
+            new TimeSequenceTag('S', 'T'),
             List.of(new Epoch2kInterval(ofYMD(2024, 1, 8), ofYMD(2024, 5, 24))));
 
     var interval = terms.interval(ofYMD(2024, 3, 15));
-    assertEquals(terms.key().toString() + interval.toString(), terms.format(interval));
+    assertEquals(terms.tag().toString() + interval.toString(), terms.format(interval));
   }
 }

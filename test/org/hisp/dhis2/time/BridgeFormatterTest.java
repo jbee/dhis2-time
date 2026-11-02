@@ -51,9 +51,9 @@ class BridgeFormatterTest {
         GW_.interval(ofYMD(2024, 3, 15)));
     assertEquals("2024W11", FORMATTER.format(monday));
 
-    var wednesdayKey = GW.offsetBy(Wednesday);
+    var wednesdayTag = GW.offsetBy(Wednesday);
     var wednesday = new TimeSlice(
-        wednesdayKey,
+        wednesdayTag,
         GregorianSequences.weekly(Wednesday).interval(ofYMD(2024, 3, 15)));
     assertEquals("2024WedW11", FORMATTER.format(wednesday));
   }
@@ -61,7 +61,7 @@ class BridgeFormatterTest {
   @Test
   void weeklyTuesdayHasNoBridgeForm() {
     var tuesday = GregorianSequences.weekly(Tuesday);
-    var slice = new TimeSlice(tuesday.key(), tuesday.interval(ofYMD(2024, 3, 15)));
+    var slice = new TimeSlice(tuesday.tag(), tuesday.interval(ofYMD(2024, 3, 15)));
     assertNull(FORMATTER.format(slice));
   }
 
@@ -75,7 +75,7 @@ class BridgeFormatterTest {
 
   @Test
   void mismatchedFortnightlySliceReturnsNull() {
-    // Fortnightly key with a 10-day interval — not a full 14-day fortnight.
+    // Fortnightly tag with a 10-day interval — not a full 14-day fortnight.
     var badSlice = new TimeSlice(
         GF.noOffset(),
         new Epoch2kInterval(ofYMD(2024, 3, 11), ofYMD(2024, 3, 20)));
@@ -103,7 +103,7 @@ class BridgeFormatterTest {
   @Test
   void quarterlyFiscalNovember() {
     var slice = new TimeSlice(
-        GregorianSequences.FQb.key(),
+        GregorianSequences.FQb.tag(),
         GregorianSequences.FQb.interval(ofYMD(2024, 12, 15)));
     assertEquals("2024NovQ1", FORMATTER.format(slice));
   }
@@ -111,7 +111,7 @@ class BridgeFormatterTest {
   @Test
   void fiscalHalfYearApril() {
     var slice = new TimeSlice(
-        GregorianSequences.FH4.key(),
+        GregorianSequences.FH4.tag(),
         GregorianSequences.FH4.interval(ofYMD(2024, 5, 15)));
     assertEquals("2024AprilS1", FORMATTER.format(slice));
   }
@@ -127,7 +127,7 @@ class BridgeFormatterTest {
   @Test
   void yearlyFiscalJuly() {
     var slice = new TimeSlice(
-        GregorianSequences.FY7.key(),
+        GregorianSequences.FY7.tag(),
         GregorianSequences.FY7.interval(ofYMD(2024, 8, 15)));
     assertEquals("2024July", FORMATTER.format(slice));
   }
@@ -135,13 +135,13 @@ class BridgeFormatterTest {
   @Test
   void calendarYearlyWithOffsetHasNoBridgeForm() {
     var gy4 = GregorianSequences.yearly(April);
-    var slice = new TimeSlice(gy4.key(), gy4.interval(ofYMD(2024, 5, 15)));
+    var slice = new TimeSlice(gy4.tag(), gy4.interval(ofYMD(2024, 5, 15)));
     assertNull(FORMATTER.format(slice));
   }
 
   @Test
   void mismatchedSliceReturnsNull() {
-    // Monthly key with a 30-day interval for March (which is 31 days).
+    // Monthly tag with a 30-day interval for March (which is 31 days).
     var badSlice = new TimeSlice(
         GM.noOffset(),
         new Epoch2kInterval(ofYMD(2024, 3, 1), ofYMD(2024, 3, 30)));
@@ -168,9 +168,9 @@ class BridgeFormatterTest {
     }
 
     for (var example : List.of(
-        new TimeSlice(GregorianSequences.FHb.key(), GregorianSequences.FHb.interval(ofYMD(2024, 12, 15))),
-        new TimeSlice(GregorianSequences.FH4.key(), GregorianSequences.FH4.interval(ofYMD(2024, 5, 15))),
-        new TimeSlice(GregorianSequences.FY7.key(), GregorianSequences.FY7.interval(ofYMD(2024, 8, 15))))) {
+        new TimeSlice(GregorianSequences.FHb.tag(), GregorianSequences.FHb.interval(ofYMD(2024, 12, 15))),
+        new TimeSlice(GregorianSequences.FH4.tag(), GregorianSequences.FH4.interval(ofYMD(2024, 5, 15))),
+        new TimeSlice(GregorianSequences.FY7.tag(), GregorianSequences.FY7.interval(ofYMD(2024, 8, 15))))) {
       var bridge = FORMATTER.format(example);
       assertNotNull(bridge, () -> "expected fiscal bridge form for " + example);
       assertEquals(example, fiscalParser.parse(bridge), () -> "fiscal round-trip failed for " + example);

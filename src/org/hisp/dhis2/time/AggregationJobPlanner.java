@@ -53,17 +53,17 @@ import java.util.Set;
  */
 public final class AggregationJobPlanner {
 
-  private final Map<TimeSequenceKey, TimeSequence> byKey;
+  private final Map<TimeSequenceTag, TimeSequence> byTag;
 
   public AggregationJobPlanner(Collection<? extends TimeSequence> sequences) {
-    var map = new HashMap<TimeSequenceKey, TimeSequence>();
+    var map = new HashMap<TimeSequenceTag, TimeSequence>();
     for (var seq : sequences) {
-      var existing = map.putIfAbsent(seq.key(), seq);
+      var existing = map.putIfAbsent(seq.tag(), seq);
       if (existing != null)
         throw new IllegalArgumentException(
-            "duplicate sequence key " + seq.key() + ": " + existing + " and " + seq);
+            "duplicate sequence tag " + seq.tag() + ": " + existing + " and " + seq);
     }
-    this.byKey = Map.copyOf(map);
+    this.byTag = Map.copyOf(map);
   }
 
   /**
@@ -111,33 +111,33 @@ public final class AggregationJobPlanner {
    * {@link AggregationJob#sources()}. Skipping partial targets is an
    * executor policy, not an expansion concern.
    *
-   * @param sourceKey the key of the sequence raw data arrives in
+   * @param source the tag of the sequence raw data arrives in
    * @param frame the source time-frame; source intervals overlapping this range
    *     are the seeds for the plan
    * @param plan the abstract plan from {@link AggregationStepPlanner}, in
    *     topological order (sources before targets)
    * @return the concrete jobs, in the same step order as the plan, with jobs
    *     for each step grouped consecutively
-   * @throws IllegalArgumentException if {@code sourceKey} is not registered, or
-   *     if {@code plan} references a key not registered with this expander
+   * @throws IllegalArgumentException if {@code source} is not registered, or
+   *     if {@code plan} references a tag not registered with this expander
    */
   public List<AggregationJob> plan(
-      TimeSequenceKey sourceKey, Epoch2kInterval frame, List<AggregationStep> plan) {
+      TimeSequenceTag source, Epoch2kInterval frame, List<AggregationStep> plan) {
 
-    var sourceSeq = byKey.get(sourceKey);
+    var sourceSeq = byTag.get(source);
     if (sourceSeq == null)
-      throw new IllegalArgumentException("no sequence registered for source key " + sourceKey);
+      throw new IllegalArgumentException("no sequence registered for source tag " + source);
     for (var step : plan) {
-      if (!byKey.containsKey(step.source()))
+      if (!byTag.containsKey(step.source()))
         throw new IllegalArgumentException(
             "no sequence registered for " + step.source() + " (step " + step + ")");
-      if (!byKey.containsKey(step.target()))
+      if (!byTag.containsKey(step.target()))
         throw new IllegalArgumentException(
             "no sequence registered for " + step.target() + " (step " + step + ")");
     }
 
-    var active = new LinkedHashMap<TimeSequenceKey, Set<Epoch2kInterval>>();
-    active.put(sourceKey, sourceIntervalsOverlapping(sourceSeq, frame));
+    var active = new LinkedHashMap<TimeSequenceTag, Set<Epoch2kInterval>>();
+    active.put(source, sourceIntervalsOverlapping(sourceSeq, frame));
 
     var jobs = new ArrayList<AggregationJob>();
 
@@ -145,8 +145,8 @@ public final class AggregationJobPlanner {
       var sourceIntervals = active.getOrDefault(step.source(), Set.of());
       if (sourceIntervals.isEmpty()) continue;
 
-      var targetSeq = byKey.get(step.target());
-      var sourceSeqForEdge = byKey.get(step.source());
+      var targetSeq = byTag.get(step.target());
+      var sourceSeqForEdge = byTag.get(step.source());
 
       // Collect every target interval that any active source interval touches.
       // A straddling source interval contributes to two (or more) consecutive

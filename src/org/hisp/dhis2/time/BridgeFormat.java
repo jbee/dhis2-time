@@ -22,7 +22,7 @@ import static org.hisp.dhis2.time.GregorianSequences.GY;
  * parse time from the string content.
  *
  * <p>Used as the key type for {@link BridgeParser}'s mapping from
- * kind to {@link TimeSequenceKey}. The mapping tells the parser which concrete
+ * kind to {@link TimeSequenceTag}. The mapping tells the parser which concrete
  * sequence family a legacy string of that kind belongs to; the parser fills in
  * the offset from the parsed components.
  */
@@ -45,7 +45,7 @@ public enum BridgeFormat {
    * formats ({@code 2024July}, {@code 2024NovQ1}, {@code 2024AprilS1}) always
    * resolve to fiscal families regardless of this mapping.
    */
-  public static Map<BridgeFormat, TimeFamilyKey> calendarMapping() {
+  public static Map<BridgeFormat, TimeFamilyTag> calendarMapping() {
     return Map.ofEntries(
         Map.entry(YEARLY,             GY),
         Map.entry(YEARLY_FISCAL,      FY),
@@ -65,7 +65,7 @@ public enum BridgeFormat {
    * on the four formats with no explicit fiscal marker in the string: those
    * resolve to fiscal families here instead of calendar.
    */
-  public static Map<BridgeFormat, TimeFamilyKey> fiscalMapping() {
+  public static Map<BridgeFormat, TimeFamilyTag> fiscalMapping() {
     return Map.ofEntries(
         Map.entry(YEARLY,             FY),
         Map.entry(YEARLY_FISCAL,      FY),

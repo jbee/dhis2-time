@@ -6,10 +6,10 @@ public final class EthiopianSequences {
 
   private EthiopianSequences() {}
 
-  // Ethiopian family keys — system 'E' distinguishes them from Gregorian 'G'/'F'
-  public static final TimeFamilyKey ED = new TimeFamilyKey('E', 'D');
-  public static final TimeFamilyKey EM = new TimeFamilyKey('E', 'M');
-  public static final TimeFamilyKey EY = new TimeFamilyKey('E', 'Y');
+  // Ethiopian family tags — system 'E' distinguishes them from Gregorian 'G'/'F'
+  public static final TimeFamilyTag ED = new TimeFamilyTag('E', 'D');
+  public static final TimeFamilyTag EM = new TimeFamilyTag('E', 'M');
+  public static final TimeFamilyTag EY = new TimeFamilyTag('E', 'Y');
 
   public static final TimeSequence ED_ = daily();
   public static final TimeSequence EM_ = monthly();
@@ -35,11 +35,11 @@ public final class EthiopianSequences {
   }
 
   private record DailyEthiopianSequence(
-      TimeSequenceKey key, Set<TimeSequenceKey> partitions, Set<TimeSequenceKey> contributesTo)
+      TimeSequenceTag tag, Set<TimeSequenceTag> partitions, Set<TimeSequenceTag> contributesTo)
       implements TimeSequence {
 
     DailyEthiopianSequence {
-      TimeSequence.checkKeys(partitions, contributesTo);
+      TimeSequence.checkTags(partitions, contributesTo);
     }
 
     @Override
@@ -49,11 +49,11 @@ public final class EthiopianSequences {
   }
 
   private record MonthlyEthiopianSequence(
-      TimeSequenceKey key, Set<TimeSequenceKey> partitions, Set<TimeSequenceKey> contributesTo)
+      TimeSequenceTag tag, Set<TimeSequenceTag> partitions, Set<TimeSequenceTag> contributesTo)
       implements TimeSequence {
 
     MonthlyEthiopianSequence {
-      TimeSequence.checkKeys(partitions, contributesTo);
+      TimeSequence.checkTags(partitions, contributesTo);
     }
 
     @Override
@@ -63,11 +63,11 @@ public final class EthiopianSequences {
   }
 
   private record YearlyEthiopianSequence(
-      TimeSequenceKey key, Set<TimeSequenceKey> partitions, Set<TimeSequenceKey> contributesTo)
+      TimeSequenceTag tag, Set<TimeSequenceTag> partitions, Set<TimeSequenceTag> contributesTo)
       implements TimeSequence {
 
     YearlyEthiopianSequence {
-      TimeSequence.checkKeys(partitions, contributesTo);
+      TimeSequence.checkTags(partitions, contributesTo);
     }
 
     @Override

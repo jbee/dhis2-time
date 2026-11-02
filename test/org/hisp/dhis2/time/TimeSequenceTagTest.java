@@ -8,7 +8,7 @@ import org.hisp.dhis2.time.Epoch2kDay.DayOfWeek;
 import org.hisp.dhis2.time.Epoch2kDay.MonthOfYear;
 import org.junit.jupiter.api.Test;
 
-class TimeSequenceKeyTest {
+class TimeSequenceTagTest {
 
   @Test
   void allDaysRoundTrip() {
@@ -29,49 +29,49 @@ class TimeSequenceKeyTest {
 
   @Test
   void twoArgConstructorUsesNoOffset() {
-    assertEquals(TimeSequenceKey.NO_OFFSET, new TimeSequenceKey('G', 'M').offset());
+    assertEquals(TimeSequenceTag.NO_OFFSET, new TimeSequenceTag('G', 'M').offset());
   }
 
   @Test
   void toStringIncludesTrailingSlashAndOffset() {
-    assertEquals("GW/", GregorianSequences.weekly(Monday).key().toString());
-    assertEquals("FY7/", GregorianSequences.fiscalYearly(July).key().toString());
+    assertEquals("GW/", GregorianSequences.weekly(Monday).tag().toString());
+    assertEquals("FY7/", GregorianSequences.fiscalYearly(July).tag().toString());
   }
 
   @Test
   void toStringOmitsDashOffset() {
-    assertEquals("GM/", new TimeSequenceKey('G', 'M').toString());
+    assertEquals("GM/", new TimeSequenceTag('G', 'M').toString());
   }
 
   @Test
   void rejectsLowercaseSystem() {
-    assertThrows(IllegalArgumentException.class, () -> new TimeSequenceKey('g', 'M', '-'));
+    assertThrows(IllegalArgumentException.class, () -> new TimeSequenceTag('g', 'M', '-'));
   }
 
   @Test
   void rejectsLowercaseInterval() {
-    assertThrows(IllegalArgumentException.class, () -> new TimeSequenceKey('G', 'm', '-'));
+    assertThrows(IllegalArgumentException.class, () -> new TimeSequenceTag('G', 'm', '-'));
   }
 
   @Test
   void rejectsUppercaseOffset() {
-    assertThrows(IllegalArgumentException.class, () -> new TimeSequenceKey('G', 'M', 'A'));
+    assertThrows(IllegalArgumentException.class, () -> new TimeSequenceTag('G', 'M', 'A'));
   }
 
   @Test
   void rejectsPunctuationOffset() {
-    assertThrows(IllegalArgumentException.class, () -> new TimeSequenceKey('G', 'M', '!'));
+    assertThrows(IllegalArgumentException.class, () -> new TimeSequenceTag('G', 'M', '!'));
   }
 
   @Test
   void acceptsDigitLowercaseAndDashOffsets() {
-    new TimeSequenceKey('G', 'M', '5');
-    new TimeSequenceKey('G', 'M', 'z');
-    new TimeSequenceKey('G', 'M', '-');
+    new TimeSequenceTag('G', 'M', '5');
+    new TimeSequenceTag('G', 'M', 'z');
+    new TimeSequenceTag('G', 'M', '-');
   }
 
   @Test
-  void familyKeyToStringHasNoSlash() {
-    assertEquals("G-W".replace("-", ""), new TimeFamilyKey('G', 'W').toString());
+  void familyTagToStringHasNoSlash() {
+    assertEquals("G-W".replace("-", ""), new TimeFamilyTag('G', 'W').toString());
   }
 }

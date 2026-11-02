@@ -59,16 +59,16 @@ import java.util.function.LongSupplier;
  *
  * <h2>Identity and the parser</h2>
  *
- * <p>Each sequence has a {@link #key()} that identifies it as a value: two
- * sequences with equal keys are indistinguishable to the string parser and to
- * lookup registries. The key encodes (calendar system, interval type, optional
+ * <p>Each sequence has a {@link #tag()} that identifies it as a value: two
+ * sequences with equal tags are indistinguishable to the string parser and to
+ * lookup registries. The tag encodes (calendar system, interval type, optional
  * offset) and is what appears as the prefix of a period's string form
- * ({@code GQ/2022-01-01+90}). {@link TimeSliceParser} resolves a parsed key
+ * ({@code GQ/2022-01-01+90}). {@link TimeSliceParser} resolves a parsed tag
  * to a concrete sequence, then uses {@code interval} / {@code next} to materialise
  * the interval.
  *
- * <p>The key is <b>coarser than equality</b>: two {@code TimeSequence} instances
- * may share a key yet differ in {@code contributesTo()} or {@code partitions()}
+ * <p>The tag is <b>coarser than equality</b>: two {@code TimeSequence} instances
+ * may share a tag yet differ in {@code contributesTo()} or {@code partitions()}
  * (a configuration error that {@link TimeSliceParser} rejects at construction
  * time).
  *
@@ -88,7 +88,7 @@ import java.util.function.LongSupplier;
  *   <li><b>Subset</b> — {@link #partitions()} must be a subset of
  *       {@link #contributesTo()}. Enforced by
  *       {@link #checkFamilies(Set, Set)}.</li>
- *   <li><b>Same calendar</b> — the {@link TimeFamilyKey}s in {@code partitions()} and
+ *   <li><b>Same calendar</b> — the {@link TimeFamilyTag}s in {@code partitions()} and
  *       {@code contributesTo()} must be from the same calendar system as this
  *       sequence. A Gregorian day aggregates into Gregorian months, never into
  *       Islamic or Ethiopian ones.</li>
@@ -105,7 +105,7 @@ import java.util.function.LongSupplier;
  * Umm al-Qura sequence covers AH 1440-1450, i.e. 2018-2029). {@code interval} throws
  * {@link IllegalArgumentException} for days outside an implementation's range.
  *
- * @see TimeSequenceKey
+ * @see TimeSequenceTag
  * @see Epoch2kDay
  * @see Epoch2kInterval
  * @see TimeSliceParser
@@ -120,18 +120,18 @@ public interface TimeSequence {
    * The identity of this sequence: which calendar, which interval type, and any
    * offset (fiscal start month, week's first day, …).
    *
-   * <p>The key is what appears as the prefix of a period's string form
-   * ({@code GQ/2022-01-01+90} — the key is {@code GQ/}) and what
+   * <p>The tag is what appears as the prefix of a period's string form
+   * ({@code GQ/2022-01-01+90} — the tag is {@code GQ/}) and what
    * {@link TimeSliceParser} uses to resolve string input to a concrete
-   * sequence. Two sequences with equal keys cannot coexist in one parser's
+   * sequence. Two sequences with equal tags cannot coexist in one parser's
    * registry.
    *
-   * <p>The key is coarser than object equality: two instances may share a key yet
+   * <p>The tag is coarser than object equality: two instances may share a tag yet
    * differ in {@link #contributesTo()}, which is treated as a configuration error
-   * by the parser. {@code key()} identifies the sequence's <em>behaviour
+   * by the parser. {@code tag()} identifies the sequence's <em>behaviour
    * family</em>, not a specific instance.
    */
-  TimeSequenceKey key();
+  TimeSequenceTag tag();
 
   /**
    * The interval of this sequence that contains {@code day}.
@@ -242,21 +242,21 @@ public interface TimeSequence {
    * succeed on a specific parent whose family is not in this set — when the
    * boundaries happen to line up. Conversely, it may throw on a parent whose
    * family <em>is</em> in this set if the two sequences' offsets do not match
-   * (something this set cannot express, since {@link TimeFamilyKey} does not
+   * (something this set cannot express, since {@link TimeFamilyTag} does not
    * encode offset). Use this set to decide <em>which families to attempt</em>
    * to partition; use {@link #partition}'s return or exception for the actual
    * outcome on a specific interval.
    */
-  Set<TimeSequenceKey> partitions();
+  Set<TimeSequenceTag> partitions();
 
   /**
    * Convenience test: does {@code family} belong to {@link #partitions()}?
    *
    * @see #partitions()
    */
-  default boolean partitions(TimeFamilyKey family) { return partitions().stream().anyMatch(k -> k.family().equals(family)); }
+  default boolean partitions(TimeFamilyTag family) { return partitions().stream().anyMatch(k -> k.family().equals(family)); }
 
-  default boolean partitions(TimeSequenceKey key) { return partitions().contains(key); }
+  default boolean partitions(TimeSequenceTag tag) { return partitions().contains(tag); }
 
   /**
    * The families this sequence contributes to by majority-of-days: for each family
@@ -274,16 +274,16 @@ public interface TimeSequence {
    *
    * @see #contributorsTo(Epoch2kInterval)
    */
-  Set<TimeSequenceKey> contributesTo();
+  Set<TimeSequenceTag> contributesTo();
 
   /**
    * Convenience test: does {@code family} belong to {@link #contributesTo()}?
    *
    * @see #contributesTo()
    */
-  default boolean contributesTo(TimeFamilyKey family) { return contributesTo().stream().anyMatch(k -> k.family().equals(family)); }
+  default boolean contributesTo(TimeFamilyTag family) { return contributesTo().stream().anyMatch(k -> k.family().equals(family)); }
 
-  default boolean contributesTo(TimeSequenceKey key) { return contributesTo().contains(key); }
+  default boolean contributesTo(TimeSequenceTag tag) { return contributesTo().contains(tag); }
 
   /**
    * Decomposes {@code parent} into the intervals of this sequence that exactly
@@ -313,7 +313,7 @@ public interface TimeSequence {
     Epoch2kInterval child = interval(parent.firstDay());
     if (!child.firstDay().equals(parent.firstDay()))
       throw new IllegalArgumentException(
-          key() + " does not align with " + parent.firstDay()
+          tag() + " does not align with " + parent.firstDay()
               + " (child starts at " + child.firstDay() + ")");
 
     List<Epoch2kInterval> parts = new ArrayList<>();
@@ -322,7 +322,7 @@ public interface TimeSequence {
       if (child.lastDay().equals(parent.lastDay())) return List.copyOf(parts);
       if (child.lastDay().after(parent.lastDay()))
         throw new IllegalArgumentException(
-            key() + " overshoots " + parent.lastDay() + " (child ends at " + child.lastDay() + ")");
+            tag() + " overshoots " + parent.lastDay() + " (child ends at " + child.lastDay() + ")");
       child = interval(child.lastDay().tomorrow());
     }
   }
@@ -372,7 +372,7 @@ public interface TimeSequence {
    *     in {@code contributesTo}
    * @throws NullPointerException if either argument is {@code null}
    */
-  static void checkFamilies(Set<TimeFamilyKey> partitions, Set<TimeFamilyKey> contributesTo) {
+  static void checkFamilies(Set<TimeFamilyTag> partitions, Set<TimeFamilyTag> contributesTo) {
     requireNonNull(partitions, "partitions");
     requireNonNull(contributesTo, "contributesTo");
     if (!contributesTo.containsAll(partitions))
@@ -381,7 +381,7 @@ public interface TimeSequence {
               + partitions.stream().filter(p -> !contributesTo.contains(p)).toList());
   }
 
-  static void checkKeys(Set<TimeSequenceKey> partitions, Set<TimeSequenceKey> contributesTo) {
+  static void checkTags(Set<TimeSequenceTag> partitions, Set<TimeSequenceTag> contributesTo) {
     requireNonNull(partitions, "partitions");
     requireNonNull(contributesTo, "contributesTo");
     if (!contributesTo.containsAll(partitions))
@@ -398,7 +398,7 @@ public interface TimeSequence {
    * Format {@code interval} in this sequence's preferred string form.
    *
    * <p>The default implementation returns the canonical form
-   * {@code <key>/<first>+<length>}. Sequences override this to produce a more
+   * {@code <tag>/<first>+<length>}. Sequences override this to produce a more
    * compact form when the interval is a member of the sequence and that form is
    * expressible in the current string grammar — e.g. {@code GQ/2024:2} for the
    * second quarter of 2024, or {@code GM/2024-03} for March 2024.
@@ -410,7 +410,7 @@ public interface TimeSequence {
    * sequence is registered with it, and re-parses to the same interval.
    */
   default String format(Epoch2kInterval interval) {
-    return key().toString() + interval.toString();
+    return tag().toString() + interval.toString();
   }
 
   /**

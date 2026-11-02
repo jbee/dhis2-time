@@ -80,15 +80,15 @@ class YearlyGregorianSequenceTest {
   @Test
   void yearlyWithOffsetKeepsCalendarSystem() {
     var y = yearly(Epoch2kDay.MonthOfYear.July);
-    assertEquals('G', y.key().system());
-    assertEquals('7', y.key().offset());
+    assertEquals('G', y.tag().system());
+    assertEquals('7', y.tag().offset());
   }
 
   @Test
   void fiscalYearlyUsesFiscalSystem() {
     var y = fiscalYearly(Epoch2kDay.MonthOfYear.July);
-    assertEquals('F', y.key().system());
-    assertEquals('Y', y.key().interval());
-    assertEquals('7', y.key().offset());
+    assertEquals('F', y.tag().system());
+    assertEquals('Y', y.tag().interval());
+    assertEquals('7', y.tag().offset());
   }
 }

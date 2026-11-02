@@ -60,21 +60,21 @@ class BridgeParserTest {
   @Test
   void yearlyUsesCalendarSystemByDefault() {
     var slice = calendar().parse("2024");
-    assertEquals(GY.noOffset(), slice.key());
+    assertEquals(GY.noOffset(), slice.tag());
     assertEquals(Epoch2kInterval.ofYear(2024), slice.interval());
   }
 
   @Test
   void yearlyUsesFiscalSystemWhenConfigured() {
     var slice = fiscal().parse("2024");
-    assertEquals(FY.noOffset(), slice.key());
+    assertEquals(FY.noOffset(), slice.tag());
     assertEquals(Epoch2kInterval.ofYear(2024), slice.interval());
   }
 
   @Test
   void yearlyFiscalJuly() {
     var slice = calendar().parse("2024July");
-    assertEquals(FY.offsetBy(July), slice.key());
+    assertEquals(FY.offsetBy(July), slice.tag());
     assertEquals(ofYMD(2024, 7, 1), slice.interval().firstDay());
     assertEquals(ofYMD(2025, 6, 30), slice.interval().lastDay());
   }
@@ -82,7 +82,7 @@ class BridgeParserTest {
   @Test
   void yearlyFiscalApril() {
     var slice = calendar().parse("2024April");
-    assertEquals(FY.offsetBy(April), slice.key());
+    assertEquals(FY.offsetBy(April), slice.tag());
     assertEquals(ofYMD(2024, 4, 1), slice.interval().firstDay());
     assertEquals(ofYMD(2025, 3, 31), slice.interval().lastDay());
   }
@@ -92,7 +92,7 @@ class BridgeParserTest {
   @Test
   void monthlyCompact() {
     var slice = calendar().parse("202403");
-    assertEquals(GM.noOffset(), slice.key());
+    assertEquals(GM.noOffset(), slice.tag());
     assertEquals(ofYMD(2024, 3, 1), slice.interval().firstDay());
     assertEquals(ofYMD(2024, 3, 31), slice.interval().lastDay());
   }
@@ -105,7 +105,7 @@ class BridgeParserTest {
   @Test
   void monthlyUsesFiscalSystemWhenConfigured() {
     var slice = fiscal().parse("202403");
-    assertEquals(FM.noOffset(), slice.key());
+    assertEquals(FM.noOffset(), slice.tag());
     assertEquals(ofYMD(2024, 3, 1), slice.interval().firstDay());
   }
 
@@ -114,7 +114,7 @@ class BridgeParserTest {
   @Test
   void quarterlyFirstQuarter() {
     var slice = calendar().parse("2024Q1");
-    assertEquals(GQ.noOffset(), slice.key());
+    assertEquals(GQ.noOffset(), slice.tag());
     assertEquals(ofYMD(2024, 1, 1), slice.interval().firstDay());
     assertEquals(ofYMD(2024, 3, 31), slice.interval().lastDay());
   }
@@ -129,7 +129,7 @@ class BridgeParserTest {
   @Test
   void quarterlyFiscalNovemberFirst() {
     var slice = calendar().parse("2024NovQ1");
-    assertEquals(FQ.offsetBy(November), slice.key());
+    assertEquals(FQ.offsetBy(November), slice.tag());
     assertEquals(ofYMD(2024, 11, 1), slice.interval().firstDay());
     assertEquals(ofYMD(2025, 1, 31), slice.interval().lastDay());
   }
@@ -146,7 +146,7 @@ class BridgeParserTest {
   @Test
   void semesterFirst() {
     var slice = calendar().parse("2024S1");
-    assertEquals(GS.noOffset(), slice.key());
+    assertEquals(GS.noOffset(), slice.tag());
     assertEquals(ofYMD(2024, 1, 1), slice.interval().firstDay());
     assertEquals(ofYMD(2024, 6, 30), slice.interval().lastDay());
   }
@@ -161,7 +161,7 @@ class BridgeParserTest {
   @Test
   void semesterFiscalApril() {
     var slice = calendar().parse("2024AprilS1");
-    assertEquals(FH.offsetBy(April), slice.key());
+    assertEquals(FH.offsetBy(April), slice.tag());
     assertEquals(ofYMD(2024, 4, 1), slice.interval().firstDay());
     assertEquals(ofYMD(2024, 9, 30), slice.interval().lastDay());
   }
@@ -169,7 +169,7 @@ class BridgeParserTest {
   @Test
   void semesterFiscalNovember() {
     var slice = calendar().parse("2024NovS1");
-    assertEquals(FH.offsetBy(November), slice.key());
+    assertEquals(FH.offsetBy(November), slice.tag());
     assertEquals(ofYMD(2024, 11, 1), slice.interval().firstDay());
     assertEquals(ofYMD(2025, 4, 30), slice.interval().lastDay());
   }
@@ -179,7 +179,7 @@ class BridgeParserTest {
   @Test
   void bimesterFirst() {
     var slice = calendar().parse("202401B");
-    assertEquals(GB.noOffset(), slice.key());
+    assertEquals(GB.noOffset(), slice.tag());
     assertEquals(ofYMD(2024, 1, 1), slice.interval().firstDay());
     assertEquals(ofYMD(2024, 2, 29), slice.interval().lastDay());
   }
@@ -196,7 +196,7 @@ class BridgeParserTest {
   @Test
   void weeklyMondaySingleDigit() {
     var slice = calendar().parse("2024W1");
-    assertEquals(GW.noOffset(), slice.key());
+    assertEquals(GW.noOffset(), slice.tag());
     assertEquals(ofYMD(2024, 1, 1), slice.interval().firstDay());
     assertEquals(ofYMD(2024, 1, 7), slice.interval().lastDay());
   }
@@ -211,7 +211,7 @@ class BridgeParserTest {
   @Test
   void weeklyWednesdayUsesOffset() {
     var slice = calendar().parse("2024WedW11");
-    assertEquals(GW.offsetBy(Wednesday), slice.key());
+    assertEquals(GW.offsetBy(Wednesday), slice.tag());
     assertEquals(ofYMD(2024, 3, 13), slice.interval().firstDay());
   }
 
@@ -220,7 +220,7 @@ class BridgeParserTest {
   @Test
   void fortnightlySingleDigit() {
     var slice = calendar().parse("2024BiW1");
-    assertEquals(GF.noOffset(), slice.key());
+    assertEquals(GF.noOffset(), slice.tag());
     assertEquals(ofYMD(2024, 1, 1), slice.interval().firstDay());
     assertEquals(ofYMD(2024, 1, 14), slice.interval().lastDay());
   }
@@ -228,7 +228,7 @@ class BridgeParserTest {
   @Test
   void fortnightlyDoubleDigit() {
     var slice = calendar().parse("2024BiW11");
-    assertEquals(GF.noOffset(), slice.key());
+    assertEquals(GF.noOffset(), slice.tag());
     assertEquals(14, slice.interval().lengthInDays());
   }
 
@@ -237,7 +237,7 @@ class BridgeParserTest {
   @Test
   void dailyCompact() {
     var slice = calendar().parse("20240315");
-    assertEquals(GD.noOffset(), slice.key());
+    assertEquals(GD.noOffset(), slice.tag());
     assertEquals(ofYMD(2024, 3, 15), slice.interval().firstDay());
     assertEquals(ofYMD(2024, 3, 15), slice.interval().lastDay());
   }
@@ -256,12 +256,12 @@ class BridgeParserTest {
   // ── System-setting behaviour ──────────────────────────────────
 
   @Test
-  void systemSettingChangesKeyNotInterval() {
+  void systemSettingChangesTagNotInterval() {
     var cal = calendar().parse("2024");
     var fis = fiscal().parse("2024");
     assertEquals(cal.interval(), fis.interval());
-    assertEquals(GY.noOffset(), cal.key());
-    assertEquals(FY.noOffset(), fis.key());
+    assertEquals(GY.noOffset(), cal.tag());
+    assertEquals(FY.noOffset(), fis.tag());
   }
 
   @Test
@@ -270,7 +270,7 @@ class BridgeParserTest {
     // of which mapping the parser was constructed with.
     var cal = calendar().parse("2024July");
     var fis = fiscal().parse("2024July");
-    assertEquals(cal.key(), fis.key());
+    assertEquals(cal.tag(), fis.tag());
     assertEquals(cal.interval(), fis.interval());
   }
 
@@ -352,6 +352,6 @@ class BridgeParserTest {
     var reparsed = formatter.parse(formatted);
 
     assertEquals(slice.interval(), reparsed.interval());
-    assertEquals(slice.key(), reparsed.key());
+    assertEquals(slice.tag(), reparsed.tag());
   }
 }

@@ -9,8 +9,8 @@ import java.util.Map;
 /**
  * Parses the string form of a period:
  * <ul>
- *   <li>{@code <key>/<date>+<length>} — explicit interval</li>
- *   <li>{@code <key>/<date>:<n>} — 1-based position among the intervals of the
+ *   <li>{@code <tag>/<date>+<length>} — explicit interval</li>
+ *   <li>{@code <tag>/<date>:<n>} — 1-based position among the intervals of the
  *       sequence that overlap the anchor's calendar period. The period is
  *       determined by the anchor's precision: {@code YYYY} denotes the whole
  *       year, {@code YYYY-MM} the month, {@code YYYY-MM-DD} the single day.</li>
@@ -25,9 +25,9 @@ import java.util.Map;
  *
  * <p>The date is always Gregorian — it is what allows a valid
  * {@link Epoch2kInterval} to be computed without knowing which calendar the
- * key belongs to. The key prefix may be 2 or 3 chars regardless of which
+ * tag belongs to. The tag prefix may be 2 or 3 chars regardless of which
  * interval form follows; the 2-char form implies
- * {@link TimeSequenceKey#NO_OFFSET}.
+ * {@link TimeSequenceTag#NO_OFFSET}.
  *
  * <p>Canonical form is always the {@code +} form, produced by
  * {@link TimeSlice#toString()}.
@@ -38,15 +38,15 @@ import java.util.Map;
  */
 public final class TimeSliceParser {
 
-  private final Map<TimeSequenceKey, TimeSequence> registry;
+  private final Map<TimeSequenceTag, TimeSequence> registry;
 
   public TimeSliceParser(Collection<? extends TimeSequence> sequences) {
-    Map<TimeSequenceKey, TimeSequence> map = new HashMap<>();
+    Map<TimeSequenceTag, TimeSequence> map = new HashMap<>();
     for (TimeSequence s : sequences) {
-      TimeSequence existing = map.putIfAbsent(s.key(), s);
+      TimeSequence existing = map.putIfAbsent(s.tag(), s);
       if (existing != null)
         throw new IllegalArgumentException(
-            "duplicate key " + s.key() + " in registry: " + existing + " and " + s);
+            "duplicate tag " + s.tag() + " in registry: " + existing + " and " + s);
     }
     this.registry = Map.copyOf(map);
   }
@@ -55,11 +55,11 @@ public final class TimeSliceParser {
     int slash = findChar(s, '/', 0);
     if (slash != 2 && slash != 3)
       throw new IllegalArgumentException(
-          "expected 2- or 3-char key prefix followed by '/', got: " + s);
+          "expected 2- or 3-char tag prefix followed by '/', got: " + s);
 
-    TimeSequenceKey key = slash == 2
-        ? new TimeSequenceKey(s.charAt(0), s.charAt(1))
-        : new TimeSequenceKey(s.charAt(0), s.charAt(1), s.charAt(2));
+    TimeSequenceTag tag = slash == 2
+        ? new TimeSequenceTag(s.charAt(0), s.charAt(1))
+        : new TimeSequenceTag(s.charAt(0), s.charAt(1), s.charAt(2));
 
     int tailStart = slash + 1;
     int plus = findChar(s, '+', tailStart);
@@ -68,11 +68,11 @@ public final class TimeSliceParser {
     if (plus >= 0 && colon >= 0)
       throw new IllegalArgumentException("cannot combine '+' and ':' in: " + s);
     if (plus >= 0)
-      return parseExplicit(key, s, tailStart, plus, plus + 1, s.length());
+      return parseExplicit(tag, s, tailStart, plus, plus + 1, s.length());
     if (colon >= 0)
-      return parseAtPosition(key, s, tailStart, colon,
+      return parseAtPosition(tag, s, tailStart, colon,
           parsePositive(s, colon + 1, s.length() - colon - 1, "position"));
-    return parseAtPosition(key, s, tailStart, s.length(), 1);
+    return parseAtPosition(tag, s, tailStart, s.length(), 1);
   }
 
   // ── :n form ────────────────────────────────────────────────────────
@@ -82,32 +82,32 @@ public final class TimeSliceParser {
    * passes its parsed position; the no-suffix form passes {@code 1}.
    */
   private TimeSlice parseAtPosition(
-      TimeSequenceKey key, CharSequence s,
+      TimeSequenceTag tag, CharSequence s,
       int dateStart, int dateEnd, int position) {
-    TimeSequence sequence = registry.get(key);
+    TimeSequence sequence = registry.get(tag);
     if (sequence == null)
       throw new IllegalArgumentException(
-          "no sequence registered for key " + key + " (in: " + s + ")");
+          "no sequence registered for tag " + tag + " (in: " + s + ")");
 
     Epoch2kInterval period = toPeriod(parseDateParts(s, dateStart, dateEnd - dateStart), s);
     List<Epoch2kInterval> overlapping = overlapping(sequence, period);
     if (position > overlapping.size())
       throw new IllegalArgumentException(
           "position " + position + " exceeds the " + overlapping.size()
-              + " interval(s) of " + key + " overlapping " + period
+              + " interval(s) of " + tag + " overlapping " + period
               + " (in: " + s + ")");
 
-    return new TimeSlice(key, overlapping.get(position - 1));
+    return new TimeSlice(tag, overlapping.get(position - 1));
   }
 
   // ── +length form ───────────────────────────────────────────────────
 
   private TimeSlice parseExplicit(
-      TimeSequenceKey key, CharSequence s,
+      TimeSequenceTag tag, CharSequence s,
       int dateStart, int dateEnd, int lengthStart, int lengthEnd) {
     Epoch2kDay first = toEpochDay(parseDateParts(s, dateStart, dateEnd - dateStart), s);
     int length = parsePositive(s, lengthStart, lengthEnd - lengthStart, "length");
-    return new TimeSlice(key, new Epoch2kInterval(first, first.plusDays(length - 1)));
+    return new TimeSlice(tag, new Epoch2kInterval(first, first.plusDays(length - 1)));
   }
 
   // ── Date parsing ───────────────────────────────────────────────────

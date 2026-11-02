@@ -31,14 +31,14 @@ import java.util.Set;
  *
  * <p>Chains are only formed when the intermediate is itself a target (or
  * the source). Intermediates that aren't targets are introduced only when
- * required — i.e. when no already-reached key can reach the target, in
+ * required — i.e. when no already-reached tag can reach the target, in
  * which case the shortest BFS path is used. This keeps the plan from
  * computing values nobody asked for.
  *
  * <h2>Cost ordering</h2>
  *
  * <p>Targets are processed finest to coarsest, and each target's source is
- * the coarsest already-reached key that can reach it — which minimises the
+ * the coarsest already-reached tag that can reach it — which minimises the
  * target's own aggregation work. EXACT edges are preferred over APPROXIMATION
  * edges; if {@code allowApproximations} is {@code false}, only exact paths
  * are considered.
@@ -53,29 +53,29 @@ public final class AggregationStepPlanner {
    */
   private static final Epoch2kDay SAMPLE_DAY = new Epoch2kDay(0);
 
-  private final Map<TimeSequenceKey, TimeSequence> byKey;
-  private final Map<TimeSequenceKey, Integer> intervalLengths;
+  private final Map<TimeSequenceTag, TimeSequence> byTag;
+  private final Map<TimeSequenceTag, Integer> intervalLengths;
 
   /**
    * @param sequences all sequences the resolver may use, both as sources and
-   *     as intermediates; duplicate keys are rejected so lookups are unambiguous
+   *     as intermediates; duplicate tags are rejected so lookups are unambiguous
    */
   public AggregationStepPlanner(Collection<? extends TimeSequence> sequences) {
-    var map = new HashMap<TimeSequenceKey, TimeSequence>();
+    var map = new HashMap<TimeSequenceTag, TimeSequence>();
     for (var seq : sequences) {
-      var existing = map.putIfAbsent(seq.key(), seq);
+      var existing = map.putIfAbsent(seq.tag(), seq);
       if (existing != null)
         throw new IllegalArgumentException(
-            "duplicate sequence key " + seq.key() + ": " + existing + " and " + seq);
+            "duplicate sequence tag " + seq.tag() + ": " + existing + " and " + seq);
     }
-    this.byKey = Map.copyOf(map);
+    this.byTag = Map.copyOf(map);
 
-    var lengths = new HashMap<TimeSequenceKey, Integer>();
+    var lengths = new HashMap<TimeSequenceTag, Integer>();
     for (var seq : sequences) {
       try {
-        lengths.put(seq.key(), seq.intervalOrNext(SAMPLE_DAY).lengthInDays());
+        lengths.put(seq.tag(), seq.intervalOrNext(SAMPLE_DAY).lengthInDays());
       } catch (Exception e) {
-        lengths.put(seq.key(), 1);
+        lengths.put(seq.tag(), 1);
       }
     }
     this.intervalLengths = Map.copyOf(lengths);
@@ -84,13 +84,13 @@ public final class AggregationStepPlanner {
   // ── Public API ─────────────────────────────────────────────────────
 
   /** Equivalent to {@code planFindOffsets(source, targets, true)}. */
-  public List<AggregationStep> planFindOffsets(TimeSequenceKey source, Set<TimeFamilyKey> targets) {
+  public List<AggregationStep> planFindOffsets(TimeSequenceTag source, Set<TimeFamilyTag> targets) {
     return planFindOffsets(source, targets, true);
   }
 
   /**
    * Resolve a plan from {@code source} to each target family. The concrete
-   * target key for each family is chosen from the reachable keys: the source
+   * target tags for each family is chosen from the reachable tags: the source
    * offset propagates when the target shares its offset domain, otherwise the
    * family's no-offset variant is used.
    *
@@ -98,33 +98,33 @@ public final class AggregationStepPlanner {
    *     any target family is not reachable under the given constraints
    */
   public List<AggregationStep> planFindOffsets(
-      TimeSequenceKey source, Set<TimeFamilyKey> targets, boolean allowApproximations) {
+      TimeSequenceTag source, Set<TimeFamilyTag> targets, boolean allowApproximations) {
     var reachable = reachableFrom(source, allowApproximations);
-    var concreteTargets = new LinkedHashSet<TimeSequenceKey>();
+    var concreteTargets = new LinkedHashSet<TimeSequenceTag>();
     for (var family : targets) {
-      concreteTargets.add(pickKeyForFamily(reachable, source, family));
+      concreteTargets.add(pickTagForFamily(reachable, source, family));
     }
     return chainAggregations(source, concreteTargets, allowApproximations, reachable);
   }
 
   /** Equivalent to {@code resolveExact(source, targets, true)}. */
-  public List<AggregationStep> plan(TimeSequenceKey source, Set<TimeSequenceKey> targets) {
+  public List<AggregationStep> plan(TimeSequenceTag source, Set<TimeSequenceTag> targets) {
     return plan(source, targets, true);
   }
 
   /**
-   * Resolve a plan from {@code source} to each concrete target key. Every key
-   * in {@code targetKeys} must be registered with this resolver and reachable
+   * Resolve a plan from {@code source} to each concrete target tag. Every tag
+   * in {@code targets} must be registered with this resolver and reachable
    * from {@code source} under the given constraints.
    *
-   * @throws IllegalArgumentException if any target key is not registered or
+   * @throws IllegalArgumentException if any target tag is not registered or
    *     not reachable from {@code source}
    */
   public List<AggregationStep> plan(
-      TimeSequenceKey source, Set<TimeSequenceKey> targets, boolean allowApproximations) {
+      TimeSequenceTag source, Set<TimeSequenceTag> targets, boolean allowApproximations) {
     for (var target : targets) {
-      if (!byKey.containsKey(target))
-        throw new IllegalArgumentException("no sequence registered for target key " + target);
+      if (!byTag.containsKey(target))
+        throw new IllegalArgumentException("no sequence registered for target tag " + target);
     }
     return chainAggregations(source, targets, allowApproximations, null);
   }
@@ -134,23 +134,23 @@ public final class AggregationStepPlanner {
   /**
    * Build the plan by processing targets finest-to-coarsest and picking the
    * coarsest already-reached source that can reach each. Targets that aren't
-   * reachable from any already-reached key fall back to the shortest BFS path.
+   * reachable from any already-reached tag fall back to the shortest BFS path.
    */
   private List<AggregationStep> chainAggregations(
-      TimeSequenceKey source,
-      Set<TimeSequenceKey> targets,
+      TimeSequenceTag source,
+      Set<TimeSequenceTag> targets,
       boolean allowApproximations,
-      Map<TimeSequenceKey, Reach> reachableHint) {
+      Map<TimeSequenceTag, Reach> reachableHint) {
     if (targets.isEmpty()) return List.of();
 
-    var reached = new LinkedHashSet<TimeSequenceKey>();
+    var reached = new LinkedHashSet<TimeSequenceTag>();
     reached.add(source);
 
     var edges = new LinkedHashSet<AggregationStep>();
 
     var sortedTargets = sortTargetsFinerFirst(targets);
 
-    Map<TimeSequenceKey, Reach> reachable = reachableHint;
+    Map<TimeSequenceTag, Reach> reachable = reachableHint;
 
     for (var target : sortedTargets) {
       if (reached.contains(target)) continue; // source already provides it
@@ -158,7 +158,7 @@ public final class AggregationStepPlanner {
       var bestSource = findBestSource(target, reached, allowApproximations);
       if (bestSource != null) {
         var type =
-            byKey.get(bestSource).partitions().contains(target)
+            byTag.get(bestSource).partitions().contains(target)
                 ? AggregationExactness.EXACT
                 : AggregationExactness.APPROXIMATE;
         edges.add(new AggregationStep(bestSource, target, type));
@@ -203,8 +203,8 @@ public final class AggregationStepPlanner {
    * week's, which would tie it with the week in a length-only sort. Custom
    * sequences could in principle have any length/depth relationship.
    */
-  private List<TimeSequenceKey> sortTargetsFinerFirst(Set<TimeSequenceKey> targets) {
-    var depth = new HashMap<TimeSequenceKey, Integer>();
+  private List<TimeSequenceTag> sortTargetsFinerFirst(Set<TimeSequenceTag> targets) {
+    var depth = new HashMap<TimeSequenceTag, Integer>();
     for (var t : targets) depth.put(t, 0);
 
     // depth(t) = 1 + max(depth(p) : t ∈ p.partitions(), p ∈ targets)
@@ -216,7 +216,7 @@ public final class AggregationStepPlanner {
       for (var t : targets) {
         for (var p : targets) {
           if (p.equals(t)) continue;
-          if (byKey.get(p).partitions().contains(t)) {
+          if (byTag.get(p).partitions().contains(t)) {
             int candidate = depth.get(p) + 1;
             if (candidate > depth.get(t)) {
               depth.put(t, candidate);
@@ -231,25 +231,25 @@ public final class AggregationStepPlanner {
     var sorted = new ArrayList<>(targets);
     sorted.sort(
         Comparator
-            .comparingInt((TimeSequenceKey k) -> depth.get(k))
+            .comparingInt((TimeSequenceTag k) -> depth.get(k))
             .thenComparingInt(this::intervalLength));
     return sorted;
   }
 
   /**
-   * Among {@code reached}, the coarsest key that can reach {@code target} —
+   * Among {@code reached}, the coarsest tag that can reach {@code target} —
    * preferring EXACT edges over APPROXIMATION. Coarsest is measured by
    * interval length, which approximates the per-step work saved by using it
    * as the source: a coarser source means fewer intervals summed into the
    * target.
    */
-  private TimeSequenceKey findBestSource(
-      TimeSequenceKey target, Set<TimeSequenceKey> reached, boolean allowApproximations) {
-    TimeSequenceKey best = null;
+  private TimeSequenceTag findBestSource(
+      TimeSequenceTag target, Set<TimeSequenceTag> reached, boolean allowApproximations) {
+    TimeSequenceTag best = null;
     int bestLength = -1;
 
     for (var candidate : reached) {
-      var seq = byKey.get(candidate);
+      var seq = byTag.get(candidate);
       if (seq.partitions().contains(target)) {
         int len = intervalLength(candidate);
         if (len > bestLength) {
@@ -263,7 +263,7 @@ public final class AggregationStepPlanner {
     if (!allowApproximations) return null;
 
     for (var candidate : reached) {
-      var seq = byKey.get(candidate);
+      var seq = byTag.get(candidate);
       if (seq.partitions().contains(target)) continue;
       if (seq.contributesTo().contains(target)) {
         int len = intervalLength(candidate);
@@ -276,14 +276,14 @@ public final class AggregationStepPlanner {
     return best;
   }
 
-  private int intervalLength(TimeSequenceKey key) {
-    return intervalLengths.getOrDefault(key, 1);
+  private int intervalLength(TimeSequenceTag tag) {
+    return intervalLengths.getOrDefault(tag, 1);
   }
 
   // ── BFS over the declared aggregation graph (fallback path) ────────
 
-  private record Reach(TimeSequenceKey node, List<AggregationStep> path, int hops, int approximations) {
-    Reach(TimeSequenceKey node, List<AggregationStep> path) {
+  private record Reach(TimeSequenceTag node, List<AggregationStep> path, int hops, int approximations) {
+    Reach(TimeSequenceTag node, List<AggregationStep> path) {
       this(
           node,
           path,
@@ -295,12 +295,12 @@ public final class AggregationStepPlanner {
   private static final Comparator<Reach> COST_ORDER =
       Comparator.comparingInt(Reach::approximations).thenComparingInt(Reach::hops);
 
-  private Map<TimeSequenceKey, Reach> reachableFrom(
-      TimeSequenceKey source, boolean allowApproximations) {
-    if (!byKey.containsKey(source))
-      throw new IllegalArgumentException("no sequence registered for source key " + source);
+  private Map<TimeSequenceTag, Reach> reachableFrom(
+      TimeSequenceTag source, boolean allowApproximations) {
+    if (!byTag.containsKey(source))
+      throw new IllegalArgumentException("no sequence registered for source tag " + source);
 
-    var best = new HashMap<TimeSequenceKey, Reach>();
+    var best = new HashMap<TimeSequenceTag, Reach>();
     var pq = new PriorityQueue<Reach>(COST_ORDER);
     var seed = new Reach(source, List.of());
     best.put(source, seed);
@@ -310,11 +310,11 @@ public final class AggregationStepPlanner {
       var current = pq.poll();
       if (COST_ORDER.compare(current, best.get(current.node())) > 0) continue;
 
-      var seq = byKey.get(current.node());
+      var seq = byTag.get(current.node());
       if (seq == null) continue;
 
       for (var target : seq.partitions()) {
-        if (!byKey.containsKey(target)) continue;
+        if (!byTag.containsKey(target)) continue;
         tryOffer(
             best,
             pq,
@@ -327,7 +327,7 @@ public final class AggregationStepPlanner {
       if (allowApproximations) {
         for (var target : seq.contributesTo()) {
           if (seq.partitions().contains(target)) continue;
-          if (!byKey.containsKey(target)) continue;
+          if (!byTag.containsKey(target)) continue;
           tryOffer(
               best,
               pq,
@@ -342,7 +342,7 @@ public final class AggregationStepPlanner {
   }
 
   private static void tryOffer(
-      Map<TimeSequenceKey, Reach> best, PriorityQueue<Reach> pq, Reach candidate) {
+      Map<TimeSequenceTag, Reach> best, PriorityQueue<Reach> pq, Reach candidate) {
     var existing = best.get(candidate.node());
     if (existing == null || COST_ORDER.compare(candidate, existing) < 0) {
       best.put(candidate.node(), candidate);
@@ -352,8 +352,8 @@ public final class AggregationStepPlanner {
 
   // ── Target selection for expandFind ───────────────────────────────
 
-  private TimeSequenceKey pickKeyForFamily(
-      Map<TimeSequenceKey, Reach> reachable, TimeSequenceKey source, TimeFamilyKey family) {
+  private TimeSequenceTag pickTagForFamily(
+      Map<TimeSequenceTag, Reach> reachable, TimeSequenceTag source, TimeFamilyTag family) {
     var candidates =
         reachable.keySet().stream().filter(k -> k.family().equals(family)).toList();
     if (candidates.isEmpty()) {
@@ -363,7 +363,7 @@ public final class AggregationStepPlanner {
               + " is not reachable from "
               + source
               + "; reachable families: "
-              + reachable.keySet().stream().map(TimeSequenceKey::family).distinct().toList());
+              + reachable.keySet().stream().map(TimeSequenceTag::family).distinct().toList());
     }
     if (candidates.size() == 1) return candidates.get(0);
 
@@ -372,8 +372,8 @@ public final class AggregationStepPlanner {
           candidates.stream().filter(c -> c.offset() == source.offset()).findFirst();
       if (matching.isPresent()) return matching.get();
     }
-    var defaultKey = candidates.stream().filter(c -> !c.isOffset()).findFirst();
-    return defaultKey.orElse(candidates.get(0));
+    var defaultTag = candidates.stream().filter(c -> !c.isOffset()).findFirst();
+    return defaultTag.orElse(candidates.get(0));
   }
 
   // ── Path and edge utilities ────────────────────────────────────────
@@ -388,8 +388,8 @@ public final class AggregationStepPlanner {
   private static List<AggregationStep> topoSortEdges(Collection<AggregationStep> edges) {
     if (edges.isEmpty()) return List.of();
 
-    var producing = new HashMap<TimeSequenceKey, List<AggregationStep>>();
-    var consuming = new HashMap<TimeSequenceKey, List<AggregationStep>>();
+    var producing = new HashMap<TimeSequenceTag, List<AggregationStep>>();
+    var consuming = new HashMap<TimeSequenceTag, List<AggregationStep>>();
     for (var edge : edges) {
       producing.computeIfAbsent(edge.target(), k -> new ArrayList<>()).add(edge);
       consuming.computeIfAbsent(edge.source(), k -> new ArrayList<>()).add(edge);

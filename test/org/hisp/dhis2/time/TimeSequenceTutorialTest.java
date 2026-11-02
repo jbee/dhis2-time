@@ -12,7 +12,7 @@ import org.junit.jupiter.api.Test;
  * top-to-bottom as a tutorial: start with a single day, end with custom
  * sequences and canonical round-trips.
  *
- * <p>The general form is {@code <key>/<date><suffix>}. The key (2 or 3 chars,
+ * <p>The general form is {@code <tag>/<date><suffix>}. The tag (2 or 3 chars,
  * optionally followed by an offset) identifies the sequence; the date is
  * always Gregorian; the suffix is either an explicit length ({@code +N}) or a
  * position ({@code :N}), or absent (meaning position 1).
@@ -150,14 +150,14 @@ class TimeSequenceTutorialTest {
   // ── 7. Multiple sequences in one parser ───────────────────────────
 
   @Test
-  void multipleKeysResolvedByPrefix() {
+  void multipleTagsResolvedByPrefix() {
     var parser = new TimeSliceParser(List.of(
         GregorianSequences.GY_,
         GregorianSequences.GQ_,
         GregorianSequences.GM_,
         GregorianSequences.GD_));
 
-    // Same date, different key → different interval granularity.
+    // Same date, different tag → different interval granularity.
     var year    = parser.parse("GY/2024-06-15").interval();
     var quarter = parser.parse("GQ/2024-06-15").interval();
     var month   = parser.parse("GM/2024-06-15").interval();
@@ -223,7 +223,7 @@ class TimeSequenceTutorialTest {
     var spring = new Epoch2kInterval(ofYMD(2024, 1, 8), ofYMD(2024, 5, 24));
     var autumn = new Epoch2kInterval(ofYMD(2024, 9, 2), ofYMD(2024, 12, 20));
     var school = CustomSequences.of(
-        new TimeSequenceKey('S', 'T'), List.of(spring, autumn));
+        new TimeSequenceTag('S', 'T'), List.of(spring, autumn));
     var parser = new TimeSliceParser(List.of(school));
 
     // Same :N syntax as calendars; the position refers to the n-th term
@@ -241,7 +241,7 @@ class TimeSequenceTutorialTest {
     var spring = new Epoch2kInterval(ofYMD(2024, 1, 8), ofYMD(2024, 5, 24));
     var autumn = new Epoch2kInterval(ofYMD(2024, 9, 2), ofYMD(2024, 12, 20));
     var school = CustomSequences.of(
-        new TimeSequenceKey('S', 'T'), List.of(spring, autumn));
+        new TimeSequenceTag('S', 'T'), List.of(spring, autumn));
     var parser = new TimeSliceParser(List.of(school));
 
     // July 2024 is in the gap; no term overlaps it.
@@ -252,10 +252,10 @@ class TimeSequenceTutorialTest {
   // ── 11. Errors ────────────────────────────────────────────────────
 
   @Test
-  void unknownKeyRejected() {
+  void unknownTagRejected() {
     var parser = new TimeSliceParser(List.of(GregorianSequences.GQ_));
 
-    // GY is a valid key globally, but not registered with this parser.
+    // GY is a valid tag globally, but not registered with this parser.
     assertThrows(IllegalArgumentException.class, () -> parser.parse("GY/2024:1"));
   }
 
@@ -263,7 +263,7 @@ class TimeSequenceTutorialTest {
   void structuralErrorsRejected() {
     var parser = new TimeSliceParser(List.of(GregorianSequences.GQ_));
 
-    // Missing "/" between key and date.
+    // Missing "/" between tag and date.
     assertThrows(IllegalArgumentException.class, () -> parser.parse("GQ2024"));
     // Both suffix forms at once.
     assertThrows(IllegalArgumentException.class, () -> parser.parse("GQ/2024+1:1"));

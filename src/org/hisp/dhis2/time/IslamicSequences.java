@@ -6,9 +6,9 @@ public final class IslamicSequences {
 
   private IslamicSequences() {}
 
-  public static final TimeFamilyKey ID = new TimeFamilyKey('I', 'D');
-  public static final TimeFamilyKey IM = new TimeFamilyKey('I', 'M');
-  public static final TimeFamilyKey IY = new TimeFamilyKey('I', 'Y');
+  public static final TimeFamilyTag ID = new TimeFamilyTag('I', 'D');
+  public static final TimeFamilyTag IM = new TimeFamilyTag('I', 'M');
+  public static final TimeFamilyTag IY = new TimeFamilyTag('I', 'Y');
 
   public static final TimeSequence ID_ = daily();
   public static final TimeSequence IM_ = monthly();
@@ -34,11 +34,11 @@ public final class IslamicSequences {
   }
 
   private record DailyIslamicSequence(
-      TimeSequenceKey key, Set<TimeSequenceKey> partitions, Set<TimeSequenceKey> contributesTo)
+      TimeSequenceTag tag, Set<TimeSequenceTag> partitions, Set<TimeSequenceTag> contributesTo)
       implements TimeSequence {
 
     DailyIslamicSequence {
-      TimeSequence.checkKeys(partitions, contributesTo);
+      TimeSequence.checkTags(partitions, contributesTo);
     }
 
     @Override
@@ -48,11 +48,11 @@ public final class IslamicSequences {
   }
 
   private record MonthlyIslamicSequence(
-      TimeSequenceKey key, Set<TimeSequenceKey> partitions, Set<TimeSequenceKey> contributesTo)
+      TimeSequenceTag tag, Set<TimeSequenceTag> partitions, Set<TimeSequenceTag> contributesTo)
       implements TimeSequence {
 
     MonthlyIslamicSequence {
-      TimeSequence.checkKeys(partitions, contributesTo);
+      TimeSequence.checkTags(partitions, contributesTo);
     }
 
     @Override
@@ -62,11 +62,11 @@ public final class IslamicSequences {
   }
 
   private record YearlyIslamicSequence(
-      TimeSequenceKey key, Set<TimeSequenceKey> partitions, Set<TimeSequenceKey> contributesTo)
+      TimeSequenceTag tag, Set<TimeSequenceTag> partitions, Set<TimeSequenceTag> contributesTo)
       implements TimeSequence {
 
     YearlyIslamicSequence {
-      TimeSequence.checkKeys(partitions, contributesTo);
+      TimeSequence.checkTags(partitions, contributesTo);
     }
 
     @Override

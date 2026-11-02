@@ -34,19 +34,19 @@ public final class GregorianSequences {
   private GregorianSequences() {}
 
   // Calendar Gregorian
-  public static final TimeFamilyKey GD = new TimeFamilyKey('G', 'D');
-  public static final TimeFamilyKey GW = new TimeFamilyKey('G', 'W');
-  public static final TimeFamilyKey GF = new TimeFamilyKey('G', 'F');
-  public static final TimeFamilyKey GM = new TimeFamilyKey('G', 'M');
-  public static final TimeFamilyKey GB = new TimeFamilyKey('G', 'B');
-  public static final TimeFamilyKey GQ = new TimeFamilyKey('G', 'Q');
-  public static final TimeFamilyKey GS = new TimeFamilyKey('G', 'S');
-  public static final TimeFamilyKey GY = new TimeFamilyKey('G', 'Y');
+  public static final TimeFamilyTag GD = new TimeFamilyTag('G', 'D');
+  public static final TimeFamilyTag GW = new TimeFamilyTag('G', 'W');
+  public static final TimeFamilyTag GF = new TimeFamilyTag('G', 'F');
+  public static final TimeFamilyTag GM = new TimeFamilyTag('G', 'M');
+  public static final TimeFamilyTag GB = new TimeFamilyTag('G', 'B');
+  public static final TimeFamilyTag GQ = new TimeFamilyTag('G', 'Q');
+  public static final TimeFamilyTag GS = new TimeFamilyTag('G', 'S');
+  public static final TimeFamilyTag GY = new TimeFamilyTag('G', 'Y');
   // Fiscal Gregorian
-  public static final TimeFamilyKey FM = new TimeFamilyKey('F', 'M');
-  public static final TimeFamilyKey FQ = new TimeFamilyKey('F', 'Q');
-  public static final TimeFamilyKey FH = new TimeFamilyKey('F', 'H');
-  public static final TimeFamilyKey FY = new TimeFamilyKey('F', 'Y');
+  public static final TimeFamilyTag FM = new TimeFamilyTag('F', 'M');
+  public static final TimeFamilyTag FQ = new TimeFamilyTag('F', 'Q');
+  public static final TimeFamilyTag FH = new TimeFamilyTag('F', 'H');
+  public static final TimeFamilyTag FY = new TimeFamilyTag('F', 'Y');
 
   // ── Common constants ────────────────────────────────────────────────
 
@@ -71,19 +71,6 @@ public final class GregorianSequences {
   public static final TimeSequence FY7 = fiscalYearly(MonthOfYear.July);
 
   // ── Factories ───────────────────────────────────────────────────────
-  //
-  // Calendar-family factories use system 'G'. The key carries NO_OFFSET ('-')
-  // when the start is January (the calendar default) and an explicit offset
-  // otherwise (e.g. GQ4 for April quarters, GY7 for July-start calendar years).
-  //
-  // Fiscal-family factories use system 'F' and always carry an explicit
-  // start-month offset (e.g. FQ7, FY7).
-  //
-  // Weeks are never fiscal — weekly/bi-weekly always use system 'G'.
-  //
-  // Target offsets (partitions()/contributesTo()) are derived from the source
-  // offset when the source and target share an offset domain (day→day,
-  // month→month); otherwise the target uses the family default (noOffset).
 
   public static TimeSequence daily() {
     return new DailyGregorianSequence(
@@ -198,11 +185,11 @@ public final class GregorianSequences {
   // ── Implementation ─────────────────────────────────────────────────────────
 
   private record DailyGregorianSequence(
-      TimeSequenceKey key, Set<TimeSequenceKey> partitions, Set<TimeSequenceKey> contributesTo)
+      TimeSequenceTag tag, Set<TimeSequenceTag> partitions, Set<TimeSequenceTag> contributesTo)
       implements TimeSequence {
 
     DailyGregorianSequence {
-      TimeSequence.checkKeys(partitions, contributesTo);
+      TimeSequence.checkTags(partitions, contributesTo);
     }
 
     @Override
@@ -217,17 +204,17 @@ public final class GregorianSequences {
   }
 
   private record WeeklyGregorianSequence(
-      TimeSequenceKey key,
+      TimeSequenceTag tag,
       DayOfWeek day1,
-      Set<TimeSequenceKey> partitions,
-      Set<TimeSequenceKey> contributesTo)
+      Set<TimeSequenceTag> partitions,
+      Set<TimeSequenceTag> contributesTo)
       implements TimeSequence {
 
     WeeklyGregorianSequence {
-      if (key.offsetAsDay() != day1)
+      if (tag.offsetAsDay() != day1)
         throw new IllegalArgumentException(
-            "key " + key + " implies day1 " + key.offsetAsDay() + " but record has " + day1);
-      TimeSequence.checkKeys(partitions, contributesTo);
+            "tag " + tag + " implies day1 " + tag.offsetAsDay() + " but record has " + day1);
+      TimeSequence.checkTags(partitions, contributesTo);
     }
 
     @Override
@@ -242,17 +229,17 @@ public final class GregorianSequences {
   }
 
   private record FortnightlyGregorianSequence(
-      TimeSequenceKey key,
+      TimeSequenceTag tag,
       DayOfWeek day1,
-      Set<TimeSequenceKey> partitions,
-      Set<TimeSequenceKey> contributesTo)
+      Set<TimeSequenceTag> partitions,
+      Set<TimeSequenceTag> contributesTo)
       implements TimeSequence {
 
     FortnightlyGregorianSequence {
-      if (key.offsetAsDay() != day1)
+      if (tag.offsetAsDay() != day1)
         throw new IllegalArgumentException(
-            "key " + key + " implies day1 " + key.offsetAsDay() + " but record has " + day1);
-      TimeSequence.checkKeys(partitions, contributesTo);
+            "tag " + tag + " implies day1 " + tag.offsetAsDay() + " but record has " + day1);
+      TimeSequence.checkTags(partitions, contributesTo);
     }
 
     @Override
@@ -267,11 +254,11 @@ public final class GregorianSequences {
   }
 
   private record MonthlyGregorianSequence(
-      TimeSequenceKey key, Set<TimeSequenceKey> partitions, Set<TimeSequenceKey> contributesTo)
+      TimeSequenceTag tag, Set<TimeSequenceTag> partitions, Set<TimeSequenceTag> contributesTo)
       implements TimeSequence {
 
     MonthlyGregorianSequence {
-      TimeSequence.checkKeys(partitions, contributesTo);
+      TimeSequence.checkTags(partitions, contributesTo);
     }
 
     @Override
@@ -286,17 +273,17 @@ public final class GregorianSequences {
   }
 
   private record BimesterGregorianSequence(
-      TimeSequenceKey key,
+      TimeSequenceTag tag,
       MonthOfYear month1,
-      Set<TimeSequenceKey> partitions,
-      Set<TimeSequenceKey> contributesTo)
+      Set<TimeSequenceTag> partitions,
+      Set<TimeSequenceTag> contributesTo)
       implements TimeSequence {
 
     BimesterGregorianSequence {
-      if (key.offsetAsMonth() != month1)
+      if (tag.offsetAsMonth() != month1)
         throw new IllegalArgumentException(
-            "key " + key + " implies month1 " + key.offsetAsMonth() + " but record has " + month1);
-      TimeSequence.checkKeys(partitions, contributesTo);
+            "tag " + tag + " implies month1 " + tag.offsetAsMonth() + " but record has " + month1);
+      TimeSequence.checkTags(partitions, contributesTo);
     }
 
     @Override
@@ -311,17 +298,17 @@ public final class GregorianSequences {
   }
 
   private record SemesterGregorianSequence(
-      TimeSequenceKey key,
+      TimeSequenceTag tag,
       MonthOfYear month1,
-      Set<TimeSequenceKey> partitions,
-      Set<TimeSequenceKey> contributesTo)
+      Set<TimeSequenceTag> partitions,
+      Set<TimeSequenceTag> contributesTo)
       implements TimeSequence {
 
     SemesterGregorianSequence {
-      if (key.offsetAsMonth() != month1)
+      if (tag.offsetAsMonth() != month1)
         throw new IllegalArgumentException(
-            "key " + key + " implies month1 " + key.offsetAsMonth() + " but record has " + month1);
-      TimeSequence.checkKeys(partitions, contributesTo);
+            "tag " + tag + " implies month1 " + tag.offsetAsMonth() + " but record has " + month1);
+      TimeSequence.checkTags(partitions, contributesTo);
     }
 
     @Override
@@ -336,17 +323,17 @@ public final class GregorianSequences {
   }
 
   private record QuarterlyGregorianSequence(
-      TimeSequenceKey key,
+      TimeSequenceTag tag,
       MonthOfYear month1,
-      Set<TimeSequenceKey> partitions,
-      Set<TimeSequenceKey> contributesTo)
+      Set<TimeSequenceTag> partitions,
+      Set<TimeSequenceTag> contributesTo)
       implements TimeSequence {
 
     QuarterlyGregorianSequence {
-      if (key.offsetAsMonth() != month1)
+      if (tag.offsetAsMonth() != month1)
         throw new IllegalArgumentException(
-            "key " + key + " implies month1 " + key.offsetAsMonth() + " but record has " + month1);
-      TimeSequence.checkKeys(partitions, contributesTo);
+            "tag " + tag + " implies month1 " + tag.offsetAsMonth() + " but record has " + month1);
+      TimeSequence.checkTags(partitions, contributesTo);
     }
 
     @Override
@@ -361,17 +348,17 @@ public final class GregorianSequences {
   }
 
   private record YearlyGregorianSequence(
-      TimeSequenceKey key,
+      TimeSequenceTag tag,
       MonthOfYear month1,
-      Set<TimeSequenceKey> partitions,
-      Set<TimeSequenceKey> contributesTo)
+      Set<TimeSequenceTag> partitions,
+      Set<TimeSequenceTag> contributesTo)
       implements TimeSequence {
 
     YearlyGregorianSequence {
-      if (key.offsetAsMonth() != month1)
+      if (tag.offsetAsMonth() != month1)
         throw new IllegalArgumentException(
-            "key " + key + " implies month1 " + key.offsetAsMonth() + " but record has " + month1);
-      TimeSequence.checkKeys(partitions, contributesTo);
+            "tag " + tag + " implies month1 " + tag.offsetAsMonth() + " but record has " + month1);
+      TimeSequence.checkTags(partitions, contributesTo);
     }
 
     @Override
@@ -386,26 +373,26 @@ public final class GregorianSequences {
   }
 
   private static String formatYearBasedSequence(TimeSequence ts, Epoch2kInterval interval) {
-    var slice = new TimeSlice(ts.key(), interval);
+    var slice = new TimeSlice(ts.tag(), interval);
     if (!TimeSequence.isMemberOf(ts, interval)) return slice.toString();
-    if (ts.key().offsetAsMonth() == MonthOfYear.January) {
+    if (ts.tag().offsetAsMonth() == MonthOfYear.January) {
       return slice.formatYYYY();
     }
     return slice.formatYYYY_MM_DD();
   }
 
   private static String formatMonthBasedSequence(TimeSequence ts, Epoch2kInterval interval) {
-    TimeSlice slice = new TimeSlice(ts.key(), interval);
+    TimeSlice slice = new TimeSlice(ts.tag(), interval);
     if (!TimeSequence.isMemberOf(ts, interval)) return slice.toString();
     return slice.formatYYYY_MM();
   }
 
   private static String formatMonthBasedSequence(
       TimeSequence ts, Epoch2kInterval interval, int monthsPerPosition) {
-    var key = ts.key();
-    var slice = new TimeSlice(key, interval);
+    var tag = ts.tag();
+    var slice = new TimeSlice(tag, interval);
     if (!TimeSequence.isMemberOf(ts, interval)) return slice.toString();
-    if (key.offsetAsMonth() == MonthOfYear.January) {
+    if (tag.offsetAsMonth() == MonthOfYear.January) {
       int position = interval.firstDay().monthOffset() / monthsPerPosition + 1;
       return slice.formatYYYYxN(position);
     }
@@ -413,7 +400,7 @@ public final class GregorianSequences {
   }
 
   private static String formatFirstDayBasedSequence(TimeSequence ts, Epoch2kInterval interval) {
-    TimeSlice slice = new TimeSlice(ts.key(), interval);
+    TimeSlice slice = new TimeSlice(ts.tag(), interval);
     if (!TimeSequence.isMemberOf(ts, interval)) return slice.toString();
     return slice.formatYYYY_MM_DD();
   }

@@ -28,16 +28,16 @@ public final class CustomSequences {
   private CustomSequences() {}
 
   /** Custom sequence with no declared aggregation targets (terminal in the graph). */
-  public static TimeSequence of(TimeSequenceKey key, List<Epoch2kInterval> intervals) {
-    return of(key, intervals, Set.of(), Set.of());
+  public static TimeSequence of(TimeSequenceTag tag, List<Epoch2kInterval> intervals) {
+    return of(tag, intervals, Set.of(), Set.of());
   }
 
   public static TimeSequence of(
-      TimeSequenceKey key,
+      TimeSequenceTag tag,
       List<Epoch2kInterval> intervals,
-      Set<TimeSequenceKey> partitions,
-      Set<TimeSequenceKey> contributesTo) {
-    return new CustomSequence(key, intervals, partitions, contributesTo);
+      Set<TimeSequenceTag> partitions,
+      Set<TimeSequenceTag> contributesTo) {
+    return new CustomSequence(tag, intervals, partitions, contributesTo);
   }
 
   /**
@@ -46,15 +46,15 @@ public final class CustomSequences {
    * from a DB, might not be ordered" case) and validated for non-overlap.
    */
   public record CustomSequence(
-      TimeSequenceKey key,
+      TimeSequenceTag tag,
       List<Epoch2kInterval> intervals,
-      Set<TimeSequenceKey> partitions,
-      Set<TimeSequenceKey> contributesTo) implements TimeSequence {
+      Set<TimeSequenceTag> partitions,
+      Set<TimeSequenceTag> contributesTo) implements TimeSequence {
 
     public CustomSequence {
       if (intervals.isEmpty())
         throw new IllegalArgumentException(
-            "custom sequence " + key + " requires at least one interval");
+            "custom sequence " + tag + " requires at least one interval");
       intervals = intervals.stream()
           .sorted(Comparator.comparing(Epoch2kInterval::firstDay))
           .toList();
@@ -63,10 +63,10 @@ public final class CustomSequences {
         Epoch2kInterval next = intervals.get(i + 1);
         if (curr.lastDay().notBefore(next.firstDay()))
           throw new IllegalArgumentException(
-              "custom sequence " + key + ": interval " + curr
+              "custom sequence " + tag + ": interval " + curr
                   + " overlaps or is not before " + next);
       }
-      TimeSequence.checkKeys(partitions, contributesTo);
+      TimeSequence.checkTags(partitions, contributesTo);
     }
 
     @Override
@@ -80,7 +80,7 @@ public final class CustomSequences {
         else return candidate;
       }
       throw new IllegalArgumentException(
-          "day " + day + " is not covered by any interval in custom sequence " + key);
+          "day " + day + " is not covered by any interval in custom sequence " + tag);
     }
 
     @Override
@@ -93,7 +93,7 @@ public final class CustomSequences {
       }
       if (result < 0)
         throw new IllegalArgumentException(
-            "no interval in " + key + " ends at or after " + day);
+            "no interval in " + tag + " ends at or after " + day);
       return intervals.get(result);
     }
 
@@ -117,7 +117,7 @@ public final class CustomSequences {
       }
       if (result < 0)
         throw new NoSuchElementException(
-            "no interval in " + key + " starts after " + ref);
+            "no interval in " + tag + " starts after " + ref);
       return intervals.get(result);
     }
 
@@ -141,7 +141,7 @@ public final class CustomSequences {
       }
       if (result < 0)
         throw new NoSuchElementException(
-            "no interval in " + key + " ends before " + ref);
+            "no interval in " + tag + " ends before " + ref);
       return intervals.get(result);
     }
 

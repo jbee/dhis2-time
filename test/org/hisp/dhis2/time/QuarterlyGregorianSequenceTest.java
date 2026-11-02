@@ -73,19 +73,19 @@ class QuarterlyGregorianSequenceTest {
 
   @Test
   void factoryUsesNoOffsetForJanuary() {
-    assertEquals('-', quarterly(Epoch2kDay.MonthOfYear.January).key().offset());
+    assertEquals('-', quarterly(Epoch2kDay.MonthOfYear.January).tag().offset());
   }
 
   @Test
   void factoryEncodesNonJanuaryStartAsDigit() {
-    assertEquals('4', quarterly(Epoch2kDay.MonthOfYear.April).key().offset());
+    assertEquals('4', quarterly(Epoch2kDay.MonthOfYear.April).tag().offset());
   }
 
   @Test
   void fiscalUsesSystemF() {
     var q = fiscalQuarterly(Epoch2kDay.MonthOfYear.July);
-    assertEquals('F', q.key().system());
-    assertEquals('7', q.key().offset());
+    assertEquals('F', q.tag().system());
+    assertEquals('7', q.tag().offset());
   }
 
   @Test

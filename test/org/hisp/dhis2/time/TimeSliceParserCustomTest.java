@@ -29,7 +29,7 @@ class TimeSliceParserCustomTest {
       new Epoch2kInterval(ofYMD(2025, 9, 1), ofYMD(2025, 12, 19));  // 110 days
 
   private static final TimeSequence SCHOOL_TERMS = CustomSequences.of(
-      new TimeSequenceKey('S', 'T'),
+      new TimeSequenceTag('S', 'T'),
       List.of(SPRING_2024, AUTUMN_2024, SPRING_2025, AUTUMN_2025));
 
   private static final TimeSliceParser PARSER =
@@ -44,7 +44,7 @@ class TimeSliceParserCustomTest {
   @Test
   void explicitFormReturnsTheSpecifiedInterval() {
     var p = PARSER.parse("ST/2024-01-08+138");
-    assertEquals(SCHOOL_TERMS.key(), p.key());
+    assertEquals(SCHOOL_TERMS.tag(), p.tag());
     assertEquals(SPRING_2024, p.interval());
   }
 
@@ -194,7 +194,7 @@ class TimeSliceParserCustomTest {
   // ── Registry interaction ──────────────────────────────────────────
 
   @Test
-  void unregisteredKeyThrows() {
+  void unregisteredTagThrows() {
     // "SU/" is not in this parser's registry — only "ST/" is.
     assertThrows(IllegalArgumentException.class,
         () -> PARSER.parse("SU/2024-01-08:1"));
